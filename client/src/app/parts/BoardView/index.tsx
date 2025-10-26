@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { WorkItem as WorkItemType } from "@/state/api";
-import { EllipsisVertical, MessageSquareMore, Plus, CircleUser } from 'lucide-react';
+import { EllipsisVertical, MessageSquareMore, Plus } from 'lucide-react';
 import { format } from "date-fns";
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 type BoardProps = {
     id: string;
@@ -167,6 +168,7 @@ type WorkItemProps = {
 }
 
 const WorkItem = ({ workItem, setEditingWorkItem }: WorkItemProps) => {
+    const router = useRouter();
     const [{ isDragging }, drag] = useDrag(() => ({
         type: "workItem",
         item: { id: workItem.id },
@@ -319,23 +321,29 @@ const WorkItem = ({ workItem, setEditingWorkItem }: WorkItemProps) => {
                             const tooltip = `${role}: ${user.name}`;
 
                             return user.profilePictureUrl ? (
-                                <Image
+                                <button
                                     key={uniqueKey}
-                                    src={`/${user.profilePictureUrl}`}
-                                    alt={user.username}
-                                    title={tooltip}  // <-- tooltip on hover
-                                    width={30}
-                                    height={30}
-                                    className="h-8 w-8 rounded-full border-2 border-white object-cover dark:border-dark-secondary"
-                                />
-                            ) : (
-                                <div
-                                    key={uniqueKey}
-                                    title={tooltip}  // <-- tooltip on hover
-                                    className="h-8 w-8 rounded-full border-2 border-white text-gray-400 dark:border-dark-secondary"
+                                    onClick={() => router.push(`/users/${user.userId}`)}
+                                    className="cursor-pointer"
                                 >
-                                    <CircleUser size={24} />
-                                </div>
+                                    <Image
+                                        src={`/${user.profilePictureUrl}`}
+                                        alt={user.username}
+                                        title={tooltip}  // <-- tooltip on hover
+                                        width={30}
+                                        height={30}
+                                        className="h-8 w-8 rounded-full border-2 border-white object-cover dark:border-dark-secondary"
+                                    />
+                                </button>
+                            ) : (
+                                <button
+                                    key={uniqueKey}
+                                    onClick={() => router.push(`/users/${user.userId}`)}
+                                    title={tooltip}  // <-- tooltip on hover
+                                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gray-300 text-xs font-medium text-gray-600 dark:border-dark-secondary"
+                                >
+                                    {user.username?.substring(0, 2).toUpperCase() || "?"}
+                                </button>
                             );
                         })}
                     </div>

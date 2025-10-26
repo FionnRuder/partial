@@ -292,7 +292,7 @@ const HomePage = () => {
       };
 
   return (
-    <div className="container h-full w-[100%] bg-gray-100 bg-transparent p-8">
+    <div className="h-full w-full bg-gray-100 bg-transparent p-8">
       <Header name="Program Management Dashboard" />
 
       {/* ---- Program Selector and Work Item Filter ---- */}
@@ -426,7 +426,7 @@ const HomePage = () => {
                 <div className="text-red-500 text-sm">Error loading milestones</div>
               </div>
             ) : displayedMilestones && displayedMilestones.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {[...displayedMilestones]
                   .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                   .map((milestone) => {
@@ -474,7 +474,7 @@ const HomePage = () => {
                     return (
                       <div
                         key={milestone.id}
-                        className={`p-3 rounded-lg border transition-all duration-200 hover:shadow-md ${
+                        className={`p-2 rounded-lg border transition-all duration-200 hover:shadow-md ${
                           isPast 
                             ? "bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700" 
                             : isUpcoming?.isWithin30Days
