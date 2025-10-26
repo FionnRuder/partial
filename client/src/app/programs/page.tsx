@@ -2,7 +2,7 @@
 
 import { useAppSelector } from '@/app/redux';
 import Header from '@/components/Header';
-import { useGetProgramsQuery, useGetMilestonesByProgramQuery, useGetWorkItemsByProgramQuery, useGetMilestonesQuery, useGetWorkItemsQuery, useGetTeamsQuery } from '@/state/api';
+import { useGetProgramsQuery, useGetMilestonesByProgramQuery, useGetWorkItemsByProgramQuery, useGetMilestonesQuery, useGetWorkItemsQuery, DeliverableTypeLabels, IssueTypeLabels } from '@/state/api';
 import ModalNewProgram from '@/components/ModalNewProgram';
 import ModalEditProgram from '@/components/ModalEditProgram';
 import ModalNewMilestone from '@/components/ModalNewMilestone';
@@ -10,24 +10,13 @@ import ModalEditMilestone from '@/components/ModalEditMilestone';
 import { DisplayOption, Gantt, ViewMode } from "gantt-task-react"
 import "gantt-task-react/dist/index.css"
 import React, { useMemo, useState } from 'react';
-import { Calendar, CheckCircle, Clock, Target, SquarePen, PlusSquare } from 'lucide-react';
-import {
-    Bar,
-    BarChart,
-    CartesianGrid,
-    Cell,
-    Legend,
-    Pie,
-    PieChart,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis,
-} from "recharts";
+import { useRouter } from 'next/navigation';
+import { Calendar, CheckCircle, Clock, Target, SquarePen, PlusSquare, ChevronDown, ChevronRight } from 'lucide-react';
 
 type TaskTypeItems = "task" | "milestone" | "project";
 
 const Programs = () => {
+    const router = useRouter();
     const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
     const { data: programs, isLoading: programsLoading, isError: programsError } = useGetProgramsQuery();
 
@@ -45,7 +34,9 @@ const Programs = () => {
     }, [selectedProgramId, programs]);
 
     const [workItemFilter, setWorkItemFilter] = useState<"all" | "open">("all");
-    const [chartMode, setChartMode] = useState<"type" | "priority">("type");
+    
+    // Expand/collapse state for table rows
+    const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
     
     // Modal states
     const [isNewProgramModalOpen, setIsNewProgramModalOpen] = useState(false);
@@ -62,7 +53,6 @@ const Programs = () => {
 
     // Get work items - always fetch all work items, then filter in the UI
     const { data: allWorkItems } = useGetWorkItemsQuery();
-    const { data: teams } = useGetTeamsQuery();
 
     // Filter work items based on the toggle and selected program
     const filteredWorkItems = useMemo(() => {
@@ -80,64 +70,76 @@ const Programs = () => {
             : filtered;
     }, [allWorkItems, workItemFilter, selectedProgramId]);
 
-    // Chart data processing
-    const COLORS = ["#6FA8DC", "#66CDAA", "#FF9500", "#FF8042", "#A28FD0", "#FF6384", "#36A2EB"];
-
-    // Work Items by Discipline Team
-    const teamDistribution = useMemo(() => {
-        if (!filteredWorkItems || !teams) return [];
+    // Work item type distribution with subtype breakdowns
+    const workItemTypeCounts = useMemo(() => {
+        if (!allWorkItems) return [];
         
-        const teamCount = filteredWorkItems.reduce((acc: Record<string, number>, item) => {
-            const team = teams.find((t) => t.id === item.assigneeUser?.disciplineTeamId);
-            const teamName = team?.name || "Unassigned";
-            acc[teamName] = (acc[teamName] || 0) + 1;
-            return acc;
-        }, {});
+        // Filter by selected program
+        const programFilteredItems = selectedProgramId === "all" 
+            ? allWorkItems 
+            : allWorkItems.filter((item) => item.programId === selectedProgramId);
         
-        return Object.entries(teamCount).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
-    }, [filteredWorkItems, teams]);
-
-    // Pie chart data: Type vs Priority
-    const priorityDistribution = useMemo(() => {
-        if (!filteredWorkItems) return [];
+        const typeCount: Record<string, { 
+            openCount: number; 
+            completedCount: number; 
+            totalCount: number;
+            subtypes?: Record<string, { openCount: number; completedCount: number; totalCount: number }> 
+        }> = {};
         
-        const priorityCount = filteredWorkItems.reduce((acc: Record<string, number>, item) => {
-            acc[item.priority] = (acc[item.priority] || 0) + 1;
-            return acc;
-        }, {});
+        programFilteredItems.forEach((item) => {
+            const isCompleted = item.status === "Completed";
+            
+            if (!typeCount[item.workItemType]) {
+                typeCount[item.workItemType] = { openCount: 0, completedCount: 0, totalCount: 0, subtypes: {} };
+            }
+            
+            typeCount[item.workItemType].totalCount++;
+            if (isCompleted) {
+                typeCount[item.workItemType].completedCount++;
+            } else {
+                typeCount[item.workItemType].openCount++;
+            }
+            
+            // Track subtypes for Deliverables and Issues
+            if (item.workItemType === 'Deliverable' && item.deliverableDetail?.deliverableType) {
+                if (!typeCount[item.workItemType].subtypes) {
+                    typeCount[item.workItemType].subtypes = {};
+                }
+                const subtype = item.deliverableDetail.deliverableType;
+                if (!typeCount[item.workItemType].subtypes![subtype]) {
+                    typeCount[item.workItemType].subtypes![subtype] = { openCount: 0, completedCount: 0, totalCount: 0 };
+                }
+                typeCount[item.workItemType].subtypes![subtype].totalCount++;
+                if (isCompleted) {
+                    typeCount[item.workItemType].subtypes![subtype].completedCount++;
+                } else {
+                    typeCount[item.workItemType].subtypes![subtype].openCount++;
+                }
+            } else if (item.workItemType === 'Issue' && item.issueDetail?.issueType) {
+                if (!typeCount[item.workItemType].subtypes) {
+                    typeCount[item.workItemType].subtypes = {};
+                }
+                const subtype = item.issueDetail.issueType;
+                if (!typeCount[item.workItemType].subtypes![subtype]) {
+                    typeCount[item.workItemType].subtypes![subtype] = { openCount: 0, completedCount: 0, totalCount: 0 };
+                }
+                typeCount[item.workItemType].subtypes![subtype].totalCount++;
+                if (isCompleted) {
+                    typeCount[item.workItemType].subtypes![subtype].completedCount++;
+                } else {
+                    typeCount[item.workItemType].subtypes![subtype].openCount++;
+                }
+            }
+        });
         
-        return Object.entries(priorityCount).map(([name, count]) => ({ name, count }));
-    }, [filteredWorkItems]);
-
-    const typeDistribution = useMemo(() => {
-        if (!filteredWorkItems) return [];
-        
-        const typeCount = filteredWorkItems.reduce((acc: Record<string, number>, item) => {
-            acc[item.workItemType] = (acc[item.workItemType] || 0) + 1;
-            return acc;
-        }, {});
-        
-        return Object.entries(typeCount).map(([name, count]) => ({ name, count }));
-    }, [filteredWorkItems]);
-
-    const pieData = chartMode === "type" ? typeDistribution : priorityDistribution;
-
-    const formattedTeamName = (name: string) => 
-        name.length > 10 ? name.slice(0, 10) + "…" : name;
-
-    const chartColors = isDarkMode
-        ? {
-            bar: "#8884d8",
-            barGrid: "#303030",
-            pieFill: "#4A90E2",
-            text: "#FFFFFF",
-        }
-        : {
-            bar: "#8884d8",
-            barGrid: "#E0E0E0",
-            pieFill: "#82ca9d",
-            text: "#000000",
-        };
+        return Object.entries(typeCount).map(([type, data]) => ({ 
+            type, 
+            openCount: data.openCount,
+            completedCount: data.completedCount,
+            totalCount: data.totalCount,
+            subtypes: data.subtypes 
+        }));
+    }, [allWorkItems, selectedProgramId]);
 
     const ganttTasks = useMemo(() => {
         return (
@@ -167,6 +169,23 @@ const Programs = () => {
     ) => {
         const value = event.target.value;
         setSelectedProgramId(value === "all" ? "all" : parseInt(value));
+    };
+
+    const toggleRowExpansion = (rowKey: string) => {
+        const newExpanded = new Set(expandedRows);
+        if (newExpanded.has(rowKey)) {
+            newExpanded.delete(rowKey);
+        } else {
+            newExpanded.add(rowKey);
+        }
+        setExpandedRows(newExpanded);
+    };
+
+    const handleWorkItemTypeClick = (workItemType: string) => {
+        const route = workItemType.toLowerCase();
+        if (route === 'deliverable' || route === 'issue' || route === 'task') {
+            router.push(`/work-items/${route}s`);
+        }
     };
 
     const formatDate = (dateString: string) => {
@@ -280,32 +299,6 @@ const Programs = () => {
                             </option>
                         ))}
                     </select>
-                </div>
-
-                {/* Work Item Status Toggle and New Milestone Button */}
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-1 dark:border-gray-600 dark:bg-dark-tertiary">
-                        <button
-                            onClick={() => setWorkItemFilter("all")}
-                            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                                workItemFilter === "all"
-                                    ? "bg-white text-blue-600 shadow-sm dark:bg-dark-secondary dark:text-blue-400"
-                                    : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
-                            }`}
-                        >
-                            All Work Items
-                        </button>
-                        <button
-                            onClick={() => setWorkItemFilter("open")}
-                            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                                workItemFilter === "open"
-                                    ? "bg-white text-blue-600 shadow-sm dark:bg-dark-secondary dark:text-blue-400"
-                                    : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
-                            }`}
-                        >
-                            Open Work Items
-                        </button>
-                    </div>
                     
                     {/* New Milestone Button */}
                     <button
@@ -316,68 +309,36 @@ const Programs = () => {
                         New Milestone
                     </button>
                 </div>
+
+                {/* Work Item Status Toggle */}
+                <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-1 dark:border-gray-600 dark:bg-dark-tertiary">
+                    <button
+                        onClick={() => setWorkItemFilter("all")}
+                        className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                            workItemFilter === "all"
+                                ? "bg-white text-blue-600 shadow-sm dark:bg-dark-secondary dark:text-blue-400"
+                                : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                        }`}
+                    >
+                        All Work Items
+                    </button>
+                    <button
+                        onClick={() => setWorkItemFilter("open")}
+                        className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                            workItemFilter === "open"
+                                ? "bg-white text-blue-600 shadow-sm dark:bg-dark-secondary dark:text-blue-400"
+                                : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                        }`}
+                    >
+                        Open Work Items
+                    </button>
+                </div>
             </div>
 
-            {/* Charts and Milestones Section */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {/* Charts Section */}
-                <div className="col-span-1 space-y-4">
-                    {/* Bar Chart: Work Items by Discipline Team */}
-                    <div className="rounded-lg bg-white p-4 shadow dark:bg-dark-secondary">
-                        <h3 className="mb-4 text-lg font-semibold dark:text-white">
-                            Work Items by Discipline Team
-                        </h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={teamDistribution}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.barGrid} />
-                                <XAxis 
-                                    dataKey="name"
-                                    tickFormatter={formattedTeamName}
-                                    stroke={chartColors.text}
-                                    interval={0}
-                                />
-                                <YAxis stroke={chartColors.text} />
-                                <Tooltip />
-                                <Bar dataKey="count" fill={chartColors.bar}>
-                                    {teamDistribution.map((_, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-
-                    {/* Pie Chart: Type vs Priority */}
-                    <div className="rounded-lg bg-white p-4 shadow dark:bg-dark-secondary">
-                        <div className="mb-4 flex items-center justify-between">
-                            <h3 className="text-lg font-semibold dark:text-white">
-                                Work Item Distribution (By Type / By Priority)
-                            </h3>
-                            <select
-                                value={chartMode}
-                                onChange={(e) => setChartMode(e.target.value as "type" | "priority")}
-                                className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm dark:bg-dark-secondary dark:text-white"
-                            >
-                                <option value="type">By Type</option>
-                                <option value="priority">By Priority</option>
-                            </select>
-                        </div>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                                <Pie dataKey="count" data={pieData} fill={chartColors.pieFill} label>
-                                    {pieData.map((_, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                                <Legend />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
+            {/* Work Items Table and Milestones Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Milestones Section */}
-                <div className="col-span-1">
+                <div>
                     <div className="rounded-lg bg-white shadow dark:bg-dark-secondary md:max-h-[940px] max-h-[50vh] overflow-y-auto">
                 <div className="sticky top-0 bg-white dark:bg-dark-secondary z-10 p-4 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
@@ -401,7 +362,7 @@ const Programs = () => {
                             <span className="ml-2 text-gray-500 dark:text-gray-300">Loading milestones...</span>
                         </div>
                     ) : allMilestones && allMilestones.length > 0 ? (
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                             {[...allMilestones]
                                 .filter((milestone) => {
                                     // When "All Programs" is selected, show all milestones
@@ -459,7 +420,7 @@ const Programs = () => {
                                     return (
                                         <div
                                             key={milestone.id}
-                                            className={`p-3 rounded-lg border transition-all duration-200 hover:shadow-md ${
+                                            className={`p-2 rounded-lg border transition-all duration-200 hover:shadow-md ${
                                                 isPast 
                                                     ? "bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700" 
                                                     : isUpcoming?.isWithin30Days
@@ -527,8 +488,117 @@ const Programs = () => {
                     )}
                     </div>
                 </div>
+                </div>
+
+                {/* Work Item Type Distribution Table */}
+                <div>
+                    <div className="rounded-lg bg-white shadow dark:bg-dark-secondary">
+                        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+                                Work Items by Type
+                            </h2>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50 dark:bg-dark-tertiary">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                            Work Item Type
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                            Qty Open
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                            Qty Closed
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                            Qty Total
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white dark:bg-dark-secondary divide-y divide-gray-200 dark:divide-gray-700">
+                                    {workItemTypeCounts.length > 0 ? (
+                                        workItemTypeCounts.map((item, index) => {
+                                            const hasSubtypes = item.subtypes && Object.keys(item.subtypes).length > 0;
+                                            const isExpanded = expandedRows.has(item.type);
+                                            const ChevronIcon = isExpanded ? ChevronDown : ChevronRight;
+                                            
+                                            return (
+                                                <React.Fragment key={index}>
+                                                    <tr 
+                                                        onClick={() => handleWorkItemTypeClick(item.type)}
+                                                        className="hover:bg-gray-50 dark:hover:bg-dark-tertiary cursor-pointer"
+                                                    >
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                                            <div className="flex items-center gap-2">
+                                                                {hasSubtypes ? (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            toggleRowExpansion(item.type);
+                                                                        }}
+                                                                        className="flex items-center justify-center w-4 h-4 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+                                                                    >
+                                                                        <ChevronIcon className="w-3 h-3" />
+                                                                    </button>
+                                                                ) : (
+                                                                    <span className="w-4" />
+                                                                )}
+                                                                <span>{item.type}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                                            {item.openCount}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                                            {item.completedCount}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                                            {item.totalCount}
+                                                        </td>
+                                                    </tr>
+                                                    {hasSubtypes && isExpanded && Object.entries(item.subtypes!).map(([subtype, counts]) => {
+                                                        // Use labels for deliverable and issue types
+                                                        let displayName = subtype;
+                                                        if (item.type === 'Deliverable' && DeliverableTypeLabels[subtype as keyof typeof DeliverableTypeLabels]) {
+                                                            displayName = DeliverableTypeLabels[subtype as keyof typeof DeliverableTypeLabels];
+                                                        } else if (item.type === 'Issue' && IssueTypeLabels[subtype as keyof typeof IssueTypeLabels]) {
+                                                            displayName = IssueTypeLabels[subtype as keyof typeof IssueTypeLabels];
+                                                        }
+                                                        
+                                                        return (
+                                                            <tr key={subtype} className="hover:bg-gray-50 dark:hover:bg-dark-tertiary bg-gray-50 dark:bg-dark-tertiary">
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400 pl-12">
+                                                                    {displayName}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                                    {counts.openCount}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                                    {counts.completedCount}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                                    {counts.totalCount}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </React.Fragment>
+                                            );
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                                No work items found
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
         
         {/* Modals */}
         <ModalNewProgram
