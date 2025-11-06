@@ -616,6 +616,27 @@ export const api = createApi({
       providesTags: (result, error, userId) => [{ type: "Users", id: userId }],
     }),
 
+    createUser: build.mutation<User, Partial<User> & { cognitoId: string; username: string; name: string; email: string; phoneNumber: string; role: string }>({
+      query: (userData) => ({
+        url: "users",
+        method: "POST",
+        body: userData,
+      }),
+      invalidatesTags: ["Users"],
+    }),
+
+    updateUser: build.mutation<User, { userId: number; data: Partial<User> }>({
+      query: ({ userId, data }) => ({
+        url: `users/${userId}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { userId }) => [
+        { type: "Users", id: userId },
+        "Users",
+      ],
+    }),
+
     /* ---------- SEARCH ---------- */
     search: build.query<SearchResults, string>({
       query: (query) => `search?query=${query}`,
@@ -659,6 +680,8 @@ export const {
 
   useGetUsersQuery,
   useGetUserByIdQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
 
   useSearchQuery,
 } = api;

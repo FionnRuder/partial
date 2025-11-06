@@ -6,6 +6,7 @@ import {
     useGetProgramsQuery,
     useGetPartsByUserQuery
 } from '@/state/api';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     AlertTriangle,
     Bolt,
@@ -36,8 +37,9 @@ const Sidebar = () => {
 
     const { data: programs } = useGetProgramsQuery();
 
-    const userId = 12; // TODO: replace with useAppSelector(state => state.global.userId)
-    const { data: userParts } = useGetPartsByUserQuery(userId!, { skip: !userId });
+    const { user } = useAuth();
+    const userId = user?.userId;
+    const { data: userParts } = useGetPartsByUserQuery(userId || 0, { skip: !userId });
 
     // ✅ Group parts by programId for easy display
     const partsByProgram = useMemo(() => {
@@ -47,6 +49,18 @@ const Sidebar = () => {
             return acc;
         }, {});
     }, [userParts]);
+
+    // ✅ Filter programs to only show those where the user's discipline team is part of
+    const filteredPrograms = useMemo(() => {
+        if (!programs) return [];
+        // If user doesn't have a discipline team, show no programs
+        if (!user?.disciplineTeamId) return [];
+        return programs.filter((program) => 
+            program.disciplineTeams?.some(
+                (dtp) => dtp.disciplineTeamId === user.disciplineTeamId
+            )
+        );
+    }, [programs, user?.disciplineTeamId]);
 
     const pathname = usePathname();
     const dispatch = useAppDispatch();
@@ -138,15 +152,15 @@ const Sidebar = () => {
                 >
                     <span>My Parts</span>
                     {showPrograms ? (
-                        <ChevronUp className="h-5 w-5" />
+                        <ChevronUp className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                     ) : (
-                        <ChevronDown className="h-5 w-5" />
+                        <ChevronDown className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                     )}
                 </button>
 
                 {/* ===== Collapsible list of programs ===== */}
                 {showPrograms &&
-                    programs?.map((program) => {
+                    filteredPrograms?.map((program) => {
                         const isOpen = expandedPrograms[program.id] ?? false;
                         return (
                             <div key={program.id}>
@@ -168,13 +182,13 @@ const Sidebar = () => {
                                     className="flex w-full items-center justify-between px-8 py-3 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
                                 >
                                     <span className="flex items-center gap-3">
-                                        <Briefcase className="h-5 w-5" />
+                                        <Briefcase className="h-5 w-5 text-gray-700 dark:text-gray-200" />
                                         {program.name}
                                     </span>
                                     {isOpen ? (
-                                        <ChevronUp className="h-5 w-5" />
+                                        <ChevronUp className="h-5 w-5 text-gray-700 dark:text-gray-200" />
                                     ) : (
-                                        <ChevronDown className="h-5 w-5" />
+                                        <ChevronDown className="h-5 w-5 text-gray-700 dark:text-gray-200" />
                                     )}
                                 </button>
 
@@ -199,9 +213,9 @@ const Sidebar = () => {
                 >
                     <span>Work Items</span>
                     {showWorkItems ? (
-                        <ChevronUp className="h-5 w-5" />
+                        <ChevronUp className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                     ) : (
-                        <ChevronDown className="h-5 w-5" />
+                        <ChevronDown className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                     )}
                 </button>
                 {showWorkItems && (
