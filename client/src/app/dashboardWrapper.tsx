@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import StoreProvider, { useAppSelector } from "./redux";
+import { useAuth } from "@/contexts/AuthContext";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const isSidebarCollapsed = useAppSelector(
@@ -35,9 +37,35 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 const DashboardWrapper = ({ children }: { children: React.ReactNode }) => {
+  const pathname = usePathname();
+  const { isAuthenticated, isLoading } = useAuth();
+  const [isOnboarding, setIsOnboarding] = useState(false);
+
+  useEffect(() => {
+    // Check if current path is onboarding
+    setIsOnboarding(pathname === "/onboarding");
+  }, [pathname]);
+
+  // Show loading spinner while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <StoreProvider>
-      <DashboardLayout>{children}</DashboardLayout>
+      {isOnboarding ? (
+        // For onboarding, render without dashboard layout
+        <div className="min-h-screen">
+          {children}
+        </div>
+      ) : (
+        // For all other pages, use dashboard layout
+        <DashboardLayout>{children}</DashboardLayout>
+      )}
     </StoreProvider>
   );
 };
