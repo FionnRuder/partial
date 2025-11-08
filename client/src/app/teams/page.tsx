@@ -1,5 +1,5 @@
 "use client";
-import { useGetTeamsQuery, useGetUsersQuery, useGetWorkItemsQuery, WorkItemType, Priority, WorkItem, Status } from "@/state/api";
+import { useGetTeamsQuery, useGetUsersQuery, useGetWorkItemsQuery, WorkItemType, Priority, WorkItem, Status, useGetProgramsQuery } from "@/state/api";
 import React, { useMemo, useState, useEffect } from "react";
 import { useAppSelector } from "../redux";
 import Header from "@/components/Header";
@@ -189,6 +189,7 @@ const Teams = () => {
     }
   }, [teams, selectedTeamId]);
   const { data: users } = useGetUsersQuery();
+  const { data: programs } = useGetProgramsQuery();
   const { data: workItems } = useGetWorkItemsQuery();
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 
@@ -295,6 +296,26 @@ const Teams = () => {
         text: "#000000",
       };
 
+  const teamsWithPrograms = useMemo(() => {
+    if (!teams) return [];
+
+    const programNamesByTeamId = new Map<number, Set<string>>();
+
+    programs?.forEach((program) => {
+      program.disciplineTeams?.forEach((relation) => {
+        if (!programNamesByTeamId.has(relation.disciplineTeamId)) {
+          programNamesByTeamId.set(relation.disciplineTeamId, new Set());
+        }
+        programNamesByTeamId.get(relation.disciplineTeamId)?.add(program.name);
+      });
+    });
+
+    return teams.map((team) => ({
+      ...team,
+      programNames: Array.from(programNamesByTeamId.get(team.id) ?? []),
+    }));
+  }, [programs, teams]);
+
   const columns: GridColDef[] = [
     { field: "id", headerName: "Team ID", width: 100 },
     { field: "name", headerName: "Team Name", width: 200 },
@@ -302,6 +323,27 @@ const Teams = () => {
       field: "description",
       headerName: "Description",
       width: 400,
+    },
+    {
+      field: "programNames",
+      headerName: "Programs",
+      width: 220,
+      renderCell: (params: any) => {
+        const programNames: string[] = params.row.programNames ?? [];
+        if (!programNames.length) return "—";
+        return (
+          <div className="flex h-full w-full flex-wrap items-center justify-center gap-1 text-center">
+            {programNames.map((name: string) => (
+              <span
+                key={name}
+                className="inline-flex rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
+              >
+                {name}
+              </span>
+            ))}
+          </div>
+        );
+      },
     },
     { 
       field: "teamManagerName",
@@ -359,7 +401,7 @@ const Teams = () => {
       <div className="mb-6 rounded-lg bg-white p-4 shadow dark:bg-dark-secondary">
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid
-            rows={teams || []}
+            rows={teamsWithPrograms}
             columns={columns}
             pagination
             showToolbar

@@ -32,6 +32,19 @@ const Navbar = () => {
         return '?';
     };
 
+    const sanitizeProfilePictureUrl = (value?: string | null) => {
+        if (!value) return "";
+        const trimmed = value.trim();
+        if (!trimmed) return "";
+        const lower = trimmed.toLowerCase();
+        if (lower.startsWith("http://") || lower.startsWith("https://")) {
+            return "";
+        }
+        return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+    };
+
+    const safeProfilePictureUrl = sanitizeProfilePictureUrl(user?.profilePictureUrl);
+
     const handleLogout = async () => {
         try {
             await signOut();
@@ -104,10 +117,10 @@ const Navbar = () => {
                         }
                         title="View Profile"
                     >
-                        {user.profilePictureUrl ? (
+                        {safeProfilePictureUrl ? (
                             <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600">
                                 <Image
-                                    src={user.profilePictureUrl}
+                                    src={safeProfilePictureUrl}
                                     alt={user.name || user.username}
                                     width={32}
                                     height={32}

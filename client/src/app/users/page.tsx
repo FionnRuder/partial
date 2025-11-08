@@ -11,6 +11,24 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { dataGridClassNames, dataGridSxStyles } from "@/lib/utils";
 
+const getInitials = (name?: string, username?: string) => {
+  if (name) {
+    const parts = name.trim().split(" ").filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    if (parts.length === 1 && parts[0].length > 0) {
+      const first = parts[0][0];
+      const second = parts[0][1] || "";
+      return `${first}${second}`.toUpperCase();
+    }
+  }
+  if (username) {
+    return username.substring(0, 2).toUpperCase();
+  }
+  return "?";
+};
+
 const columns: GridColDef[] = [
   { field: "userId", headerName: "ID", width: 100 },
   { field: "name", headerName: "Name", width: 200 },
@@ -58,7 +76,7 @@ const columns: GridColDef[] = [
           </div>
         ) : (
           <div className="h-9 w-9 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-xs font-medium">
-            {params.row.username?.substring(0, 2).toUpperCase() || "?"}
+            {getInitials(params.row.name, params.row.username)}
           </div>
         )}
       </div>

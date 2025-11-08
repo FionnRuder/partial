@@ -26,12 +26,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const sanitizeProfilePictureUrl = (value?: string | null) => {
+    if (!value) return undefined;
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    const lower = trimmed.toLowerCase();
+    if (lower.startsWith('http://') || lower.startsWith('https://')) {
+      return undefined;
+    }
+    return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  };
+
+  const sanitizeUser = (current: AuthUser | null): AuthUser | null => {
+    if (!current) return null;
+    const sanitizedProfilePictureUrl = sanitizeProfilePictureUrl(current.profilePictureUrl);
+    return {
+      ...current,
+      profilePictureUrl: sanitizedProfilePictureUrl,
+    };
+  };
+
   useEffect(() => {
     // Initialize auth state
     const initializeAuth = async () => {
       try {
         const currentUser = await authService.getCurrentUser();
-        setUser(currentUser);
+        const sanitizedUser = sanitizeUser(currentUser);
+        setUser(sanitizedUser);
       } catch (error) {
         console.error('Failed to initialize auth:', error);
         setUser(null);
@@ -44,7 +65,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Listen for auth state changes
     const unsubscribe = authService.onAuthStateChange((user) => {
-      setUser(user);
+      setUser(sanitizeUser(user));
       setIsLoading(false);
     });
 
@@ -55,8 +76,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     try {
       const newUser = await authService.signUp(data);
-      setUser(newUser);
-      return newUser;
+      const sanitized = sanitizeUser(newUser);
+      setUser(sanitized);
+      return sanitized as AuthUser;
     } catch (error) {
       setUser(null);
       throw error;
@@ -68,9 +90,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signIn = async (data: { email: string; password: string }) => {
     setIsLoading(true);
     try {
-      const user = await authService.signIn(data);
-      setUser(user);
-      return user;
+      const signedInUser = await authService.signIn(data);
+      const sanitized = sanitizeUser(signedInUser);
+      setUser(sanitized);
+      return sanitized as AuthUser;
     } catch (error) {
       setUser(null);
       throw error;
@@ -98,9 +121,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     try {
-      const updatedUser = await authService.updateUserProfile(updates);
-      setUser(updatedUser);
-      return updatedUser;
+      const mergedUpdates = {
+        ...updates,
+        profilePictureUrl: sanitizeProfilePictureUrl(updates.profilePictureUrl ?? undefined),
+      };
+      const updatedUser = await authService.updateUserProfile(mergedUpdates);
+      const sanitized = sanitizeUser(updatedUser);
+      setUser(sanitized);
+      return sanitized as AuthUser;
     } catch (error) {
       throw error;
     }
