@@ -11,6 +11,17 @@ const Settings = () => {
     const { data: teams, isLoading: isTeamsLoading } = useGetTeamsQuery();
     const [updateUser] = useUpdateUserMutation();
 
+    const sanitizeProfilePictureUrl = (value?: string | null) => {
+        if (!value) return '';
+        const trimmed = value.trim();
+        if (!trimmed) return '';
+        const lower = trimmed.toLowerCase();
+        if (lower.startsWith('http://') || lower.startsWith('https://')) {
+            return '';
+        }
+        return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    };
+
     const [formData, setFormData] = useState({
         name: '',
         phoneNumber: '',
@@ -26,7 +37,7 @@ const Settings = () => {
             setFormData({
                 name: user.name || '',
                 phoneNumber: user.phoneNumber || '',
-                profilePictureUrl: user.profilePictureUrl || '',
+                profilePictureUrl: sanitizeProfilePictureUrl(user.profilePictureUrl),
                 disciplineTeamId: user.disciplineTeamId || null,
             });
         }
@@ -46,7 +57,7 @@ const Settings = () => {
                 data: {
                     name: formData.name,
                     phoneNumber: formData.phoneNumber,
-                    profilePictureUrl: formData.profilePictureUrl || undefined,
+                    profilePictureUrl: formData.profilePictureUrl,
                     disciplineTeamId: formData.disciplineTeamId || undefined,
                 },
             }).unwrap();
@@ -55,7 +66,7 @@ const Settings = () => {
             await updateProfile({
                 name: formData.name,
                 phoneNumber: formData.phoneNumber,
-                profilePictureUrl: formData.profilePictureUrl || undefined,
+                profilePictureUrl: formData.profilePictureUrl,
                 disciplineTeamId: formData.disciplineTeamId || undefined,
             });
 
@@ -136,9 +147,9 @@ const Settings = () => {
                         id="profilePictureUrl"
                         type="url"
                         value={formData.profilePictureUrl}
-                        onChange={(e) => setFormData({ ...formData, profilePictureUrl: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, profilePictureUrl: sanitizeProfilePictureUrl(e.target.value) })}
                         className={inputStyles}
-                        placeholder="https://example.com/profile.jpg"
+                        placeholder="/images/profile.jpg"
                     />
                     {formData.profilePictureUrl && (
                         <div className="mt-4">

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useAppSelector } from "../../redux";
 import Header from "@/components/Header";
 import {
@@ -8,10 +8,12 @@ import {
 } from "@mui/x-data-grid";
 import Image from "next/image";
 import { useGetUserByIdQuery } from "@/state/api";
-import { Priority, Status, WorkItem } from "@/state/api";
+import { Priority, Status, WorkItem, useGetTeamsQuery, useUpdateUserMutation } from "@/state/api";
 import { dataGridClassNames, dataGridSxStyles } from "@/lib/utils";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { SquarePen } from "lucide-react";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -130,6 +132,35 @@ const workItemColumns: GridColDef<WorkItem>[] = [
   },
 ];
 
+const getInitials = (name?: string, username?: string) => {
+  if (name) {
+    const parts = name.trim().split(" ").filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    if (parts.length === 1 && parts[0].length > 0) {
+      const first = parts[0][0];
+      const second = parts[0][1] || "";
+      return `${first}${second}`.toUpperCase();
+    }
+  }
+  if (username) {
+    return username.substring(0, 2).toUpperCase();
+  }
+  return "?";
+};
+
+const sanitizeProfilePictureUrl = (value?: string | null) => {
+  if (!value) return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const lower = trimmed.toLowerCase();
+  if (lower.startsWith("http://") || lower.startsWith("https://")) {
+    return "";
+  }
+  return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+};
+
 const UserDetailPage = ({ params }: Props) => {
   const { id } = React.use(params);
   const router = useRouter();
@@ -137,10 +168,71 @@ const UserDetailPage = ({ params }: Props) => {
   const [selectedPriority, setSelectedPriority] = useState<Priority | "all">("all");
 
   const { data: user, isLoading, isError } = useGetUserByIdQuery(userId);
+  const { data: teams, isLoading: isTeamsLoading } = useGetTeamsQuery();
+  const [updateUser] = useUpdateUserMutation();
+  const { user: authUser, updateProfile } = useAuth();
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    phoneNumber: user?.phoneNumber || "",
+    profilePictureUrl: sanitizeProfilePictureUrl(user?.profilePictureUrl),
+    disciplineTeamId: user?.disciplineTeamId || null,
+  });
+
+  useEffect(() => {
+    setFormData({
+      name: user?.name || "",
+      phoneNumber: user?.phoneNumber || "",
+      profilePictureUrl: sanitizeProfilePictureUrl(user?.profilePictureUrl),
+      disciplineTeamId: user?.disciplineTeamId || null,
+    });
+  }, [user]);
+
+  const isOwnProfile = authUser?.userId === user?.userId;
 
   if (isLoading) return <div className="p-8">Loading user...</div>;
   if (isError || !user) return <div className="p-8">Error loading user or user not found</div>;
+
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    setSaveStatus('idle');
+    try {
+      const sanitizedProfileUrl = sanitizeProfilePictureUrl(formData.profilePictureUrl);
+
+      await updateUser({
+        userId: user.userId,
+        data: {
+          name: formData.name,
+          phoneNumber: formData.phoneNumber,
+          profilePictureUrl: sanitizedProfileUrl || undefined,
+          disciplineTeamId: formData.disciplineTeamId || undefined,
+        },
+      }).unwrap();
+
+      if (isOwnProfile) {
+        await updateProfile({
+          name: formData.name,
+          phoneNumber: formData.phoneNumber,
+          profilePictureUrl: sanitizedProfileUrl || undefined,
+          disciplineTeamId: formData.disciplineTeamId || undefined,
+        });
+      }
+
+      setSaveStatus('success');
+      setIsEditing(false);
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } catch (err) {
+      console.error('Failed to update user:', err);
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Get assigned work items
   const assignedWorkItems = user.assignedWorkItems || [];
@@ -179,27 +271,39 @@ const UserDetailPage = ({ params }: Props) => {
 
   return (
     <div className="flex w-full flex-col p-8">
-      <Header name={user.name} />
+      <div className="flex items-center justify-between">
+        <Header name={user.name} />
+        {isOwnProfile && !isEditing && (
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            className="flex items-center gap-2 whitespace-nowrap rounded-md bg-gray-300 px-3 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:bg-dark-tertiary dark:text-white dark:hover:bg-gray-600"
+          >
+            <SquarePen className="h-4 w-4" />
+            Edit Profile
+          </button>
+        )}
+      </div>
 
       {/* User Information Section */}
       <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">
         <div className="flex items-start gap-6">
           {/* Profile Picture */}
-          {user.profilePictureUrl ? (
-            <div className="h-24 w-24 flex-shrink-0">
+          <div className="h-24 w-24 flex-shrink-0">
+            {formData.profilePictureUrl ? (
               <Image
-                src={`/${user.profilePictureUrl}`}
+                src={formData.profilePictureUrl}
                 alt={user.username}
                 width={96}
                 height={96}
                 className="h-full w-full rounded-full object-cover"
               />
-            </div>
-          ) : (
-            <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 text-3xl font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-              {user.username?.substring(0, 2).toUpperCase() || "?"}
-            </div>
-          )}
+            ) : (
+              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-300 text-3xl font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                {getInitials(user.name, user.username)}
+              </div>
+            )}
+          </div>
 
           {/* User Details */}
           <div className="flex-1 space-y-3">
@@ -214,9 +318,18 @@ const UserDetailPage = ({ params }: Props) => {
               </div>
               <div>
                 <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Phone Number:</span>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {formatPhoneNumber(user.phoneNumber)}
-                </p>
+                {isEditing ? (
+                  <input
+                    type="tel"
+                    value={formData.phoneNumber}
+                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                  />
+                ) : (
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {formatPhoneNumber(user.phoneNumber)}
+                  </p>
+                )}
               </div>
               <div>
                 <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Role:</span>
@@ -224,11 +337,102 @@ const UserDetailPage = ({ params }: Props) => {
               </div>
               <div>
                 <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Discipline Team:</span>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {user.disciplineTeam?.name || "N/A"}
-                </p>
+                {isEditing ? (
+                  isTeamsLoading ? (
+                    <div className="flex items-center py-1">
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-blue-600"></div>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Loading teams...</span>
+                    </div>
+                  ) : (
+                    <select
+                      value={formData.disciplineTeamId || ""}
+                      onChange={(e) => setFormData({ ...formData, disciplineTeamId: e.target.value ? Number(e.target.value) : null })}
+                      className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    >
+                      <option value="">No team selected</option>
+                      {teams?.map((team) => (
+                        <option key={team.id} value={team.id}>
+                          {team.name}
+                        </option>
+                      ))}
+                    </select>
+                  )
+                ) : (
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {user.disciplineTeam?.name || "N/A"}
+                  </p>
+                )}
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Profile Picture URL:</span>
+                {isEditing ? (
+                  <input
+                    type="url"
+                    value={formData.profilePictureUrl}
+                    onChange={(e) => setFormData({ ...formData, profilePictureUrl: sanitizeProfilePictureUrl(e.target.value) })}
+                    placeholder="/images/profile.jpg"
+                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                  />
+                ) : (
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {formData.profilePictureUrl || "N/A"}
+                  </p>
+                )}
               </div>
             </div>
+            {isEditing && formData.profilePictureUrl && (
+              <div className="mt-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Profile Picture Preview:</p>
+                <div className="h-20 w-20 overflow-hidden rounded-full border-2 border-gray-200 dark:border-gray-600">
+                  <img
+                    src={formData.profilePictureUrl}
+                    alt="Profile preview"
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+            {saveStatus === 'success' && (
+              <div className="mt-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
+                Profile updated successfully.
+              </div>
+            )}
+            {saveStatus === 'error' && (
+              <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                Failed to update profile. Please try again.
+              </div>
+            )}
+            {isEditing && (
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setSaveStatus('idle');
+                    setFormData({
+                      name: user.name || "",
+                      phoneNumber: user.phoneNumber || "",
+                      profilePictureUrl: sanitizeProfilePictureUrl(user.profilePictureUrl),
+                      disciplineTeamId: user.disciplineTeamId || null,
+                    });
+                  }}
+                  className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveProfile}
+                  disabled={isSaving}
+                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

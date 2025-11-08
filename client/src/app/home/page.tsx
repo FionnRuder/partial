@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Priority,
   Program,
@@ -34,6 +34,7 @@ import {
 } from "recharts";
 import { dataGridClassNames, dataGridSxStyles } from "@/lib/utils";
 import { format } from "date-fns";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const workItemColumns: GridColDef<WorkItem>[] = [
   { 
@@ -179,6 +180,11 @@ const HomePage = () => {
   const [selectedWorkItemType, setSelectedWorkItemType] = useState<WorkItemType | "all">("all");
   const [selectedPriority, setSelectedPriority] = useState<Priority | "all">("all");
   const [workItemFilter, setWorkItemFilter] = useState<"all" | "open">("all");
+  const [showPastMilestones, setShowPastMilestones] = useState(false);
+
+  useEffect(() => {
+    setShowPastMilestones(false);
+  }, [selectedProgramId]);
 
 
   // Conditionally choose which work item query to use
@@ -201,9 +207,26 @@ const HomePage = () => {
       : useGetMilestonesByProgramQuery({ programId: selectedProgramId });
 
   const displayedMilestones =
-  selectedProgramId === "all"
-    ? milestones
-    : milestones?.filter((m) => m.programId === selectedProgramId);
+    selectedProgramId === "all"
+      ? milestones
+      : milestones?.filter((m) => m.programId === selectedProgramId);
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const sortedMilestones = [...(displayedMilestones ?? [])].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  const upcomingMilestones = sortedMilestones.filter((milestone) => {
+    if (!milestone.date) return true;
+    const milestoneDate = new Date(milestone.date);
+    return milestoneDate >= startOfToday;
+  });
+
+  const pastMilestones = sortedMilestones
+    .filter((milestone) => milestone.date && new Date(milestone.date) < startOfToday)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 
@@ -410,7 +433,7 @@ const HomePage = () => {
                   Program Milestones
                 </h2>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {displayedMilestones?.length || 0} milestones
+                  {upcomingMilestones.length} upcoming
                 </div>
               </div>
             </div>
@@ -425,104 +448,179 @@ const HomePage = () => {
               <div className="text-center py-8">
                 <div className="text-red-500 text-sm">Error loading milestones</div>
               </div>
-            ) : displayedMilestones && displayedMilestones.length > 0 ? (
-              <div className="space-y-2">
-                {[...displayedMilestones]
-                  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                  .map((milestone) => {
+            ) : sortedMilestones.length > 0 ? (
+              <div className="space-y-3">
+                {upcomingMilestones.length > 0 ? (
+                  upcomingMilestones.map((milestone) => {
                     const milestoneWorkItems = filteredWorkItems?.filter(
                       (wi) => wi.dueByMilestoneId === milestone.id
                     );
                     const programName =
                       programs.find((p) => p.id === milestone.programId)?.name || "—";
 
-                    // Enhanced status logic
                     const today = new Date();
                     const milestoneDate = milestone.date ? new Date(milestone.date) : null;
                     const isPast = milestoneDate ? milestoneDate < today : false;
-                    const isUpcoming = milestoneDate ? {
-                      daysUntil: Math.ceil((milestoneDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)),
-                      isWithin30Days: Math.ceil((milestoneDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) <= 30
-                    } : null;
+                    const daysUntil = milestoneDate
+                      ? Math.ceil(
+                          (milestoneDate.getTime() - today.getTime()) /
+                            (1000 * 60 * 60 * 24)
+                        )
+                      : null;
+                    const isWithin30Days =
+                      daysUntil !== null ? daysUntil <= 30 && daysUntil >= 0 : false;
 
-                    // Status badge
                     const getStatusBadge = () => {
                       if (isPast) {
                         return (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                            <div className="w-2 h-2 bg-gray-400 rounded-full mr-1"></div>
+                            <div className="mr-1 h-2 w-2 rounded-full bg-gray-400"></div>
                             Completed
                           </span>
                         );
-                      } else if (isUpcoming?.isWithin30Days) {
+                      }
+                      if (isWithin30Days) {
                         return (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                            <div className="w-2 h-2 bg-orange-500 rounded-full mr-1 animate-pulse"></div>
-                            Due in {isUpcoming.daysUntil} days
-                          </span>
-                        );
-                      } else {
-                        return (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full mr-1"></div>
-                            Upcoming
+                            <div className="mr-1 h-2 w-2 animate-pulse rounded-full bg-orange-500"></div>
+                            Due in {daysUntil} days
                           </span>
                         );
                       }
+                      return (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                          <div className="mr-1 h-2 w-2 rounded-full bg-blue-500"></div>
+                          Upcoming
+                        </span>
+                      );
                     };
 
                     return (
                       <div
                         key={milestone.id}
-                        className={`p-2 rounded-lg border transition-all duration-200 hover:shadow-md ${
-                          isPast 
-                            ? "bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700" 
-                            : isUpcoming?.isWithin30Days
+                        className={`rounded-lg border px-3 py-2 transition-all duration-200 hover:shadow-md ${
+                          isPast
+                            ? "bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700"
+                            : isWithin30Days
                             ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-700"
                             : "bg-white border-gray-200 dark:bg-dark-tertiary dark:border-gray-700"
                         }`}
                       >
-                        <div className="flex items-start justify-between mb-1">
-                          <div className="flex-1 min-w-0">
-                            <h3 className={`font-semibold text-sm truncate ${
-                              isPast ? "text-gray-600 dark:text-gray-400" : "text-gray-900 dark:text-white"
-                            }`}>
+                        <div className="mb-1 flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <h3
+                              className={`truncate text-sm font-semibold ${
+                                isPast
+                                  ? "text-gray-600 dark:text-gray-400"
+                                  : "text-gray-900 dark:text-white"
+                              }`}
+                            >
                               {milestone.name}
                             </h3>
-                            <p className={`text-xs ${
-                              isPast ? "text-gray-500 dark:text-gray-500" : "text-gray-600 dark:text-gray-300"
-                            }`}>
+                            <p
+                              className={`truncate text-xs ${
+                                isPast
+                                  ? "text-gray-500 dark:text-gray-500"
+                                  : "text-gray-600 dark:text-gray-300"
+                              }`}
+                            >
                               {programName}
                             </p>
                           </div>
                           {getStatusBadge()}
                         </div>
-                        
                         <div className="flex items-center justify-between text-xs">
-                          <span className={`${
-                            isPast ? "text-gray-500 dark:text-gray-500" : "text-gray-600 dark:text-gray-400"
-                          }`}>
-                            {milestoneDate ? milestoneDate.toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric'
-                            }) : "No date"}
+                          <span
+                            className={`${
+                              isPast
+                                ? "text-gray-500 dark:text-gray-500"
+                                : "text-gray-600 dark:text-gray-400"
+                            }`}
+                          >
+                            {milestoneDate
+                              ? milestoneDate.toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })
+                              : "No date"}
                           </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            milestoneWorkItems && milestoneWorkItems.length > 0
-                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                              : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
-                          }`}>
+                          <span
+                            className={`rounded-full px-2 py-1 text-xs font-medium ${
+                              milestoneWorkItems && milestoneWorkItems.length > 0
+                                ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                            }`}
+                          >
                             {milestoneWorkItems?.length || 0} work items
                           </span>
                         </div>
                       </div>
                     );
-                  })}
+                  })
+                ) : (
+                  <div className="rounded-md border border-dashed border-blue-200 bg-blue-50 px-3 py-4 text-center text-sm text-blue-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200">
+                    No upcoming milestones. Create a new milestone to keep momentum.
+                  </div>
+                )}
+
+                {pastMilestones.length > 0 && (
+                  <div className="mt-3 border-t border-gray-200 pt-3 dark:border-gray-700">
+                    <button
+                      type="button"
+                      onClick={() => setShowPastMilestones((prev) => !prev)}
+                      className="flex w-full items-center justify-between rounded-md bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                    >
+                      <span>Past Milestones ({pastMilestones.length})</span>
+                      {showPastMilestones ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </button>
+
+                    {showPastMilestones && (
+                      <div className="mt-2 space-y-1.5">
+                        {pastMilestones.map((milestone) => {
+                          const milestoneDate = milestone.date
+                            ? new Date(milestone.date)
+                            : null;
+                          const programName =
+                            programs.find((p) => p.id === milestone.programId)?.name || "—";
+
+                          return (
+                            <div
+                              key={`past-${milestone.id}`}
+                              className="flex items-center justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-dark-tertiary"
+                            >
+                              <div className="min-w-0">
+                                <p className="truncate font-medium text-gray-700 dark:text-gray-200">
+                                  {milestone.name}
+                                </p>
+                                <p className="truncate text-[11px] text-gray-500 dark:text-gray-400">
+                                  {programName}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-end text-[11px] text-gray-500 dark:text-gray-400">
+                                {milestoneDate
+                                  ? milestoneDate.toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })
+                                  : "No date"}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <div className="text-gray-500 dark:text-gray-400 text-sm">
+              <div className="py-8 text-center">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
                   No milestones found
                 </div>
               </div>

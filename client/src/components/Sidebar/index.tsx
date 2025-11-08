@@ -50,17 +50,26 @@ const Sidebar = () => {
         }, {});
     }, [userParts]);
 
-    // ✅ Filter programs to only show those where the user's discipline team is part of
+    // ✅ Filter programs to only show those where the user has parts or belongs via discipline team
     const filteredPrograms = useMemo(() => {
         if (!programs) return [];
-        // If user doesn't have a discipline team, show no programs
+
+        const programIdsFromParts = new Set(
+            (userParts ?? []).map((part) => part.programId)
+        );
+
+        if (programIdsFromParts.size > 0) {
+            return programs.filter((program) => programIdsFromParts.has(program.id));
+        }
+
         if (!user?.disciplineTeamId) return [];
-        return programs.filter((program) => 
+
+        return programs.filter((program) =>
             program.disciplineTeams?.some(
                 (dtp) => dtp.disciplineTeamId === user.disciplineTeamId
             )
         );
-    }, [programs, user?.disciplineTeamId]);
+    }, [programs, userParts, user?.disciplineTeamId]);
 
     const pathname = usePathname();
     const dispatch = useAppDispatch();
@@ -146,65 +155,69 @@ const Sidebar = () => {
                 </nav>
 
                 {/* ===== My Programs top-level toggle ===== */}
-                <button
-                    onClick={() => setShowPrograms((p) => !p)}
-                    className="flex w-full items-center justify-between px-8 py-3 text-gray-500"
-                >
-                    <span>My Parts</span>
-                    {showPrograms ? (
-                        <ChevronUp className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                    ) : (
-                        <ChevronDown className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                    )}
-                </button>
+                {filteredPrograms.length > 0 && (
+                    <>
+                        <button
+                            onClick={() => setShowPrograms((p) => !p)}
+                            className="flex w-full items-center justify-between px-8 py-3 text-gray-500"
+                        >
+                            <span>My Parts</span>
+                            {showPrograms ? (
+                                <ChevronUp className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                            ) : (
+                                <ChevronDown className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                            )}
+                        </button>
 
-                {/* ===== Collapsible list of programs ===== */}
-                {showPrograms &&
-                    filteredPrograms?.map((program) => {
-                        const isOpen = expandedPrograms[program.id] ?? false;
-                        return (
-                            <div key={program.id}>
-                                {/* Program toggle */}
-                                <button
-                                    onClick={() => {
-                                        setExpandedPrograms((prev) => {
-                                            const newState = {
-                                                ...prev,
-                                                [program.id]: !isOpen,
-                                            };
-                                            localStorage.setItem(
-                                                "expandedPrograms",
-                                                JSON.stringify(newState)
-                                            );
-                                            return newState;
-                                        });
-                                    }}
-                                    className="flex w-full items-center justify-between px-8 py-3 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
-                                >
-                                    <span className="flex items-center gap-3">
-                                        <Briefcase className="h-5 w-5 text-gray-700 dark:text-gray-200" />
-                                        {program.name}
-                                    </span>
-                                    {isOpen ? (
-                                        <ChevronUp className="h-5 w-5 text-gray-700 dark:text-gray-200" />
-                                    ) : (
-                                        <ChevronDown className="h-5 w-5 text-gray-700 dark:text-gray-200" />
-                                    )}
-                                </button>
+                        {/* ===== Collapsible list of programs ===== */}
+                        {showPrograms &&
+                            filteredPrograms?.map((program) => {
+                                const isOpen = expandedPrograms[program.id] ?? false;
+                                return (
+                                    <div key={program.id}>
+                                        {/* Program toggle */}
+                                        <button
+                                            onClick={() => {
+                                                setExpandedPrograms((prev) => {
+                                                    const newState = {
+                                                        ...prev,
+                                                        [program.id]: !isOpen,
+                                                    };
+                                                    localStorage.setItem(
+                                                        "expandedPrograms",
+                                                        JSON.stringify(newState)
+                                                    );
+                                                    return newState;
+                                                });
+                                            }}
+                                            className="flex w-full items-center justify-between px-8 py-3 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                                        >
+                                            <span className="flex items-center gap-3">
+                                                <Briefcase className="h-5 w-5 text-gray-700 dark:text-gray-200" />
+                                                {program.name}
+                                            </span>
+                                            {isOpen ? (
+                                                <ChevronUp className="h-5 w-5 text-gray-700 dark:text-gray-200" />
+                                            ) : (
+                                                <ChevronDown className="h-5 w-5 text-gray-700 dark:text-gray-200" />
+                                            )}
+                                        </button>
 
-                                {/* User’s part numbers for this program */}
-                                {isOpen &&
-                                    partsByProgram[program.id]?.map((part) => (
-                                        <SidebarLink
-                                            key={part.id}
-                                            icon={Bolt}
-                                            label={`${part.number} - ${part.partName}`}
-                                            href={`/parts/${part.id}`}
-                                        />
-                                    ))}
-                            </div>
-                        );
-                    })}
+                                        {/* User’s part numbers for this program */}
+                                        {isOpen &&
+                                            partsByProgram[program.id]?.map((part) => (
+                                                <SidebarLink
+                                                    key={part.id}
+                                                    icon={Bolt}
+                                                    label={`${part.number} - ${part.partName}`}
+                                                    href={`/parts/${part.id}`}
+                                                />
+                                            ))}
+                                    </div>
+                                );
+                            })}
+                    </>
+                )}
 
                 {/* WORK ITEMS LINKS */}
                 <button

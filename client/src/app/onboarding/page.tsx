@@ -1,11 +1,25 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { validatePassword } from "@/lib/cognito";
-import { useGetTeamsQuery } from "@/state/api";
+import type { Program, Milestone } from "@/state/api";
+import type { AuthUser } from "@/lib/auth";
+import {
+  useGetTeamsQuery,
+  useCreateTeamMutation,
+  useGetProgramsQuery,
+  useCreateProgramMutation,
+  useCreateMilestoneMutation,
+  useCreatePartMutation,
+  PartState,
+  PartStateLabels,
+} from "@/state/api";
+import { addDays, formatISO } from "date-fns";
+
+const STEP_STORAGE_KEY = "onboardingStep";
 
 // Onboarding Step Components
 const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
@@ -171,12 +185,9 @@ const AuthScreen = ({ onBack, onNext, initialMode = "signup" }: {
           phoneNumber: formData.phoneNumber,
           role: "Engineer", // Default role, will be updated in role selection
         });
-        // Save step to localStorage immediately after signup
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('onboardingStep', '2');
-        }
+        setIsLogin(true);
+        onNext();
       }
-      onNext();
     } catch (error: any) {
       setError(error.message || "An error occurred. Please try again.");
     } finally {
@@ -505,14 +516,31 @@ const RoleSelectionScreen = ({ onBack, onNext }: {
 
 const ProfileCompletionScreen = ({ onBack, onNext }: {
   onBack: () => void;
-  onNext: () => void;
+  onNext: (result: { requiresSetup: boolean; teamId: number | null }) => void;
 }) => {
   const { user, updateProfile } = useAuth();
   const { data: teams, isLoading: teamsLoading } = useGetTeamsQuery();
+  const { data: programs } = useGetProgramsQuery();
+  const [createTeam, { isLoading: isCreatingTeam }] = useCreateTeamMutation();
+  const sanitizeProfilePictureUrl = (value?: string | null) => {
+    if (!value) return "";
+    const trimmed = value.trim();
+    if (!trimmed) return "";
+    const lower = trimmed.toLowerCase();
+    if (lower.startsWith("http://") || lower.startsWith("https://")) {
+      return "";
+    }
+    return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  };
+
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(user?.disciplineTeamId || null);
-  const [profilePictureUrl, setProfilePictureUrl] = useState<string>(user?.profilePictureUrl || "");
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string>(sanitizeProfilePictureUrl(user?.profilePictureUrl));
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [newTeamName, setNewTeamName] = useState("");
+  const [newTeamDescription, setNewTeamDescription] = useState("");
+  const [showCreateTeam, setShowCreateTeam] = useState(false);
+  const [createTeamError, setCreateTeamError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -522,9 +550,19 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
     try {
       await updateProfile({
         disciplineTeamId: selectedTeamId || undefined,
-        profilePictureUrl: profilePictureUrl || undefined,
+        profilePictureUrl: sanitizeProfilePictureUrl(profilePictureUrl),
       });
-      onNext();
+
+      const teamId = selectedTeamId ?? user?.disciplineTeamId ?? null;
+      let requiresSetup = false;
+      if (teamId) {
+        const teamPrograms = programs?.filter((program) =>
+          program.disciplineTeams?.some((dtp) => dtp.disciplineTeamId === teamId),
+        ) ?? [];
+        requiresSetup = teamPrograms.length === 0;
+      }
+
+      onNext({ requiresSetup, teamId });
     } catch (error: any) {
       setError(error.message || "Failed to update profile. Please try again.");
       console.error('Failed to update profile:', error);
@@ -567,9 +605,9 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
                 name="profilePictureUrl"
                 type="url"
                 value={profilePictureUrl}
-                onChange={(e) => setProfilePictureUrl(e.target.value)}
+                onChange={(e) => setProfilePictureUrl(sanitizeProfilePictureUrl(e.target.value))}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="https://example.com/profile.jpg"
+                placeholder="/images/profile.jpg"
               />
               {profilePictureUrl && (
                 <div className="mt-4">
@@ -587,7 +625,7 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
                 </div>
               )}
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                You can add a profile picture URL now, or add one later in settings
+                Use a local media path (e.g. /images/profile.jpg). You can add a profile picture later in settings.
               </p>
             </div>
 
@@ -620,6 +658,88 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                 Select your team to connect with colleagues and collaborate on projects
               </p>
+
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateTeam((prev) => !prev);
+                    setCreateTeamError(null);
+                  }}
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  {showCreateTeam ? "Cancel new team" : "Create a new discipline team"}
+                </button>
+              </div>
+
+              {showCreateTeam && (
+                <div className="mt-4 space-y-4 rounded-md border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+                  <div>
+                    <label htmlFor="newTeamName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Team Name
+                    </label>
+                    <input
+                      id="newTeamName"
+                      type="text"
+                      value={newTeamName}
+                      onChange={(e) => setNewTeamName(e.target.value)}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Enter the new team name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="newTeamDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Team Description
+                    </label>
+                    <textarea
+                      id="newTeamDescription"
+                      value={newTeamDescription}
+                      onChange={(e) => setNewTeamDescription(e.target.value)}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                      rows={3}
+                      placeholder="Describe the purpose of this team"
+                    />
+                  </div>
+
+                  {createTeamError && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3 text-sm text-red-600 dark:text-red-400">
+                      {createTeamError}
+                    </div>
+                  )}
+
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      disabled={isCreatingTeam}
+                      onClick={async () => {
+                        setCreateTeamError(null);
+                        if (!newTeamName.trim() || !newTeamDescription.trim()) {
+                          setCreateTeamError("Please provide both a team name and description.");
+                          return;
+                        }
+
+                        try {
+                          const newTeam = await createTeam({
+                            name: newTeamName.trim(),
+                            description: newTeamDescription.trim(),
+                          }).unwrap();
+
+                          setSelectedTeamId(newTeam.id);
+                          setShowCreateTeam(false);
+                          setNewTeamName("");
+                          setNewTeamDescription("");
+                        } catch (createErr: any) {
+                          console.error("Failed to create team:", createErr);
+                          setCreateTeamError(createErr?.data?.message || "Failed to create team. Please try again.");
+                        }
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isCreatingTeam ? "Creating..." : "Create Team"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {error && (
@@ -660,6 +780,657 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
   );
 };
 
+const ProgramSetupScreen = ({
+  onBack,
+  onComplete,
+  onJoinExisting,
+  currentUser,
+}: {
+  onBack: () => void;
+  onComplete: (program: Program) => void;
+  onJoinExisting: (program: Program) => void;
+  currentUser: AuthUser | null;
+}) => {
+  const { data: programs = [], isLoading: programsLoading } = useGetProgramsQuery();
+  const [mode, setMode] = useState<"create" | "join">("create");
+  const [selectedProgramId, setSelectedProgramId] = useState<number | "">("");
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [createProgram, { isLoading, error }] = useCreateProgramMutation();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [startDate, setStartDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [endDate, setEndDate] = useState(() => addDays(new Date(), 30).toISOString().split("T")[0]);
+  const [createdProgram, setCreatedProgram] = useState<Program | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const handleCreateProgram = async () => {
+    setFormError(null);
+    if (!name || !startDate || !endDate) {
+      setFormError("Please provide a program name and date range.");
+      return;
+    }
+
+    try {
+      const payload = {
+        name,
+        description,
+        programManagerUserId: currentUser?.userId,
+        startDate: formatISO(new Date(startDate), { representation: "complete" }),
+        endDate: formatISO(new Date(endDate), { representation: "complete" }),
+      };
+
+      const newProgram = await createProgram(payload).unwrap();
+      setCreatedProgram(newProgram);
+      onComplete(newProgram);
+    } catch (e) {
+      setFormError("Failed to create program. Please try again.");
+      console.error("Failed to create program:", e);
+    }
+  };
+
+  const handleJoinProgram = () => {
+    setJoinError(null);
+    if (!selectedProgramId || typeof selectedProgramId !== "number") {
+      setJoinError("Please select a program to join.");
+      return;
+    }
+
+    const programToJoin = programs.find((program) => program.id === selectedProgramId);
+    if (!programToJoin) {
+      setJoinError("Selected program could not be found. Please try again.");
+      return;
+    }
+
+    onJoinExisting(programToJoin);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-8">
+          <button
+            onClick={onBack}
+            className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 mx-auto"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+          </button>
+
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            {mode === "create" ? "Create Your First Program" : "Join an Existing Program"}
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            {mode === "create"
+              ? "Program Managers use programs to organize milestones, part numbers, and work items. Let's create your first program to get your team started."
+              : "Already have programs running? Choose one below so your team can plug into its milestones, parts, and work items right away."}
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <div className="flex gap-3 mb-6">
+            <button
+              type="button"
+              onClick={() => setMode("create")}
+              className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+                mode === "create"
+                  ? "bg-blue-600 text-white shadow"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+              }`}
+            >
+              Create New Program
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("join")}
+              className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+                mode === "join"
+                  ? "bg-blue-600 text-white shadow"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+              }`}
+            >
+              Join Existing Program
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            {mode === "create" ? (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Program Name
+                  </label>
+                  <input
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Alpha Device Launch"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={3}
+                    placeholder="Provide context for this program"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Target Completion Date
+                    </label>
+                    <input
+                      type="date"
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {formError && (
+                  <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                    {formError}
+                  </div>
+                )}
+
+                {error && (
+                  <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                    Failed to create program. Please try again.
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleCreateProgram}
+                  disabled={isLoading || !!createdProgram}
+                  className="flex w-full justify-center rounded-md bg-blue-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isLoading ? "Creating Program..." : createdProgram ? "Program Created" : "Create Program"}
+                </button>
+
+                {createdProgram && (
+                  <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
+                    Program "{createdProgram.name}" created successfully.
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => createdProgram && onComplete(createdProgram)}
+                  disabled={!createdProgram}
+                  className="mt-4 flex w-full justify-center rounded-md border border-transparent bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+                >
+                  Continue to Milestones
+                </button>
+              </>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Select a Program to Join
+                  </label>
+                  {programsLoading ? (
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Loading programs...</div>
+                  ) : programs.length === 0 ? (
+                    <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+                      No programs are available yet. Create a new program to get started.
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedProgramId === "" ? "" : selectedProgramId}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setSelectedProgramId(value ? Number(value) : "");
+                      }}
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    >
+                      <option value="">Choose a program</option>
+                      {programs.map((program) => (
+                        <option key={program.id} value={program.id}>
+                          {program.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {typeof selectedProgramId === "number" && (
+                  <div className="rounded-md border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200">
+                    <p className="font-semibold">
+                      {programs.find((program) => program.id === selectedProgramId)?.name}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                      Joining this program will give your team access to its milestones, parts, and work items.
+                    </p>
+                  </div>
+                )}
+
+                {joinError && (
+                  <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                    {joinError}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleJoinProgram}
+                  disabled={typeof selectedProgramId !== "number" || programsLoading}
+                  className="flex w-full justify-center rounded-md bg-blue-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Join Program
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MilestoneSetupScreen = ({
+  onBack,
+  program,
+  onComplete,
+}: {
+  onBack: () => void;
+  program: Program | null;
+  onComplete: (milestone: Milestone) => void;
+}) => {
+  const [createMilestone, { isLoading, error }] = useCreateMilestoneMutation();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [date, setDate] = useState(() => addDays(new Date(), 14).toISOString().split("T")[0]);
+  const [createdMilestone, setCreatedMilestone] = useState<Milestone | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  if (!program) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-xl mx-auto text-center">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Program not found</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            We couldn't find the program you just created. Please go back and create a program first.
+          </p>
+          <button
+            onClick={onBack}
+            className="rounded-md bg-blue-primary px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
+          >
+            Back to Program Setup
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const handleCreateMilestone = async () => {
+    setFormError(null);
+    if (!name || !date) {
+      setFormError("Please provide a milestone name and date.");
+      return;
+    }
+
+    try {
+      const payload = {
+        name,
+        description,
+        date: formatISO(new Date(date), { representation: "complete" }),
+        programId: program.id,
+      };
+
+      const newMilestone = await createMilestone(payload).unwrap();
+      setCreatedMilestone(newMilestone);
+      onComplete(newMilestone);
+    } catch (e) {
+      setFormError("Failed to create milestone. Please try again.");
+      console.error("Failed to create milestone:", e);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-8">
+          <button
+            onClick={onBack}
+            className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 mx-auto"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+          </button>
+
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Add a Milestone to "{program.name}"
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            Milestones help track major events or deliverables in your program timeline.
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Milestone Name
+              </label>
+              <input
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Prototype Complete"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Description (Optional)
+              </label>
+              <textarea
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Milestone Date
+              </label>
+              <input
+                type="date"
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </div>
+
+            {formError && (
+              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                {formError}
+              </div>
+            )}
+
+            {error && (
+              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                Failed to create milestone. Please try again.
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleCreateMilestone}
+              disabled={isLoading || !!createdMilestone}
+              className="flex w-full justify-center rounded-md bg-blue-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isLoading ? "Creating Milestone..." : createdMilestone ? "Milestone Created" : "Create Milestone"}
+            </button>
+
+            {createdMilestone && (
+              <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
+                Milestone "{createdMilestone.name}" created successfully.
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => createdMilestone && onComplete(createdMilestone)}
+              disabled={!createdMilestone}
+              className="mt-4 flex w-full justify-center rounded-md border border-transparent bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+            >
+              Continue to Part Numbers
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PartSetupScreen = ({
+  onBack,
+  onComplete,
+  program,
+  currentUser,
+  milestoneCreated,
+}: {
+  onBack: () => void;
+  onComplete: () => void;
+  program: Program | null;
+  currentUser: AuthUser | null;
+  milestoneCreated: boolean;
+}) => {
+  const [createPart, { isLoading, error }] = useCreatePartMutation();
+  const [partNumber, setPartNumber] = useState("");
+  const [partName, setPartName] = useState("");
+  const [level, setLevel] = useState("1");
+  const [revisionLevel, setRevisionLevel] = useState("A");
+  const [state, setState] = useState<PartState>(PartState.InWork);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [createdPart, setCreatedPart] = useState<boolean>(false);
+
+  if (!program) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-xl mx-auto text-center">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Program not found</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            We couldn't find the program you just created. Please go back and create a program first.
+          </p>
+          <button
+            onClick={onBack}
+            className="rounded-md bg-blue-primary px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
+          >
+            Back to Program Setup
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!milestoneCreated) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-xl mx-auto text-center">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Milestone required</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Please create at least one milestone for "{program.name}" before adding part numbers.
+          </p>
+          <button
+            onClick={onBack}
+            className="rounded-md bg-blue-primary px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
+          >
+            Back to Milestone Setup
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const handleCreatePart = async () => {
+    setFormError(null);
+    if (!partNumber || !partName) {
+      setFormError("Please provide a part number and name.");
+      return;
+    }
+    if (!currentUser?.userId) {
+      setFormError("An assigned user is required to create a part number. Please sign in again.");
+      return;
+    }
+
+    try {
+      await createPart({
+        number: Number(partNumber),
+        partName,
+        level: Number(level || "1"),
+        state,
+        revisionLevel: revisionLevel || "A",
+        assignedUserId: currentUser.userId,
+        programId: program.id,
+      }).unwrap();
+
+      setCreatedPart(true);
+      onComplete();
+    } catch (e) {
+      setFormError("Failed to create part number. Please try again.");
+      console.error("Failed to create part number:", e);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-8">
+          <button
+            onClick={onBack}
+            className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 mx-auto"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+          </button>
+
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Create a Part Number for "{program.name}"
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            Every program starts with at least one part number assigned to an engineer. Create the first part number so your team can begin collaborating.
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Part Number
+              </label>
+              <input
+                type="number"
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                value={partNumber}
+                onChange={(e) => setPartNumber(e.target.value)}
+                placeholder="e.g. 1001"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Part Name
+              </label>
+              <input
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                value={partName}
+                onChange={(e) => setPartName(e.target.value)}
+                placeholder="e.g. Main Control Board"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Level
+                </label>
+                <input
+                  type="number"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  value={level}
+                  onChange={(e) => setLevel(e.target.value)}
+                  min={1}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Revision
+                </label>
+                <input
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  value={revisionLevel}
+                  onChange={(e) => setRevisionLevel(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  State
+                </label>
+                <select
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  value={state}
+                  onChange={(e) => setState(e.target.value as PartState)}
+                >
+                  {Object.values(PartState).map((stateValue) => (
+                    <option key={stateValue} value={stateValue}>
+                      {PartStateLabels[stateValue]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {formError && (
+              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                {formError}
+              </div>
+            )}
+
+            {error && (
+              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                Failed to create part number. Please try again.
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleCreatePart}
+              disabled={isLoading || createdPart}
+              className="flex w-full justify-center rounded-md bg-blue-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isLoading ? "Creating Part Number..." : createdPart ? "Part Number Created" : "Create Part Number"}
+            </button>
+
+            {createdPart && (
+              <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
+                Part number created successfully.
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => createdPart && onComplete()}
+              disabled={!createdPart}
+              className="mt-4 flex w-full justify-center rounded-md border border-transparent bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+            >
+              Finish Setup
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SuccessScreen = ({ role, onComplete }: {
   role: string;
   onComplete: () => void;
@@ -689,7 +1460,7 @@ const SuccessScreen = ({ role, onComplete }: {
 
         <button
           onClick={onComplete}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all duration-200 shadow-lg hover:shadow-xl"
         >
           Go to Dashboard
         </button>
@@ -698,74 +1469,46 @@ const SuccessScreen = ({ role, onComplete }: {
   );
 };
 
+type OnboardingStep =
+  | "landing"
+  | "auth"
+  | "role-selection"
+  | "profile"
+  | "program-setup"
+  | "milestone-setup"
+  | "part-setup"
+  | "success";
+
 // Main Onboarding Component
 const OnboardingPage = () => {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(() => {
-    // Initialize from localStorage if available
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('onboardingStep');
-      return saved ? parseInt(saved) : 0;
-    }
-    return 0;
-  });
+  const { user: authUser } = useAuth();
+  const [step, setStep] = useState<OnboardingStep>(() => (authUser ? "role-selection" : "landing"));
+  const [requiresSetup, setRequiresSetup] = useState(false);
+  const [createdProgram, setCreatedProgram] = useState<Program | null>(null);
+  const [createdMilestone, setCreatedMilestone] = useState<Milestone | null>(null);
   const [userRole, setUserRole] = useState<string>("");
   const [showLearnMore, setShowLearnMore] = useState(false);
   const [authMode, setAuthMode] = useState<"signup" | "login">("signup");
-  const { signOut, isAuthenticated, isLoading } = useAuth();
 
+  const goToStep = (next: OnboardingStep) => {
+    setStep(next);
+  };
 
-  // Save step to localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('onboardingStep', currentStep.toString());
+    if (authUser && step === "landing") {
+      setStep("role-selection");
     }
-  }, [currentStep]);
-
-  // Prevent step reset when authentication state changes during onboarding
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      // Check localStorage when auth state stabilizes
-      if (typeof window !== 'undefined') {
-        const savedStep = localStorage.getItem('onboardingStep');
-        if (savedStep) {
-          const savedStepNum = parseInt(savedStep);
-          // Only restore if we're on an earlier step than saved
-          setCurrentStep((prevStep) => {
-            if (savedStepNum > prevStep && prevStep < 3) {
-              console.log('Restoring step from localStorage:', savedStepNum, 'prevStep was:', prevStep);
-              return savedStepNum;
-            }
-            return prevStep;
-          });
-        }
-      }
-    }
-  }, [isAuthenticated, isLoading]);
-
-  // Clear onboarding step when completed
-  useEffect(() => {
-    if (currentStep === 4) { // success step
-      localStorage.removeItem('onboardingStep');
-    }
-  }, [currentStep]);
-
-  const steps = [
-    "landing",
-    "auth", 
-    "role-selection",
-    "profile-completion",
-    "success"
-  ];
+  }, [authUser, step]);
 
   const handleGetStarted = () => {
     setAuthMode("signup");
-    setCurrentStep(1);
+    goToStep("auth");
   };
 
   const handleLogin = () => {
     setAuthMode("login");
-    setCurrentStep(1);
+    goToStep("auth");
   };
 
   const handleLearnMore = () => {
@@ -773,52 +1516,91 @@ const OnboardingPage = () => {
   };
 
   const handleAuthNext = () => {
-    // Save to localStorage immediately before state update
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('onboardingStep', '2');
-    }
-    // Use functional update to ensure we have the latest state
-    setCurrentStep((prevStep) => {
-      console.log('handleAuthNext: prevStep =', prevStep, 'setting to 2');
-      return 2;
-    });
+    goToStep("role-selection");
   };
 
   const handleRoleNext = (role: string) => {
     setUserRole(role);
-    // Save to localStorage immediately before state update
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('onboardingStep', '3');
-    }
-    setCurrentStep(3); // Go to profile-completion step
+    goToStep("profile");
   };
 
-  const handleProfileNext = () => {
-    // Save to localStorage immediately before state update
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('onboardingStep', '4');
+  const handleProfileNext = ({ requiresSetup }: { requiresSetup: boolean; teamId: number | null }) => {
+    setRequiresSetup(requiresSetup);
+    setCreatedMilestone(null);
+
+    if (requiresSetup) {
+      setCreatedProgram(null);
+      goToStep("program-setup");
+    } else {
+      goToStep("success");
     }
-    setCurrentStep(4); // Go to success step
+  };
+
+  const handleProgramComplete = (program: Program) => {
+    setCreatedProgram(program);
+    goToStep("milestone-setup");
+  };
+
+  const handleProgramJoin = (program: Program) => {
+    setCreatedProgram(program);
+    setRequiresSetup(false);
+    goToStep("success");
+  };
+
+  const handleMilestoneComplete = (milestone: Milestone) => {
+    setCreatedMilestone(milestone);
+    goToStep("part-setup");
+  };
+
+  const handlePartComplete = () => {
+    goToStep("success");
   };
 
   const handleComplete = async () => {
     try {
-      // Navigate to dashboard - authentication state is already managed by AuthContext
       router.push("/home");
     } catch (error) {
-      console.error('Failed to complete onboarding:', error);
-      router.push("/home"); // Continue anyway
+      console.error("Failed to complete onboarding:", error);
+      router.push("/home");
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+    let previous: OnboardingStep | null = null;
+    switch (step) {
+      case "landing":
+        previous = null;
+        break;
+      case "auth":
+        previous = "landing";
+        break;
+      case "role-selection":
+        previous = "auth";
+        break;
+      case "profile":
+        previous = "role-selection";
+        break;
+      case "program-setup":
+        previous = "profile";
+        break;
+      case "milestone-setup":
+        previous = "program-setup";
+        break;
+      case "part-setup":
+        previous = "milestone-setup";
+        break;
+      case "success":
+        previous = requiresSetup ? "part-setup" : "profile";
+        break;
+    }
+
+    if (previous) {
+      goToStep(previous);
     }
   };
 
   const renderCurrentStep = () => {
-    switch (steps[currentStep]) {
+    switch (step) {
       case "landing":
         return (
           <LandingScreen
@@ -842,11 +1624,38 @@ const OnboardingPage = () => {
             onNext={handleRoleNext}
           />
         );
-      case "profile-completion":
+      case "profile":
         return (
           <ProfileCompletionScreen
             onBack={handleBack}
             onNext={handleProfileNext}
+          />
+        );
+      case "program-setup":
+        return (
+          <ProgramSetupScreen
+            onBack={handleBack}
+            currentUser={authUser || null}
+            onComplete={handleProgramComplete}
+            onJoinExisting={handleProgramJoin}
+          />
+        );
+      case "milestone-setup":
+        return (
+          <MilestoneSetupScreen
+            onBack={handleBack}
+            program={createdProgram}
+            onComplete={handleMilestoneComplete}
+          />
+        );
+      case "part-setup":
+        return (
+          <PartSetupScreen
+            onBack={handleBack}
+            program={createdProgram}
+            currentUser={authUser || null}
+            milestoneCreated={!!createdMilestone}
+            onComplete={handlePartComplete}
           />
         );
       case "success":
