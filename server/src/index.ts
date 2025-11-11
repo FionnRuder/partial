@@ -31,7 +31,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/milestones", milestoneRoutes);
-app.use("/partNumbers", partRoutes);
+app.use("/parts", partRoutes);
 app.use("/programs", programRoutes);
 app.use("/search", searchRoutes);
 app.use("/teams", teamRoutes);

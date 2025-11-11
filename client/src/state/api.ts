@@ -145,7 +145,7 @@ export interface Program {
   startDate: string;
   endDate: string;
 
-  partNumbers?: PartNumber[];
+  partNumbers?: Part[];
   disciplineTeams?: DisciplineTeamToProgram[];
   milestones?: Milestone[];
   workItems?: WorkItem[];
@@ -165,7 +165,7 @@ export interface User {
   disciplineTeam?: DisciplineTeam;
   authoredWorkItems?: WorkItem[];
   assignedWorkItems?: WorkItem[];
-  partNumbers?: PartNumber[];
+  partNumbers?: Part[];
   attachments?: Attachment[];
   comments?: Comment[];
 }
@@ -195,9 +195,9 @@ export const PartStateLabels: Record<PartState, string> = {
   [PartState.Implementation]: "Implementation",
 };
 
-export interface PartNumber {
+export interface Part {
   id: number;
-  number: number;
+  code: string;
   partName: string;
   level: number;
   state: PartState;
@@ -208,9 +208,9 @@ export interface PartNumber {
 
   assignedUser?: User;
   program?: Program;
-  parent?: PartNumber;
-  children?: PartNumber[];
-  workItemLinks?: WorkItemToPartNumber[];
+  parent?: Part;
+  children?: Part[];
+  workItemLinks?: WorkItemToPart[];
 }
 
 export interface WorkItem {
@@ -236,7 +236,8 @@ export interface WorkItem {
   dueByMilestone: Milestone;
   authorUser: User;
   assigneeUser: User;
-  partNumbers?: WorkItemToPartNumber[];
+  partNumbers?: WorkItemToPart[];
+  partIds?: number[];
   attachments?: Attachment[];
   comments?: Comment[];
 
@@ -256,11 +257,11 @@ export interface DeliverableDetail {
   deliverableType: DeliverableType;
 }
 
-export interface WorkItemToPartNumber {
+export interface WorkItemToPart {
   id: number;
   workItemId: number;
-  partNumberId: number;
-  partNumber?: PartNumber;
+  partId: number;
+  part?: Part;
 }
 
 export interface Attachment {
@@ -278,6 +279,7 @@ export interface Comment {
   dateCommented: string;
   commenterUserId: number;
   workItemId?: number;
+  commenterUser?: User;
 }
 
 export interface DisciplineTeam {
@@ -297,7 +299,7 @@ export interface SearchResults {
   programs?: Program[];
   users?: User[];
   milestones?: Milestone[];
-  partNumbers?: PartNumber[];
+  parts?: Part[];
 }
 
 export interface WorkItemCreateInput {
@@ -325,7 +327,7 @@ export interface WorkItemCreateInput {
   deliverableDetail?: {
     deliverableType: DeliverableType;
   };
-  partNumberIds?: number[];
+  partIds?: number[];
 }
 
 export interface WorkItemEditInput {
@@ -353,7 +355,7 @@ export interface WorkItemEditInput {
   deliverableDetail?: {
     deliverableType?: DeliverableType;
   };
-  partNumberIds?: number[];
+  partIds?: number[];
 }
 
 
@@ -364,7 +366,7 @@ export interface WorkItemEditInput {
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
   reducerPath: "api",
-  tagTypes: ["WorkItems", "Milestones", "PartNumbers", "Programs", "Teams", "Users"],
+  tagTypes: ["WorkItems", "Milestones", "Parts", "Programs", "Teams", "Users", "Comments"],
   endpoints: (build) => ({
     /* ---------- WORK ITEMS ---------- */
     getWorkItems: build.query<WorkItem[], void>({
@@ -394,8 +396,14 @@ export const api = createApi({
                 : [{ type: "WorkItems", id: "LIST" }],
     }),
 
-    getWorkItemsByPartNumber: build.query<WorkItem[], { partNumberId: number }>({
-        query: ({ partNumberId }) => `workItems?partNumberId=${partNumberId}`,
+    getWorkItemsByPart: build.query<WorkItem[], { partId: number; includeChildren?: boolean }>({
+        query: ({ partId, includeChildren }) => {
+            const params = new URLSearchParams({ partId: String(partId) });
+            if (includeChildren) {
+                params.append("includeChildren", "true");
+            }
+            return `workItems?${params.toString()}`;
+        },
         providesTags: (result) =>
             result
                 ? [
@@ -464,6 +472,64 @@ export const api = createApi({
         ],
     }),
 
+    getCommentsByWorkItem: build.query<Comment[], number>({
+        query: (workItemId) => `workItems/${workItemId}/comments`,
+        providesTags: (result, error, workItemId) =>
+            result
+                ? [
+                        ...result.map(({ id }) => ({ type: "Comments" as const, id })),
+                        { type: "Comments", id: `LIST-${workItemId}` },
+                    ]
+                : [{ type: "Comments", id: `LIST-${workItemId}` }],
+    }),
+
+    createComment: build.mutation<
+        Comment,
+        { workItemId: number; text: string; commenterUserId: number }
+    >({
+        query: ({ workItemId, text, commenterUserId }) => ({
+            url: `workItems/${workItemId}/comments`,
+            method: "POST",
+            body: { text, commenterUserId },
+        }),
+        invalidatesTags: (result, error, { workItemId }) => [
+            { type: "Comments", id: `LIST-${workItemId}` },
+            { type: "WorkItems", id: workItemId },
+        ],
+    }),
+
+    updateComment: build.mutation<
+        Comment,
+        { workItemId: number; commentId: number; text: string; requesterUserId: number }
+    >({
+        query: ({ workItemId, commentId, text, requesterUserId }) => ({
+            url: `workItems/${workItemId}/comments/${commentId}`,
+            method: "PATCH",
+            body: { text, requesterUserId },
+        }),
+        invalidatesTags: (result, error, { workItemId, commentId }) => [
+            { type: "Comments", id: commentId },
+            { type: "Comments", id: `LIST-${workItemId}` },
+            { type: "WorkItems", id: workItemId },
+        ],
+    }),
+
+    deleteComment: build.mutation<
+        void,
+        { workItemId: number; commentId: number; requesterUserId: number }
+    >({
+        query: ({ workItemId, commentId, requesterUserId }) => ({
+            url: `workItems/${workItemId}/comments/${commentId}`,
+            method: "DELETE",
+            body: { requesterUserId },
+        }),
+        invalidatesTags: (result, error, { workItemId, commentId }) => [
+            { type: "Comments", id: commentId },
+            { type: "Comments", id: `LIST-${workItemId}` },
+            { type: "WorkItems", id: workItemId },
+        ],
+    }),
+
 
     /* ---------- MILESTONES ---------- */
     getMilestones: build.query<Milestone[], void>({
@@ -494,64 +560,64 @@ export const api = createApi({
       ],
     }),
 
-    /* ---------- PART NUMBERS ---------- */
-    getParts: build.query<PartNumber[], void>({
-      query: () => "partNumbers",
+    /* ---------- PARTS ---------- */
+    getParts: build.query<Part[], void>({
+      query: () => "parts",
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ id }) => ({ type: "PartNumbers" as const, id })),
-              { type: "PartNumbers", id: "LIST" },
+              ...result.map(({ id }) => ({ type: "Parts" as const, id })),
+              { type: "Parts", id: "LIST" },
             ]
-          : [{ type: "PartNumbers", id: "LIST" }],
+          : [{ type: "Parts", id: "LIST" }],
     }),
-    getPartsByProgram: build.query<PartNumber[], { programId: number }>({
-      query: ({ programId }) => `partNumbers?programId=${programId}`,
+    getPartsByProgram: build.query<Part[], { programId: number }>({
+      query: ({ programId }) => `parts?programId=${programId}`,
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ id }) => ({ type: "PartNumbers" as const, id })),
-              { type: "PartNumbers", id: "LIST" },
+              ...result.map(({ id }) => ({ type: "Parts" as const, id })),
+              { type: "Parts", id: "LIST" },
             ]
-          : [{ type: "PartNumbers", id: "LIST" }],
+          : [{ type: "Parts", id: "LIST" }],
     }),
-    getPartsByUser: build.query<PartNumber[], number>({
-      query: (userId) => `partNumbers/user/${userId}`,
+    getPartsByUser: build.query<Part[], number>({
+      query: (userId) => `parts/user/${userId}`,
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ id }) => ({ type: "PartNumbers" as const, id })),
-              { type: "PartNumbers", id: "LIST" },
+              ...result.map(({ id }) => ({ type: "Parts" as const, id })),
+              { type: "Parts", id: "LIST" },
             ]
-          : [{ type: "PartNumbers", id: "LIST" }],
+          : [{ type: "Parts", id: "LIST" }],
     }),
-    createPart: build.mutation<PartNumber, Partial<PartNumber>>({
+    createPart: build.mutation<Part, Partial<Part>>({
       query: (body) => ({
-        url: "partNumbers",
+        url: "parts",
         method: "POST",
         body,
       }),
-      invalidatesTags: ["PartNumbers"],
+      invalidatesTags: ["Parts"],
     }),
-    editPart: build.mutation<PartNumber, { partNumberId: number; updates: Partial<PartNumber> }>({
-      query: ({ partNumberId, updates }) => ({
-        url: `partNumbers/${partNumberId}`,
+    editPart: build.mutation<Part, { partId: number; updates: Partial<Part> }>({
+      query: ({ partId, updates }) => ({
+        url: `parts/${partId}`,
         method: "PATCH",
         body: updates,
       }),
-      invalidatesTags: (result, error, { partNumberId }) => [
-        { type: "PartNumbers", id: partNumberId },
-        { type: "PartNumbers", id: "LIST" },
+      invalidatesTags: (result, error, { partId }) => [
+        { type: "Parts", id: partId },
+        { type: "Parts", id: "LIST" },
       ],
     }),
     deletePart: build.mutation<void, number>({
-      query: (partNumberId) => ({
-        url: `partNumbers/${partNumberId}`,
+      query: (partId) => ({
+        url: `parts/${partId}`,
         method: "DELETE",
       }),
-      invalidatesTags: (result, error, partNumberId) => [
-        { type: "PartNumbers", id: partNumberId },
-        { type: "PartNumbers", id: "LIST" },
+      invalidatesTags: (result, error, partId) => [
+        { type: "Parts", id: partId },
+        { type: "Parts", id: "LIST" },
       ],
     }),
 
@@ -651,12 +717,16 @@ export const {
   useGetWorkItemsQuery,
   useGetWorkItemByIdQuery,
   useGetWorkItemsByProgramQuery,
-  useGetWorkItemsByPartNumberQuery,
+  useGetWorkItemsByPartQuery,
   useGetWorkItemsByUserQuery,
   useCreateWorkItemMutation,
   useUpdateWorkItemStatusMutation,
   useEditWorkItemMutation,
   useDeleteWorkItemMutation,
+  useGetCommentsByWorkItemQuery,
+  useCreateCommentMutation,
+  useUpdateCommentMutation,
+  useDeleteCommentMutation,
 
   useGetMilestonesQuery,
   useGetMilestonesByProgramQuery,

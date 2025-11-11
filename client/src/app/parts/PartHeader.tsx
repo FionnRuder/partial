@@ -1,30 +1,52 @@
 import Header from '@/components/Header';
 import { Filter, SquareKanban, Search, TrendingDown, PlusSquare, Share2, SquarePen, Table, SquareChartGantt } from 'lucide-react';
+import Link from 'next/link';
 import React, { useState } from 'react';
 import ModalNewPart from "./ModalNewPart";
 import ModalEditPart from "./ModalEditPart";
-import { PartNumber, useGetUsersQuery } from '@/state/api';
+import { Part, useGetPartsQuery, useGetProgramsQuery, useGetUsersQuery } from '@/state/api';
 
 type Props = {
     activeTab: string;
     setActiveTab: (tabname: string) => void
-    activePart?: Partial<PartNumber> | null;
+    activePart?: Partial<Part> | null;
     searchQuery: string;
     setSearchQuery: (query: string) => void;
+    includeChildren: boolean;
+    setIncludeChildren: (value: boolean) => void;
 };
 
-const PartHeader = ({ activeTab, setActiveTab, activePart, searchQuery, setSearchQuery }: Props) => {
+const PartHeader = ({
+    activeTab,
+    setActiveTab,
+    activePart,
+    searchQuery,
+    setSearchQuery,
+    includeChildren,
+    setIncludeChildren,
+}: Props) => {
     const [isModalNewPartOpen, setIsModalNewPartOpen] = useState(false); 
     const [isModalEditPartOpen, setIsModalEditPartOpen] = useState(false);
     const { data: users = [] } = useGetUsersQuery();
+    const { data: programs = [] } = useGetProgramsQuery();
+    const { data: parts = [] } = useGetPartsQuery(undefined, { skip: !activePart?.parentId });
     
     const headerTitle = activePart
-        ? `${activePart.number} - ${activePart.partName}: Work Items (Tasks, Deliverables, and Issues)`
-        : "My Part's Work Items (Tasks, Deliverables, and Issues)";
+        ? `${activePart.partName} (${activePart.code})`
+        : "My Part";
     
     const assignedUser = activePart?.assignedUserId 
         ? users.find(user => user.userId === activePart.assignedUserId)
         : null;
+    const activeProgramName = activePart
+        ? activePart.program?.name ?? programs.find(program => program.id === activePart.programId)?.name
+        : undefined;
+    const parentPart = activePart
+        ? activePart.parent ?? parts.find(part => part.id === activePart.parentId)
+        : undefined;
+    const parentDisplay = parentPart
+        ? `${parentPart.partName} (${parentPart.code})`
+        : undefined;
     
     return (
         <div className="px-4 xl:px-6">
@@ -60,9 +82,47 @@ const PartHeader = ({ activeTab, setActiveTab, activePart, searchQuery, setSearc
                     }
                 />
                 {activePart && (
-                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Assignee: {assignedUser?.name || 'Unassigned'}
-                    </p>
+                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 dark:text-gray-400">
+                        <span>
+                            Parent:{' '}
+                            {parentPart ? (
+                                <Link
+                                    href={`/parts/${parentPart.id}`}
+                                    className="text-blue-600 hover:underline dark:text-blue-400"
+                                >
+                                    {parentDisplay}
+                                </Link>
+                            ) : (
+                                'None'
+                            )}
+                        </span>
+                        <span>
+                            Program:{' '}
+                            {activeProgramName ? (
+                                <Link
+                                    href="/programs"
+                                    className="text-blue-600 hover:underline dark:text-blue-400"
+                                >
+                                    {activeProgramName}
+                                </Link>
+                            ) : (
+                                'Unassigned'
+                            )}
+                        </span>
+                        <span>
+                            Assignee:{' '}
+                            {assignedUser || activePart?.assignedUserId ? (
+                                <Link
+                                    href={`/users/${assignedUser?.userId ?? activePart?.assignedUserId}`}
+                                    className="text-blue-600 hover:underline dark:text-blue-400"
+                                >
+                                    {assignedUser?.name ?? 'View Assignee'}
+                                </Link>
+                            ) : (
+                                'Unassigned'
+                            )}
+                        </span>
+                    </div>
                 )}
             </div>
 
@@ -95,6 +155,15 @@ const PartHeader = ({ activeTab, setActiveTab, activePart, searchQuery, setSearc
                     />
                 </div>
                 <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-600 dark:border-dark-secondary dark:text-neutral-400">
+                        <input
+                            type="checkbox"
+                            className="h-4 w-4 accent-blue-600"
+                            checked={includeChildren}
+                            onChange={(e) => setIncludeChildren(e.target.checked)}
+                        />
+                        Include children
+                    </label>
                     <button className="text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300">
                         <Filter className="h-5 w-5" />
                     </button>

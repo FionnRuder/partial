@@ -10,14 +10,14 @@ import {  useEditPartMutation,
           PartStateLabels
 } from "@/state/api";
 import React, { useState, useEffect } from "react";
-import { PartNumber } from "@/state/api";
+import { Part } from "@/state/api";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   part?: {
     id: number;
-    number?: number;
+    code?: string;
     partName?: string;
     level?: number;
     state?: PartState;
@@ -35,7 +35,7 @@ const ModalEditPart = ({ isOpen, onClose, part }: Props) => {
   const { data: programs = [], isLoading: programsLoading } = useGetProgramsQuery();
   const { data: parentParts = [], isLoading: partsLoading } = useGetPartsQuery();
 
-  const [partNumber, setPartNumber] = useState("");
+  const [partCode, setPartCode] = useState("");
   const [partName, setPartName] = useState("");
   const [level, setLevel] = useState("");
   const [state, setState] = useState<PartState | "">("");
@@ -50,7 +50,7 @@ const ModalEditPart = ({ isOpen, onClose, part }: Props) => {
   // ✅ Auto-fill fields when modal opens or part changes
   useEffect(() => {
     if (part) {
-      setPartNumber(part?.number?.toString() || "");
+      setPartCode(part?.code || "");
       setPartName(part?.partName || "");
       setLevel(part?.level?.toString() || "");
       setState(part?.state || "");
@@ -77,9 +77,9 @@ const ModalEditPart = ({ isOpen, onClose, part }: Props) => {
     if (!part) return;
 
     await editPart({
-      partNumberId: part.id,
+      partId: part.id,
       updates: {
-        number: Number(partNumber),
+        code: partCode,
         partName,
         level: Number(level),
         state: state || undefined,
@@ -94,7 +94,7 @@ const ModalEditPart = ({ isOpen, onClose, part }: Props) => {
   };
 
   const isFormValid = () =>
-    partNumber && partName && level && state && revisionLevel && assignedUserId && programId;
+    partCode && partName && level && state && revisionLevel && assignedUserId && programId;
 
   const handleDelete = async () => {
     if (!part) return;
@@ -126,14 +126,14 @@ const ModalEditPart = ({ isOpen, onClose, part }: Props) => {
       >
         <div>
             <label className="block text-sm text-gray-600 dark:text-gray-300">
-                Part Number:
+                Part Code:
             </label>
             <input
-                type="number"
+                type="text"
                 className={inputStyles}
-                placeholder="Part Number"
-                value={partNumber}
-                onChange={(e) => setPartNumber(e.target.value)}
+                placeholder="Part Code"
+                value={partCode}
+                onChange={(e) => setPartCode(e.target.value)}
             />
         </div>
         <div>
@@ -250,7 +250,7 @@ const ModalEditPart = ({ isOpen, onClose, part }: Props) => {
               <option value="">Select Parent Part</option>
               {parentParts.map((parentPart) => (
                 <option key={parentPart.id} value={parentPart.id}>
-                  {parentPart.number} - {parentPart.partName}
+                  {parentPart.code} - {parentPart.partName}
                 </option>
               ))}
             </select>

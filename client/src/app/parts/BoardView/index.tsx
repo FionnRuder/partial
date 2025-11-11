@@ -1,19 +1,31 @@
-import { useGetWorkItemsByPartNumberQuery, useUpdateWorkItemStatusMutation, useEditWorkItemMutation } from '@/state/api';
+import {
+    useGetWorkItemsByPartQuery,
+    useUpdateWorkItemStatusMutation,
+    useGetCommentsByWorkItemQuery,
+    useCreateCommentMutation,
+    useUpdateCommentMutation,
+    useDeleteCommentMutation,
+    WorkItem as WorkItemType,
+    Comment as CommentType,
+} from '@/state/api';
 import ModalEditWorkItem from '@/components/ModalEditWorkItem';
 import React, { useState } from 'react';
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { WorkItem as WorkItemType } from "@/state/api";
 import { EllipsisVertical, MessageSquareMore, Plus } from 'lucide-react';
 import { format } from "date-fns";
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Modal from '@/components/Modal';
+import { skipToken } from '@reduxjs/toolkit/query';
+import { useAuth } from '@/contexts/AuthContext';
 
 type BoardProps = {
     id: string;
     setIsModalNewWorkItemOpen: (isOpen: boolean) => void;
     searchQuery: string;
+    includeChildren: boolean;
 };
 
 const workItemStatus = ["ToDo", "WorkInProgress", "UnderReview", "Completed"];
@@ -42,13 +54,29 @@ const statusLabels: Record<string, string> = {
   Completed: "Completed"
 };
 
-const BoardView = ({ id, setIsModalNewWorkItemOpen, searchQuery }: BoardProps) => {
+const BoardView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren }: BoardProps) => {
+    const { user: authUser } = useAuth();
     const {
         data: workItems,
         isLoading,
-        error
-    } = useGetWorkItemsByPartNumberQuery({ partNumberId: Number(id)});
+        error,
+        refetch: refetchWorkItems,
+    } = useGetWorkItemsByPartQuery({ partId: Number(id), includeChildren });
     const [updateWorkItemStatus] = useUpdateWorkItemStatusMutation();
+    const [activeCommentsWorkItem, setActiveCommentsWorkItem] = useState<WorkItemType | null>(null);
+    const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
+    const [newCommentText, setNewCommentText] = useState("");
+    const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+    const [editingCommentText, setEditingCommentText] = useState("");
+
+    const { data: comments = [], isFetching: isCommentsLoading, refetch: refetchComments } =
+        useGetCommentsByWorkItemQuery(
+            activeCommentsWorkItem ? activeCommentsWorkItem.id : skipToken
+        );
+
+    const [createComment, { isLoading: isCreatingComment }] = useCreateCommentMutation();
+    const [updateComment, { isLoading: isUpdatingComment }] = useUpdateCommentMutation();
+    const [deleteComment, { isLoading: isDeletingComment }] = useDeleteCommentMutation();
 
     const moveWorkItem = (workItemId: number, toStatus: string) => {
         updateWorkItemStatus({ workItemId, status: toStatus })
@@ -58,6 +86,83 @@ const BoardView = ({ id, setIsModalNewWorkItemOpen, searchQuery }: BoardProps) =
 
     // Filter work items based on search query
     const filteredWorkItems = filterWorkItemsBySearch(workItems || [], searchQuery);
+
+    const resetCommentState = () => {
+        setNewCommentText("");
+        setEditingCommentId(null);
+        setEditingCommentText("");
+    };
+
+    const handleOpenComments = (workItem: WorkItemType) => {
+        setActiveCommentsWorkItem(workItem);
+        setIsCommentsModalOpen(true);
+        resetCommentState();
+    };
+
+    const handleCloseComments = () => {
+        setIsCommentsModalOpen(false);
+        setActiveCommentsWorkItem(null);
+        resetCommentState();
+    };
+
+    const handleSubmitComment = async () => {
+        if (!activeCommentsWorkItem || !authUser || !newCommentText.trim()) return;
+        try {
+            await createComment({
+                workItemId: activeCommentsWorkItem.id,
+                text: newCommentText.trim(),
+                commenterUserId: authUser.userId,
+            }).unwrap();
+            resetCommentState();
+            await refetchComments();
+            refetchWorkItems();
+        } catch (error) {
+            console.error("Failed to create comment:", error);
+        }
+    };
+
+    const handleStartEdit = (comment: CommentType) => {
+        setEditingCommentId(comment.id);
+        setEditingCommentText(comment.text);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingCommentId(null);
+        setEditingCommentText("");
+    };
+
+    const handleSaveEdit = async () => {
+        if (!activeCommentsWorkItem || editingCommentId === null || !authUser || !editingCommentText.trim()) return;
+        try {
+            await updateComment({
+                workItemId: activeCommentsWorkItem.id,
+                commentId: editingCommentId,
+                text: editingCommentText.trim(),
+                requesterUserId: authUser.userId,
+            }).unwrap();
+            resetCommentState();
+            await refetchComments();
+            refetchWorkItems();
+        } catch (error) {
+            console.error("Failed to update comment:", error);
+        }
+    };
+
+    const handleDeleteComment = async (comment: CommentType) => {
+        if (!activeCommentsWorkItem || !authUser) return;
+        if (!window.confirm("Delete this comment?")) return;
+        try {
+            await deleteComment({
+                workItemId: activeCommentsWorkItem.id,
+                commentId: comment.id,
+                requesterUserId: authUser.userId,
+            }).unwrap();
+            await refetchComments();
+            refetchWorkItems();
+        } catch (error) {
+            console.error("Failed to delete comment:", error);
+        }
+    };
 
     if (isLoading) return <div>Loading...</div>
     if (error) return <div>An error occured while fetching work items</div>;
@@ -72,6 +177,7 @@ const BoardView = ({ id, setIsModalNewWorkItemOpen, searchQuery }: BoardProps) =
                     moveWorkItem={moveWorkItem}
                     setIsModalNewWorkItemOpen={setIsModalNewWorkItemOpen}
                     setEditingWorkItem={setEditingWorkItem}
+                    onOpenComments={handleOpenComments}
                 />
             ))}
         </div>
@@ -82,6 +188,115 @@ const BoardView = ({ id, setIsModalNewWorkItemOpen, searchQuery }: BoardProps) =
                 workItem={editingWorkItem}
             />
         )}
+        <Modal
+            isOpen={isCommentsModalOpen}
+            onClose={handleCloseComments}
+            name={activeCommentsWorkItem ? `${activeCommentsWorkItem.workItemType} Comments` : "Comments"}
+        >
+            {isCommentsLoading ? (
+                <p className="text-sm text-gray-500 dark:text-neutral-400">Loading comments...</p>
+            ) : (
+                <div className="space-y-4">
+                    {comments.length === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-neutral-400">No comments yet.</p>
+                    ) : (
+                        comments.map((comment) => {
+                            const isOwnComment = authUser?.userId === comment.commenterUserId;
+                            const commenterName =
+                                comment.commenterUser?.name ||
+                                comment.commenterUser?.username ||
+                                `User ${comment.commenterUserId}`;
+                            const formattedDate = format(new Date(comment.dateCommented), "PPpp");
+
+                            return (
+                                <div key={comment.id} className="rounded-md border border-gray-200 p-4 dark:border-gray-700">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <div>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{commenterName}</p>
+                                            <p className="text-xs text-gray-500 dark:text-neutral-400">{formattedDate}</p>
+                                        </div>
+                                        {isOwnComment && (
+                                            <div className="flex gap-2 text-xs">
+                                                <button
+                                                    className="rounded-md border border-gray-300 px-2 py-1 text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                                                    onClick={() => handleStartEdit(comment)}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    className="rounded-md border border-red-300 px-2 py-1 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+                                                    onClick={() => handleDeleteComment(comment)}
+                                                    disabled={isDeletingComment}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {editingCommentId === comment.id ? (
+                                        <div className="mt-3 space-y-2">
+                                            <textarea
+                                                className="w-full rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-dark-secondary dark:text-white"
+                                                rows={3}
+                                                value={editingCommentText}
+                                                onChange={(e) => setEditingCommentText(e.target.value)}
+                                            />
+                                            <div className="flex gap-2">
+                                                <button
+                                                    className="rounded-md bg-blue-600 px-3 py-1 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                                                    onClick={handleSaveEdit}
+                                                    disabled={isUpdatingComment}
+                                                >
+                                                    Save
+                                                </button>
+                                                <button
+                                                    className="rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                                                    onClick={handleCancelEdit}
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <p className="mt-3 whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">
+                                            {comment.text}
+                                        </p>
+                                    )}
+                                </div>
+                            );
+                        })
+                    )}
+
+                    <div className="border-t border-gray-200 pt-4 dark:border-gray-700">
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Add a comment</h4>
+                        {!authUser ? (
+                            <p className="mt-2 text-sm text-gray-500 dark:text-neutral-400">
+                                Sign in to add comments.
+                            </p>
+                        ) : (
+                            <div className="mt-2 space-y-3">
+                                <textarea
+                                    className="w-full rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-dark-secondary dark:text-white"
+                                    rows={3}
+                                    placeholder="Share an update..."
+                                    value={newCommentText}
+                                    onChange={(e) => setNewCommentText(e.target.value)}
+                                />
+                                <div className="flex justify-end">
+                                    <button
+                                        className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                                        onClick={handleSubmitComment}
+                                        disabled={isCreatingComment || !newCommentText.trim()}
+                                    >
+                                        {isCreatingComment ? "Posting..." : "Post Comment"}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </Modal>
     </DndProvider>;
 };
 
@@ -91,6 +306,7 @@ type WorkItemColumnProps = {
     moveWorkItem: (workItemId: number, toStatus: string) => void;
     setIsModalNewWorkItemOpen: (isOpen: boolean) => void;
     setEditingWorkItem: (workItem: WorkItemType | null) => void;
+    onOpenComments: (workItem: WorkItemType) => void;
 };
 
 const WorkItemColumn = ({
@@ -99,6 +315,7 @@ const WorkItemColumn = ({
     moveWorkItem,
     setIsModalNewWorkItemOpen,
     setEditingWorkItem,
+    onOpenComments,
     }: WorkItemColumnProps) => {
     const [{ isOver }, drop] = useDrop(() => ({
         accept: "workItem",
@@ -155,6 +372,7 @@ const WorkItemColumn = ({
                     key={workItem.id}
                     workItem={workItem}
                     setEditingWorkItem={setEditingWorkItem}
+                    onOpenComments={onOpenComments}
                 />
             ))}
         </div>
@@ -165,9 +383,10 @@ const WorkItemColumn = ({
 type WorkItemProps = {
     workItem: WorkItemType;
     setEditingWorkItem: (workItem: WorkItemType | null) => void;
-}
+    onOpenComments: (workItem: WorkItemType) => void;
+};
 
-const WorkItem = ({ workItem, setEditingWorkItem }: WorkItemProps) => {
+const WorkItem = ({ workItem, setEditingWorkItem, onOpenComments }: WorkItemProps) => {
     const router = useRouter();
     const [{ isDragging }, drag] = useDrag(() => ({
         type: "workItem",
@@ -192,7 +411,7 @@ const WorkItem = ({ workItem, setEditingWorkItem }: WorkItemProps) => {
         ? format(new Date(workItem.actualCompletionDate), "P")
         : "";
 
-    const numberOfComments = (workItem.comments && workItem.comments.length) || 0;
+    const numberOfComments = workItem.comments?.length ?? 0;
 
     const PriorityTag = ({ priority }: { priority: WorkItemType["priority"]}) => (
         <div
@@ -246,15 +465,31 @@ const WorkItem = ({ workItem, setEditingWorkItem }: WorkItemProps) => {
                     </button>
                 </div>
 
-                <div className="my-3 flex justify-between">
-                    <h4 className="text-md font-bold dark:text-white">{workItem.workItemType}: {workItem.title}</h4>
+                <div className="mt-3 mb-1 flex justify-between">
+                    <h4 className="text-md font-bold dark:text-white">
+                        <Link
+                            href={`/work-items/${workItem.id}`}
+                            className="text-blue-600 hover:underline dark:text-blue-400"
+                        >
+                            {workItem.title}
+                        </Link>
+                    </h4>
                     {typeof workItem.percentComplete === "number" && (
                         <div className="whitespace-nowrap text-xs font-semibold dark:text-white">
                             {workItem.percentComplete}%
                         </div>
                     )}
                 </div>
-
+                <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-neutral-500">
+                    <span>{workItem.workItemType}</span>
+                    <span>
+                        {workItem.workItemType === "Deliverable"
+                            ? "D"
+                            : workItem.workItemType === "Issue"
+                                ? "I"
+                                : "T"}{workItem.id}
+                    </span>
+                </div>
                 <div className="text-xs text-gray-500 dark:text-neutral-500">
                     {formattedDateOpened && <span>{formattedDateOpened} (opened) - </span>}
                     {formattedDueDate && <span>{formattedDueDate} (due)</span>}
@@ -349,12 +584,16 @@ const WorkItem = ({ workItem, setEditingWorkItem }: WorkItemProps) => {
                     </div>
 
                     {/* Comments */}
-                    <div className="flex items-center text-gray-500 dark:text-neutral-500">
+                    <button
+                        type="button"
+                        className="flex items-center text-gray-500 hover:text-blue-600 dark:text-neutral-500 dark:hover:text-blue-400"
+                        onClick={() => onOpenComments(workItem)}
+                    >
                         <MessageSquareMore size={20} />
                         <span className="ml-1 text-sm dark:text-neutral-400">
                             {numberOfComments}
                         </span>
-                    </div>
+                    </button>
                 </div>
             </div>
         </div>

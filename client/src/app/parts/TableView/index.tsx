@@ -1,7 +1,7 @@
 import { useAppSelector } from "@/app/redux";
 import Header from "@/components/Header";
 import { dataGridClassNames, dataGridSxStyles } from "@/lib/utils";
-import { useGetWorkItemsByPartNumberQuery, WorkItemType, Status, Priority, IssueType, DeliverableType, WorkItem } from "@/state/api";
+import { useGetWorkItemsByPartQuery, WorkItemType, Status, Priority, IssueType, DeliverableType, WorkItem } from "@/state/api";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import React from "react";
 import ModalEditWorkItem from "@/components/ModalEditWorkItem";
@@ -12,6 +12,7 @@ type Props = {
   id: string;
   setIsModalNewWorkItemOpen: (isOpen: boolean) => void;
   searchQuery: string;
+  includeChildren: boolean;
 };
 
 // Helper function to filter work items based on search query
@@ -266,7 +267,7 @@ const columns: GridColDef[] = [
   },
 ];
 
-const TableView = ({ id, setIsModalNewWorkItemOpen, searchQuery }: Props) => {
+const TableView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren }: Props) => {
   const router = useRouter();
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
   const [workItemFilter, setWorkItemFilter] = React.useState<"all" | "open">("all");
@@ -276,7 +277,7 @@ const TableView = ({ id, setIsModalNewWorkItemOpen, searchQuery }: Props) => {
     data: workItems,
     error,
     isLoading,
-  } = useGetWorkItemsByPartNumberQuery({ partNumberId: Number(id) });
+  } = useGetWorkItemsByPartQuery({ partId: Number(id), includeChildren });
 
   if (isLoading) return <div>Loading...</div>;
   if (error || !workItems) return <div>An error occurred while fetching work items</div>;

@@ -24,7 +24,7 @@ ALTER TABLE "public"."Issue" DROP CONSTRAINT "Issue_assignedUserId_fkey";
 ALTER TABLE "public"."Issue" DROP CONSTRAINT "Issue_authorUserId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."PartNumber" DROP CONSTRAINT "PartNumber_assignedUserId_fkey";
+ALTER TABLE "public"."Part" DROP CONSTRAINT "Part_assignedUserId_fkey";
 
 -- DropForeignKey
 ALTER TABLE "public"."Task" DROP CONSTRAINT "Task_assignedUserId_fkey";
@@ -39,7 +39,7 @@ ADD COLUMN     "userId" SERIAL NOT NULL,
 ADD CONSTRAINT "User_pkey" PRIMARY KEY ("userId");
 
 -- AddForeignKey
-ALTER TABLE "public"."PartNumber" ADD CONSTRAINT "PartNumber_assignedUserId_fkey" FOREIGN KEY ("assignedUserId") REFERENCES "public"."User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Part" ADD CONSTRAINT "Part_assignedUserId_fkey" FOREIGN KEY ("assignedUserId") REFERENCES "public"."User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Issue" ADD CONSTRAINT "Issue_authorUserId_fkey" FOREIGN KEY ("authorUserId") REFERENCES "public"."User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;

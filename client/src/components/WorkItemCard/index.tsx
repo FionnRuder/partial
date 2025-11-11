@@ -140,7 +140,7 @@ const WorkItemCard = ({ workItem }: Props) => {
           <div className="grid grid-cols-3 gap-2 text-xs">
             {workItem.partNumbers && workItem.partNumbers.length > 0 && (
               <div>
-                <span className="font-medium">Part Numbers:</span> {workItem.partNumbers.length}
+                <span className="font-medium">Parts:</span> {workItem.partNumbers.length}
               </div>
             )}
             {workItem.attachments && workItem.attachments.length > 0 && (

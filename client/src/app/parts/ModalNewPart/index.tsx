@@ -13,7 +13,7 @@ const ModalNewPart = ({isOpen, onClose}: Props) => {
     const { data: programs = [], isLoading: programsLoading } = useGetProgramsQuery();
     const { data: parts = [], isLoading: partsLoading } = useGetPartsQuery();
     const [createPart, {isLoading}] = useCreatePartMutation();
-    const [partNumber, setPartNumber] = useState("");
+    const [partCode, setPartCode] = useState("");
     const [partName, setPartName] = useState("");
     const [level, setLevel] = useState("");
     const [state, setState] = useState<PartState | "">("");
@@ -25,27 +25,27 @@ const ModalNewPart = ({isOpen, onClose}: Props) => {
     //const [endDate, setEndDate] = useState("");
 
     const handleSubmit = async () => {
-        if (!partNumber || !partName || !level || !state || !revisionLevel || !assignedUserId || !programId) return;
+        if (!partCode || !partName || !level || !state || !revisionLevel || !assignedUserId || !programId) return;
 
         //const formattedStartDate = formatISO(new Date(startDate), { representation: 'complete'});
         //const formattedEndDate = formatISO(new Date(endDate), { representation: 'complete'});
 
         await createPart({
-            number: Number(partNumber),
+            code: partCode,
             partName,
             level: Number(level),
             state,
             revisionLevel,
             assignedUserId: Number(assignedUserId),
             programId: Number(programId),
-            parentId: Number(parentId),
+            parentId: parentId ? Number(parentId) : undefined,
             //startDate: formattedStartDate,
             //endDate: formattedEndDate
         });
     };
 
     const isFormValid = () => {
-        return partNumber && partName && level && state && revisionLevel && assignedUserId && programId;
+        return partCode && partName && level && state && revisionLevel && assignedUserId && programId;
     };
 
     const inputStyles = "w-full rounded border border-gray-300 p-2 shadow-sm dark:border-dark-tertiary dark:bg-dark-tertiary dark:text-white dark:focus:outline-none"
@@ -60,11 +60,11 @@ const ModalNewPart = ({isOpen, onClose}: Props) => {
                 }}
             >
                 <input
-                    type="number"
+                    type="text"
                     className={inputStyles}
-                    placeholder="Part Number"
-                    value={partNumber}
-                    onChange={(e) => setPartNumber(e.target.value)}
+                    placeholder="Part Code"
+                    value={partCode}
+                    onChange={(e) => setPartCode(e.target.value)}
                 />
                 <input
                     type="text"
@@ -134,7 +134,7 @@ const ModalNewPart = ({isOpen, onClose}: Props) => {
                     <option value="">Select Parent Part</option>
                     {parts.map((part) => (
                         <option key={part.id} value={part.id}>
-                        {part.number} - {part.partName}
+                        {part.code} - {part.partName}
                         </option>
                     ))}
                 </select>

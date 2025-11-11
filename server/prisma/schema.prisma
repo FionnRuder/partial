@@ -107,7 +107,7 @@ model User {
   authoredWorkItems WorkItem[] @relation("WorkItemAuthor")
   assignedWorkItems WorkItem[] @relation("WorkItemAssignee")
 
-  partNumbers PartNumber[]
+  partNumbers Part[]
   attachments Attachment[]
   comments    Comment[]
 }
@@ -130,7 +130,7 @@ model Program {
   startDate            DateTime
   endDate              DateTime
 
-  partNumbers     PartNumber[]
+  partNumbers     Part[]
   disciplineTeams DisciplineTeamToProgram[]
   milestones      Milestone[]
   workItems       WorkItem[]
@@ -156,9 +156,9 @@ model Milestone {
   workItems WorkItem[]
 }
 
-model PartNumber {
+model Part {
   id             Int       @id @default(autoincrement())
-  number         Int       @unique
+  code           String    @unique @map("number")
   partName       String
   level          Int
   state          PartState
@@ -167,12 +167,14 @@ model PartNumber {
   programId      Int
   parentId       Int?
 
-  assignedUser User         @relation(fields: [assignedUserId], references: [userId])
-  program      Program      @relation(fields: [programId], references: [id])
-  parent       PartNumber?  @relation("ParentChildren", fields: [parentId], references: [id])
-  children     PartNumber[] @relation("ParentChildren")
+  assignedUser User    @relation(fields: [assignedUserId], references: [userId])
+  program      Program @relation(fields: [programId], references: [id])
+  parent       Part?   @relation("ParentChildren", fields: [parentId], references: [id])
+  children     Part[]  @relation("ParentChildren")
 
-  workItemLinks WorkItemToPartNumber[]
+  workItemLinks WorkItemToPart[]
+
+  @@map("PartNumber")
 }
 
 // ===================
@@ -204,7 +206,7 @@ model WorkItem {
   assigneeUser   User      @relation("WorkItemAssignee", fields: [assignedUserId], references: [userId])
 
   // Relations
-  partNumbers WorkItemToPartNumber[]
+  partNumbers WorkItemToPart[]
   attachments Attachment[]
   comments    Comment[]
 
@@ -233,13 +235,15 @@ model DeliverableDetail {
 // Linking Models
 // ===================
 
-model WorkItemToPartNumber {
-  id           Int @id @default(autoincrement())
-  workItemId   Int
-  partNumberId Int
+model WorkItemToPart {
+  id         Int @id @default(autoincrement())
+  workItemId Int
+  partId     Int @map("partNumberId")
 
-  workItem   WorkItem   @relation(fields: [workItemId], references: [id])
-  partNumber PartNumber @relation(fields: [partNumberId], references: [id])
+  workItem WorkItem @relation(fields: [workItemId], references: [id])
+  part     Part     @relation(fields: [partId], references: [id])
+
+  @@map("WorkItemToPartNumber")
 }
 
 model Attachment {

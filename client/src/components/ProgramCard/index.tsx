@@ -61,7 +61,7 @@ const ProgramCard = ({ program }: Props) => {
           <div className="grid grid-cols-2 gap-2 text-xs">
             {program.partNumbers && program.partNumbers.length > 0 && (
               <div>
-                <span className="font-medium">Part Numbers:</span> {program.partNumbers.length}
+                <span className="font-medium">Parts:</span> {program.partNumbers.length}
               </div>
             )}
             {program.disciplineTeams && program.disciplineTeams.length > 0 && (

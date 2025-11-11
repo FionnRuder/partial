@@ -7,7 +7,7 @@ router.get("/", getParts);
 router.get("/by-program", getPartsByProgram);
 router.get("/user/:userId", getPartsByUser);
 router.post("/", createPart);
-router.patch("/:partNumberId", editPart);
-router.delete("/:partNumberId", deletePart);
+router.patch("/:partId", editPart);
+router.delete("/:partId", deletePart);
 
 export default router;

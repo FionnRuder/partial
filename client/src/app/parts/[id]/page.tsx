@@ -18,6 +18,7 @@ const Part = ({ params }: Props) => {
     const [activeTab, setActiveTab] = useState("Board");
     const [isModalNewWorkItemOpen, setIsModalNewWorkItemOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [includeChildren, setIncludeChildren] = useState(false);
 
     // Fetch all parts to find the requested part
     const { data: allParts = [], isLoading } = useGetPartsQuery();
@@ -40,18 +41,40 @@ const Part = ({ params }: Props) => {
                 activePart={activePart}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
+                includeChildren={includeChildren}
+                setIncludeChildren={setIncludeChildren}
             />
             { activeTab === "Board" && (
-                <Board id={id} setIsModalNewWorkItemOpen={setIsModalNewWorkItemOpen} searchQuery={searchQuery} />
+                <Board
+                    id={id}
+                    setIsModalNewWorkItemOpen={setIsModalNewWorkItemOpen}
+                    searchQuery={searchQuery}
+                    includeChildren={includeChildren}
+                />
             )}
             { activeTab === "Burndown" && (
-                <Burndown id={id} setIsModalNewWorkItemOpen={setIsModalNewWorkItemOpen} searchQuery={searchQuery} />
+                <Burndown
+                    id={id}
+                    setIsModalNewWorkItemOpen={setIsModalNewWorkItemOpen}
+                    searchQuery={searchQuery}
+                    includeChildren={includeChildren}
+                />
             )}
             { activeTab === "Timeline" && (
-                <Timeline id={id} setIsModalNewWorkItemOpen={setIsModalNewWorkItemOpen} searchQuery={searchQuery} />
+                <Timeline
+                    id={id}
+                    setIsModalNewWorkItemOpen={setIsModalNewWorkItemOpen}
+                    searchQuery={searchQuery}
+                    includeChildren={includeChildren}
+                />
             )}
             { activeTab === "Table" && (
-                <Table id={id} setIsModalNewWorkItemOpen={setIsModalNewWorkItemOpen} searchQuery={searchQuery} />
+                <Table
+                    id={id}
+                    setIsModalNewWorkItemOpen={setIsModalNewWorkItemOpen}
+                    searchQuery={searchQuery}
+                    includeChildren={includeChildren}
+                />
             )}
         </div>
     )

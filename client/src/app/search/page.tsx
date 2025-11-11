@@ -2,7 +2,7 @@
 
 import Header from "@/components/Header";
 import MilestoneCard from "@/components/MilestoneCard";
-import PartNumberCard from "@/components/PartNumberCard";
+import PartCard from "@/components/PartCard";
 import ProgramCard from "@/components/ProgramCard";
 import UserCard from "@/components/UserCard";
 import WorkItemCard from "@/components/WorkItemCard";
@@ -36,7 +36,7 @@ const Search = () => {
     (searchResults.programs && searchResults.programs.length > 0) ||
     (searchResults.users && searchResults.users.length > 0) ||
     (searchResults.milestones && searchResults.milestones.length > 0) ||
-    (searchResults.partNumbers && searchResults.partNumbers.length > 0)
+    (searchResults.parts && searchResults.parts.length > 0)
   );
 
   return (
@@ -109,16 +109,16 @@ const Search = () => {
               </div>
             )}
 
-            {/* Part Numbers */}
-            {searchResults.partNumbers && searchResults.partNumbers.length > 0 && (
-              <div>
-                <h2 className="mb-3 text-2xl font-semibold">Part Numbers ({searchResults.partNumbers.length})</h2>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {searchResults.partNumbers.map((partNumber) => (
-                    <PartNumberCard key={partNumber.id} partNumber={partNumber} />
+            {/* Parts */}
+            {searchResults.parts && searchResults.parts.length > 0 && (
+                <div>
+                <h2 className="mb-3 text-2xl font-semibold">Parts ({searchResults.parts.length})</h2>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {searchResults.parts.map((part) => (
+                    <PartCard key={part.id} part={part} />
                   ))}
+                  </div>
                 </div>
-              </div>
             )}
           </div>
         )}

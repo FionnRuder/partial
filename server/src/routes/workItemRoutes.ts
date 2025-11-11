@@ -7,15 +7,25 @@ import {
   updateWorkItemStatus,
   editWorkItem,
   deleteWorkItem,
+  getCommentsForWorkItem,
+  createCommentForWorkItem,
+  updateCommentForWorkItem,
+  deleteCommentForWorkItem,
 } from "../controllers/workItemController";
 
 const router = express.Router();
 
-// ✅ GET all work items (optionally filter by programId or partNumberId)
+// ✅ GET all work items (optionally filter by programId or partId)
 router.get("/", getWorkItems);
 
 // ✅ GET all work items authored or assigned to a user
 router.get("/user/:userId", getWorkItemsByUser);
+
+// ✅ Comments
+router.get("/:workItemId/comments", getCommentsForWorkItem);
+router.post("/:workItemId/comments", createCommentForWorkItem);
+router.patch("/:workItemId/comments/:commentId", updateCommentForWorkItem);
+router.delete("/:workItemId/comments/:commentId", deleteCommentForWorkItem);
 
 // ✅ GET single work item by ID (must be last to avoid conflicts)
 router.get("/:workItemId", getWorkItemById);

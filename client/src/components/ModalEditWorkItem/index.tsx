@@ -49,7 +49,7 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
   const [actualCompletionDate, setActualCompletionDate] = useState("");
   const [percentComplete, setPercentComplete] = useState<number>(0);
   const [inputStatus, setInputStatus] = useState("");
-  const [partNumberIds, setPartNumberIds] = useState<number[]>([]);
+  const [partIds, setPartIds] = useState<number[]>([]);
   const [programId, setProgramId] = useState("");
   const [programName, setProgramName] = useState("");
   const [dueByMilestoneId, setDueByMilestoneId] = useState("");
@@ -84,7 +84,7 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
       );
       setPercentComplete(workItem.percentComplete || 0);
       setInputStatus(workItem.inputStatus || "");
-      setPartNumberIds(workItem.partNumbers?.map((p) => p.partNumberId) || []);
+      setPartIds(workItem.partNumbers?.map((p) => p.partId) || []);
       
       setProgramId(workItem.programId?.toString() || "");
       // Prefill program name if known
@@ -150,7 +150,7 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
         : undefined,
       percentComplete,
       inputStatus,
-      partNumberIds,
+      partIds,
       programId: parseInt(programId),
       dueByMilestoneId: parseInt(dueByMilestoneId),
       authorUserId: parseInt(authorUserId),
@@ -434,22 +434,22 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
 
         <div>
           <label className="block text-sm text-gray-600 dark:text-gray-300">
-            Affected Part Number(s):
+            Affected Part(s):
           </label>
           <select
             multiple
             className={inputStyles}
-            value={partNumberIds.map(String)} // convert numbers to strings for <select>
+            value={partIds.map(String)} // convert numbers to strings for <select>
             onChange={(e) => {
               const selectedOptions = Array.from(e.target.selectedOptions);
               const ids = selectedOptions.map((opt) => Number(opt.value));
-              setPartNumberIds(ids);
+              setPartIds(ids);
             }}
             disabled={partsLoading}
           >
             {parts.map((part) => (
               <option key={part.id} value={part.id}>
-                {part.number} - {part.partName}
+                {part.partName} ({part.code})
               </option>
             ))}
           </select>

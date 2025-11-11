@@ -203,13 +203,13 @@ const Sidebar = () => {
                                             )}
                                         </button>
 
-                                        {/* User’s part numbers for this program */}
+                                        {/* User’s part codes for this program */}
                                         {isOpen &&
                                             partsByProgram[program.id]?.map((part) => (
                                                 <SidebarLink
                                                     key={part.id}
                                                     icon={Bolt}
-                                                    label={`${part.number} - ${part.partName}`}
+                                                    label={`${part.partName} (${part.code})`}
                                                     href={`/parts/${part.id}`}
                                                 />
                                             ))}

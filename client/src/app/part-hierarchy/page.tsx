@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useGetPartsQuery, useGetProgramsQuery, useGetWorkItemsByPartNumberQuery, WorkItemType } from '@/state/api';
-import { PartNumber, Program, WorkItem } from '@/state/api';
-import { ChevronDown, ChevronRight, Bolt, User, Calendar, FileText, AlertTriangle, CheckSquare, Edit, PlusSquare } from 'lucide-react';
+import { useGetPartsQuery, useGetProgramsQuery, useGetWorkItemsByPartQuery, WorkItemType } from '@/state/api';
+import { Part, Program, WorkItem } from '@/state/api';
+import { ChevronDown, ChevronRight, Bolt, User, Layers, FileText, AlertTriangle, CheckSquare, Edit, PlusSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import ModalEditPart from '@/app/parts/ModalEditPart';
 import ModalNewPart from '@/app/parts/ModalNewPart';
 import Header from '@/components/Header';
 
-interface PartHierarchyNode extends PartNumber {
+interface PartHierarchyNode extends Part {
   children?: PartHierarchyNode[];
   isExpanded?: boolean;
 }
@@ -22,7 +22,7 @@ interface WorkItemCounts {
 }
 
 // Custom hook to manage work item data for all parts
-const useWorkItemData = (parts: PartNumber[]) => {
+const useWorkItemData = (parts: Part[]) => {
   const [workItemData, setWorkItemData] = useState<Map<number, WorkItem[]>>(new Map());
   const [loadingParts, setLoadingParts] = useState<Set<number>>(new Set());
 
@@ -32,7 +32,7 @@ const useWorkItemData = (parts: PartNumber[]) => {
     
     setLoadingParts(prev => new Set(prev).add(partId));
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/workItems?partNumberId=${partId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/workItems?partId=${partId}`);
       const workItems = await response.json();
       setWorkItemData(prev => new Map(prev).set(partId, workItems));
     } catch (error) {
@@ -50,7 +50,7 @@ const useWorkItemData = (parts: PartNumber[]) => {
   const fetchAllWorkItems = useCallback(async () => {
     const allPartIds = new Set<number>();
     
-    const collectPartIds = (partList: PartNumber[]) => {
+    const collectPartIds = (partList: Part[]) => {
       partList.forEach(part => {
         allPartIds.add(part.id);
         if (part.children) {
@@ -75,13 +75,13 @@ const useWorkItemData = (parts: PartNumber[]) => {
 };
 
 // Component to display work item counts for a part
-const PartWorkItemCounts = ({ 
-  partId, 
-  children, 
-  isExpanded, 
-  workItemData 
-}: { 
-  partId: number; 
+const PartWorkItemCounts = ({
+  partId,
+  children,
+  isExpanded,
+  workItemData,
+}: {
+  partId: number;
   children?: PartHierarchyNode[];
   isExpanded: boolean;
   workItemData: Map<number, WorkItem[]>;
@@ -147,28 +147,23 @@ const PartWorkItemCounts = ({
   }, [isExpanded, directCounts, childrenCounts, children]);
 
   return (
-    <div className="flex items-center gap-3 mt-2 text-xs">
-      <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400 group">
-        <div title="Deliverables">
-          <FileText className="h-3 w-3" />
-        </div>
-        <span>{displayCounts.deliverables}</span>
-      </div>
-      <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 group">
-        <div title="Issues">
-          <AlertTriangle className="h-3 w-3" />
-        </div>
-        <span>{displayCounts.issues}</span>
-      </div>
-      <div className="flex items-center gap-1 text-green-600 dark:text-green-400 group">
-        <div title="Tasks">
-          <CheckSquare className="h-3 w-3" />
-        </div>
-        <span>{displayCounts.tasks}</span>
-      </div>
-      <div className="text-gray-500 dark:text-gray-400">
-        ({displayCounts.total} total{isExpanded || !children || children.length === 0 ? ' direct' : ' including children'})
-      </div>
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400">
+        <FileText className="h-3 w-3" />
+        Deliverables: {displayCounts.deliverables}
+      </span>
+      <span className="inline-flex items-center gap-1 text-sm font-medium text-orange-600 dark:text-orange-400">
+        <AlertTriangle className="h-3 w-3" />
+        Issues: {displayCounts.issues}
+      </span>
+      <span className="inline-flex items-center gap-1 text-sm font-medium text-green-600 dark:text-green-400">
+        <CheckSquare className="h-3 w-3" />
+        Tasks: {displayCounts.tasks}
+      </span>
+      <span className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+        Total: {displayCounts.total}
+        {isExpanded || !children || children.length === 0 ? " (direct)" : " (including children)"}
+      </span>
     </div>
   );
 };
@@ -180,7 +175,7 @@ const PartHierarchyPage = () => {
   const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
   const [selectedProgramId, setSelectedProgramId] = useState<number | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedPartForEdit, setSelectedPartForEdit] = useState<PartNumber | null>(null);
+  const [selectedPartForEdit, setSelectedPartForEdit] = useState<Part | null>(null);
   const [isNewPartModalOpen, setIsNewPartModalOpen] = useState(false);
 
   // Auto-select the first program when programs are loaded
@@ -221,9 +216,9 @@ const PartHierarchyPage = () => {
       }
     });
 
-    // Sort children by part number
+    // Sort children by part code
     const sortChildren = (nodes: PartHierarchyNode[]) => {
-      nodes.sort((a, b) => a.number - b.number);
+      nodes.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true, sensitivity: "base" }));
       nodes.forEach(node => {
         if (node.children && node.children.length > 0) {
           sortChildren(node.children);
@@ -247,7 +242,7 @@ const PartHierarchyPage = () => {
     });
   };
 
-  const handleEditPart = (part: PartNumber, e: React.MouseEvent) => {
+  const handleEditPart = (part: Part, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering the row click
     setSelectedPartForEdit(part);
     setIsEditModalOpen(true);
@@ -260,8 +255,8 @@ const PartHierarchyPage = () => {
 
     return (
       <div key={node.id} className="select-none">
-        <div 
-          className={`flex items-center gap-2 py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border-l-2 border-transparent hover:border-blue-200 transition-colors ${indentClass}`}
+        <div
+          className={`flex flex-wrap items-center gap-x-4 gap-y-2 py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border-l-2 border-transparent hover:border-blue-200 transition-colors ${indentClass}`}
           style={{ marginLeft: `${depth * 20}px` }}
           onClick={() => router.push(`/parts/${node.id}`)}
         >
@@ -290,40 +285,45 @@ const PartHierarchyPage = () => {
           <Bolt className="h-5 w-5 text-gray-600 dark:text-gray-400 flex-shrink-0" />
 
           {/* Part Information */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3">
+          <div className="flex-1 min-w-0 flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-3 text-sm">
               <span className="font-semibold text-gray-900 dark:text-white">
-                {node.number}
-              </span>
-              <span className="text-gray-700 dark:text-gray-300 truncate">
                 {node.partName}
               </span>
+              <span className="text-gray-700 dark:text-gray-300 truncate">
+                ({node.code})
+              </span>
             </div>
-            
+
             {/* Additional Info */}
-            <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
-              <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
+              <span className="flex items-center gap-1">
                 <User className="h-3 w-3" />
-                <span>{node.assignedUser?.name || 'Unassigned'}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                <span>Level {node.level}</span>
-              </div>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                node.state === 'Released' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                node.state === 'UnderReview' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                node.state === 'InWork' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-              }`}>
+                {node.assignedUser?.name || 'Unassigned'}
+              </span>
+              <span className="flex items-center gap-1">
+                <Layers className="h-3 w-3" />
+                Level {node.level}
+              </span>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  node.state === 'Released'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : node.state === 'UnderReview'
+                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                      : node.state === 'InWork'
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                        : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                }`}
+              >
                 {node.state}
               </span>
             </div>
-            
+
             {/* Work Item Counts */}
-            <PartWorkItemCounts 
-              partId={node.id} 
-              children={node.children} 
+            <PartWorkItemCounts
+              partId={node.id}
+              children={node.children}
               isExpanded={isExpanded}
               workItemData={workItemData}
             />
@@ -373,7 +373,6 @@ const PartHierarchyPage = () => {
 
   return (
     <div className="p-8">
-      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <Header 
@@ -491,7 +490,6 @@ const PartHierarchyPage = () => {
           isOpen={isNewPartModalOpen}
           onClose={() => setIsNewPartModalOpen(false)}
         />
-      </div>
     </div>
   );
 };

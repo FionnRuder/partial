@@ -8,10 +8,11 @@ import {
 } from "@mui/x-data-grid";
 import Image from "next/image";
 import { useGetUserByIdQuery } from "@/state/api";
-import { Priority, Status, WorkItem, useGetTeamsQuery, useUpdateUserMutation } from "@/state/api";
+import { Part, Priority, Status, WorkItem, useGetProgramsQuery, useGetTeamsQuery, useUpdateUserMutation } from "@/state/api";
 import { dataGridClassNames, dataGridSxStyles } from "@/lib/utils";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { SquarePen } from "lucide-react";
 
@@ -169,6 +170,11 @@ const UserDetailPage = ({ params }: Props) => {
 
   const { data: user, isLoading, isError } = useGetUserByIdQuery(userId);
   const { data: teams, isLoading: isTeamsLoading } = useGetTeamsQuery();
+  const { data: programs = [] } = useGetProgramsQuery();
+  const programById = useMemo(
+    () => new Map(programs.map((program) => [program.id, program.name])),
+    [programs]
+  );
   const [updateUser] = useUpdateUserMutation();
   const { user: authUser, updateProfile } = useAuth();
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
@@ -236,6 +242,7 @@ const UserDetailPage = ({ params }: Props) => {
 
   // Get assigned work items
   const assignedWorkItems = user.assignedWorkItems || [];
+  const assignedParts = user.partNumbers || [];
   
   // Filter by priority
   const filteredWorkItems =
@@ -435,6 +442,49 @@ const UserDetailPage = ({ params }: Props) => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Assigned Parts */}
+      <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-lg font-semibold dark:text-white">Assigned Parts</h3>
+          <span className="text-sm text-gray-500 dark:text-neutral-400">
+            {assignedParts.length} {assignedParts.length === 1 ? "part" : "parts"}
+          </span>
+        </div>
+        {assignedParts.length === 0 ? (
+          <p className="text-sm text-gray-500 dark:text-neutral-400">
+            This user has no assigned parts.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {assignedParts.map((part: Part) => (
+              <Link
+                key={part.id}
+                href={`/parts/${part.id}`}
+                className="group flex flex-col rounded-md border border-gray-200 p-4 shadow-sm transition hover:border-blue-500 hover:shadow-md dark:border-gray-700 dark:bg-dark-tertiary dark:hover:border-blue-400"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h4 className="text-base font-semibold text-gray-900 transition group-hover:text-blue-600 dark:text-white">
+                      {part.partName} ({part.code})
+                    </h4>
+                  </div>
+                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                    {part.state}
+                  </span>
+                </div>
+                <div className="mt-3 space-y-1 text-sm text-gray-500 dark:text-neutral-400">
+                  <p>
+                    Program: {part.program?.name ?? programById.get(part.programId) ?? "N/A"}
+                  </p>
+                  <p>Level: {part.level ?? "N/A"}</p>
+                  <p>Revision: {part.revisionLevel ?? "N/A"}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Work Items Table */}
