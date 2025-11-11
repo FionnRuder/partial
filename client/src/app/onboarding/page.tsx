@@ -863,7 +863,7 @@ const ProgramSetupScreen = ({
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400">
             {mode === "create"
-              ? "Program Managers use programs to organize milestones, part numbers, and work items. Let's create your first program to get your team started."
+              ? "Program Managers use programs to organize milestones, part codes, and work items. Let's create your first program to get your team started."
               : "Already have programs running? Choose one below so your team can plug into its milestones, parts, and work items right away."}
           </p>
         </div>
@@ -1200,7 +1200,7 @@ const MilestoneSetupScreen = ({
               disabled={!createdMilestone}
               className="mt-4 flex w-full justify-center rounded-md border border-transparent bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
             >
-              Continue to Part Numbers
+              Continue to Parts
             </button>
           </div>
         </div>
@@ -1223,7 +1223,7 @@ const PartSetupScreen = ({
   milestoneCreated: boolean;
 }) => {
   const [createPart, { isLoading, error }] = useCreatePartMutation();
-  const [partNumber, setPartNumber] = useState("");
+  const [partCode, setPartCode] = useState("");
   const [partName, setPartName] = useState("");
   const [level, setLevel] = useState("1");
   const [revisionLevel, setRevisionLevel] = useState("A");
@@ -1256,7 +1256,7 @@ const PartSetupScreen = ({
         <div className="max-w-xl mx-auto text-center">
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Milestone required</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Please create at least one milestone for "{program.name}" before adding part numbers.
+            Please create at least one milestone for "{program.name}" before adding part codes.
           </p>
           <button
             onClick={onBack}
@@ -1271,18 +1271,18 @@ const PartSetupScreen = ({
 
   const handleCreatePart = async () => {
     setFormError(null);
-    if (!partNumber || !partName) {
-      setFormError("Please provide a part number and name.");
+    if (!partCode || !partName) {
+      setFormError("Please provide a part code and name.");
       return;
     }
     if (!currentUser?.userId) {
-      setFormError("An assigned user is required to create a part number. Please sign in again.");
+      setFormError("An assigned user is required to create a part code. Please sign in again.");
       return;
     }
 
     try {
       await createPart({
-        number: Number(partNumber),
+        code: partCode,
         partName,
         level: Number(level || "1"),
         state,
@@ -1294,8 +1294,8 @@ const PartSetupScreen = ({
       setCreatedPart(true);
       onComplete();
     } catch (e) {
-      setFormError("Failed to create part number. Please try again.");
-      console.error("Failed to create part number:", e);
+      setFormError("Failed to create part code. Please try again.");
+      console.error("Failed to create part code:", e);
     }
   };
 
@@ -1314,10 +1314,10 @@ const PartSetupScreen = ({
           </button>
 
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Create a Part Number for "{program.name}"
+            Create a Part Code for "{program.name}"
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Every program starts with at least one part number assigned to an engineer. Create the first part number so your team can begin collaborating.
+            Every program starts with at least one part code assigned to an engineer. Create the first part code so your team can begin collaborating.
           </p>
         </div>
 
@@ -1325,13 +1325,13 @@ const PartSetupScreen = ({
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Part Number
+                Part Code
               </label>
               <input
-                type="number"
+                type="text"
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                value={partNumber}
-                onChange={(e) => setPartNumber(e.target.value)}
+                value={partCode}
+                onChange={(e) => setPartCode(e.target.value)}
                 placeholder="e.g. 1001"
               />
             </div>
@@ -1397,7 +1397,7 @@ const PartSetupScreen = ({
 
             {error && (
               <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
-                Failed to create part number. Please try again.
+                Failed to create part code. Please try again.
               </div>
             )}
 
@@ -1407,12 +1407,12 @@ const PartSetupScreen = ({
               disabled={isLoading || createdPart}
               className="flex w-full justify-center rounded-md bg-blue-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isLoading ? "Creating Part Number..." : createdPart ? "Part Number Created" : "Create Part Number"}
+              {isLoading ? "Creating Part Code..." : createdPart ? "Part Code Created" : "Create Part Code"}
             </button>
 
             {createdPart && (
               <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
-                Part number created successfully.
+                Part code created successfully.
               </div>
             )}
 

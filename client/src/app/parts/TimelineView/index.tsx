@@ -1,5 +1,5 @@
 import { useAppSelector } from '@/app/redux';
-import { useGetWorkItemsByPartNumberQuery } from '@/state/api';
+import { useGetWorkItemsByPartQuery } from '@/state/api';
 import {
   DisplayOption,
   Gantt,
@@ -14,6 +14,7 @@ type Props = {
   id: string;
   setIsModalNewWorkItemOpen: (isOpen: boolean) => void;
   searchQuery: string;
+  includeChildren: boolean;
 };
 
 // Helper function to filter work items based on search query
@@ -33,10 +34,10 @@ const filterWorkItemsBySearch = (workItems: any[], searchQuery: string) => {
   });
 };
 
-const Timeline = ({ id, setIsModalNewWorkItemOpen, searchQuery }: Props) => {
+const Timeline = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren }: Props) => {
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
   const { data: workItems, error, isLoading } =
-    useGetWorkItemsByPartNumberQuery({ partNumberId: Number(id) });
+    useGetWorkItemsByPartQuery({ partId: Number(id), includeChildren });
 
   const [displayOptions, setDisplayOptions] = useState<DisplayOption>({
     viewMode: ViewMode.Month,

@@ -25,7 +25,7 @@ export const search = async (req: Request, res: Response): Promise<void> => {
         authorUser: true,
         assigneeUser: true,
         partNumbers: {
-          include: { partNumber: true },
+          include: { part: true },
         },
       },
     });
@@ -80,12 +80,10 @@ export const search = async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    const partNumbers = await prisma.partNumber.findMany({
+    const parts = await prisma.part.findMany({
       where: {
         OR: [
-          ...(Number.isFinite(Number(query))
-            ? [{ number: Number(query) }]
-            : []),
+          { code: { contains: query, mode: "insensitive" } },
           { partName: { contains: query, mode: "insensitive" } },
         ],
       },
@@ -102,7 +100,7 @@ export const search = async (req: Request, res: Response): Promise<void> => {
       programs,
       users,
       milestones,
-      partNumbers,
+      parts,
     });
   } catch (error: any) {
     res.status(500).json({ message: `Error performing search: ${error.message}` });

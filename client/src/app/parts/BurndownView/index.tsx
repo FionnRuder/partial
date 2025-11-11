@@ -3,7 +3,7 @@
 import Header from "@/components/Header";
 import WorkItemCard from "@/components/WorkItemCard";
 import BurndownChart from "@/components/BurndownChart";
-import { WorkItem, WorkItemType, useGetWorkItemsByPartNumberQuery } from "@/state/api";
+import { WorkItem, WorkItemType, useGetWorkItemsByPartQuery } from "@/state/api";
 import { useAppSelector } from "@/app/redux";
 import React, { useMemo, useState } from "react";
 import { PlusSquare } from "lucide-react";
@@ -12,6 +12,7 @@ type Props = {
   id: string;
   setIsModalNewWorkItemOpen: (isOpen: boolean) => void;
   searchQuery: string;
+  includeChildren: boolean;
 };
 
 // Helper function to filter work items based on search query
@@ -31,9 +32,10 @@ const filterWorkItemsBySearch = (workItems: WorkItem[], searchQuery: string) => 
   });
 };
 
-const BurndownView = ({ id, setIsModalNewWorkItemOpen, searchQuery }: Props) => {
-  const { data: workItems, error, isLoading } = useGetWorkItemsByPartNumberQuery({
-    partNumberId: Number(id),
+const BurndownView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren }: Props) => {
+  const { data: workItems, error, isLoading } = useGetWorkItemsByPartQuery({
+    partId: Number(id),
+    includeChildren,
   });
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 

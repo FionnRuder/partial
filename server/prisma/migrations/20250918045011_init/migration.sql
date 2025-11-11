@@ -177,7 +177,7 @@ CREATE TABLE "public"."Milestone" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."PartNumber" (
+CREATE TABLE "public"."Part" (
     "id" SERIAL NOT NULL,
     "number" INTEGER NOT NULL,
     "partName" TEXT NOT NULL,
@@ -188,7 +188,7 @@ CREATE TABLE "public"."PartNumber" (
     "programId" INTEGER NOT NULL,
     "parentId" INTEGER,
 
-    CONSTRAINT "PartNumber_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Part_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -241,30 +241,30 @@ CREATE TABLE "public"."Deliverable" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."IssueToPartNumber" (
+CREATE TABLE "public"."IssueToPart" (
     "id" SERIAL NOT NULL,
     "issueId" INTEGER NOT NULL,
-    "partNumberId" INTEGER NOT NULL,
+    "partId" INTEGER NOT NULL,
 
-    CONSTRAINT "IssueToPartNumber_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "IssueToPart_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."DeliverableToPartNumber" (
+CREATE TABLE "public"."DeliverableToPart" (
     "id" SERIAL NOT NULL,
     "deliverableId" INTEGER NOT NULL,
-    "partNumberId" INTEGER NOT NULL,
+    "partId" INTEGER NOT NULL,
 
-    CONSTRAINT "DeliverableToPartNumber_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "DeliverableToPart_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "public"."TaskToPartNumber" (
+CREATE TABLE "public"."TaskToPart" (
     "id" SERIAL NOT NULL,
     "taskId" INTEGER NOT NULL,
-    "partNumberId" INTEGER NOT NULL,
+    "partId" INTEGER NOT NULL,
 
-    CONSTRAINT "TaskToPartNumber_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "TaskToPart_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -274,7 +274,7 @@ CREATE UNIQUE INDEX "DisciplineTeam_teamManagerUserId_key" ON "public"."Discipli
 CREATE UNIQUE INDEX "Program_programManagerUserId_key" ON "public"."Program"("programManagerUserId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PartNumber_number_key" ON "public"."PartNumber"("number");
+CREATE UNIQUE INDEX "Part_number_key" ON "public"."Part"("number");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
@@ -298,13 +298,13 @@ ALTER TABLE "public"."DisciplineTeamToProgram" ADD CONSTRAINT "DisciplineTeamToP
 ALTER TABLE "public"."Milestone" ADD CONSTRAINT "Milestone_programId_fkey" FOREIGN KEY ("programId") REFERENCES "public"."Program"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PartNumber" ADD CONSTRAINT "PartNumber_assignedUserId_fkey" FOREIGN KEY ("assignedUserId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Part" ADD CONSTRAINT "Part_assignedUserId_fkey" FOREIGN KEY ("assignedUserId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PartNumber" ADD CONSTRAINT "PartNumber_programId_fkey" FOREIGN KEY ("programId") REFERENCES "public"."Program"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Part" ADD CONSTRAINT "Part_programId_fkey" FOREIGN KEY ("programId") REFERENCES "public"."Program"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."PartNumber" ADD CONSTRAINT "PartNumber_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "public"."PartNumber"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "public"."Part" ADD CONSTRAINT "Part_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "public"."Part"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Issue" ADD CONSTRAINT "Issue_programId_fkey" FOREIGN KEY ("programId") REFERENCES "public"."Program"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -352,22 +352,22 @@ ALTER TABLE "public"."Task" ADD CONSTRAINT "Task_authorUserId_fkey" FOREIGN KEY 
 ALTER TABLE "public"."Task" ADD CONSTRAINT "Task_assignedUserId_fkey" FOREIGN KEY ("assignedUserId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."IssueToPartNumber" ADD CONSTRAINT "IssueToPartNumber_issueId_fkey" FOREIGN KEY ("issueId") REFERENCES "public"."Issue"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."IssueToPart" ADD CONSTRAINT "IssueToPart_issueId_fkey" FOREIGN KEY ("issueId") REFERENCES "public"."Issue"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."IssueToPartNumber" ADD CONSTRAINT "IssueToPartNumber_partNumberId_fkey" FOREIGN KEY ("partNumberId") REFERENCES "public"."PartNumber"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."IssueToPart" ADD CONSTRAINT "IssueToPart_partId_fkey" FOREIGN KEY ("partId") REFERENCES "public"."Part"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."DeliverableToPartNumber" ADD CONSTRAINT "DeliverableToPartNumber_deliverableId_fkey" FOREIGN KEY ("deliverableId") REFERENCES "public"."Deliverable"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."DeliverableToPart" ADD CONSTRAINT "DeliverableToPart_deliverableId_fkey" FOREIGN KEY ("deliverableId") REFERENCES "public"."Deliverable"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."DeliverableToPartNumber" ADD CONSTRAINT "DeliverableToPartNumber_partNumberId_fkey" FOREIGN KEY ("partNumberId") REFERENCES "public"."PartNumber"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."DeliverableToPart" ADD CONSTRAINT "DeliverableToPart_partId_fkey" FOREIGN KEY ("partId") REFERENCES "public"."Part"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."TaskToPartNumber" ADD CONSTRAINT "TaskToPartNumber_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "public"."Task"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."TaskToPart" ADD CONSTRAINT "TaskToPart_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "public"."Task"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."TaskToPartNumber" ADD CONSTRAINT "TaskToPartNumber_partNumberId_fkey" FOREIGN KEY ("partNumberId") REFERENCES "public"."PartNumber"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."TaskToPart" ADD CONSTRAINT "TaskToPart_partId_fkey" FOREIGN KEY ("partId") REFERENCES "public"."Part"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Attachment" ADD CONSTRAINT "Attachment_uploadedByUserId_fkey" FOREIGN KEY ("uploadedByUserId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

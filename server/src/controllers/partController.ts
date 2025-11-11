@@ -8,7 +8,7 @@ export const getParts = async (
   res: Response
 ): Promise<void> => {
   try {
-    const parts = await prisma.partNumber.findMany({
+    const parts = await prisma.part.findMany({
       include: {
         assignedUser: true,
         program: true,
@@ -20,7 +20,7 @@ export const getParts = async (
   } catch (error: any) {
     res
       .status(500)
-      .json({ message: `Error retrieving part numbers: ${error.message}` });
+      .json({ message: `Error retrieving parts: ${error.message}` });
   }
 };
 
@@ -30,7 +30,7 @@ export const getPartsByProgram = async (
 ): Promise<void> => {
   const {programId} = req.query;
   try {
-    const parts = await prisma.partNumber.findMany({ // GRAB PART NUMBERS SPECIFICALLY FROM THAT PROGRAM ID
+    const parts = await prisma.part.findMany({ // GRAB PARTS SPECIFICALLY FROM THAT PROGRAM ID
         where: {
             programId: Number(programId),
         },
@@ -45,7 +45,7 @@ export const getPartsByProgram = async (
   } catch (error: any) {
     res
       .status(500)
-      .json({ message: `Error retrieving part numbers by program: ${error.message}` });
+      .json({ message: `Error retrieving parts by program: ${error.message}` });
   }
 };
 
@@ -55,7 +55,7 @@ export const getPartsByUser = async (
 ): Promise<void> => {
   const { userId } = req.params;
   try {
-    const parts = await prisma.partNumber.findMany({ // GRAB PART NUMBERS SPECIFICALLY FOR THAT USER
+    const parts = await prisma.part.findMany({ // GRAB PARTS SPECIFICALLY FOR THAT USER
         where: {
             assignedUserId: Number(userId),
         },
@@ -70,7 +70,7 @@ export const getPartsByUser = async (
   } catch (error: any) {
     res
       .status(500)
-      .json({ message: `Error retrieving part numbers by user: ${error.message}` });
+      .json({ message: `Error retrieving parts by user: ${error.message}` });
   }
 };
 
@@ -78,25 +78,55 @@ export const createPart = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { number, partName, level, state, revisionLevel, assignedUserId, programId, parentId } = req.body;
+  const { code, partName, level, state, revisionLevel, assignedUserId, programId, parentId } = req.body;
   try {
-    const newPart = await prisma.partNumber.create({
-      data: {
-        number,
-        partName,
-        level,
-        state,
-        revisionLevel,
-        assignedUserId,
-        programId,
-        parentId
-      },
+    const newPart = await prisma.$transaction(async (tx) => {
+      const createdPart = await tx.part.create({
+        data: {
+          code,
+          partName,
+          level,
+          state,
+          revisionLevel,
+          assignedUserId,
+          programId,
+          parentId,
+        },
+      });
+
+      if (assignedUserId) {
+        const assignedUser = await tx.user.findUnique({
+          where: { userId: assignedUserId },
+          select: { disciplineTeamId: true },
+        });
+
+        if (assignedUser?.disciplineTeamId) {
+          const existingRelation = await tx.disciplineTeamToProgram.findFirst({
+            where: {
+              disciplineTeamId: assignedUser.disciplineTeamId,
+              programId,
+            },
+          });
+
+          if (!existingRelation) {
+            await tx.disciplineTeamToProgram.create({
+              data: {
+                disciplineTeamId: assignedUser.disciplineTeamId,
+                programId,
+              },
+            });
+          }
+        }
+      }
+
+      return createdPart;
     });
+
     res.status(201).json(newPart);
   } catch (error: any) {
     res
       .status(500)
-      .json({ message: `Error creating a part number: ${error.message}` });
+      .json({ message: `Error creating a part: ${error.message}` });
   }
 };
 
@@ -104,28 +134,72 @@ export const editPart = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { partNumberId } = req.params;
-  const updates = req.body; // Partial<PartNumber>
+  const { partId } = req.params;
+  const updates = req.body; // Partial<Part>
 
   try {
-    const updatedPart = await prisma.partNumber.update({
-      where: { id: Number(partNumberId) },
-      data: {
-        number: updates.number,
-        partName: updates.partName,
-        level: updates.level,
-        state: updates.state,
-        revisionLevel: updates.revisionLevel,
-        assignedUserId: updates.assignedUserId,
-        programId: updates.programId,
-        parentId: updates.parentId ?? null,
-      },
-      include: {
-        assignedUser: true,
-        program: true,
-        parent: true,
-        children: true,
-      },
+    const updatedPart = await prisma.$transaction(async (tx) => {
+      const existingPart = await tx.part.findUnique({
+        where: { id: Number(partId) },
+      });
+
+      if (!existingPart) {
+        throw new Error("Part not found");
+      }
+
+      const result = await tx.part.update({
+        where: { id: Number(partId) },
+        data: {
+          code: updates.code,
+          partName: updates.partName,
+          level: updates.level,
+          state: updates.state,
+          revisionLevel: updates.revisionLevel,
+          assignedUserId: updates.assignedUserId,
+          programId: updates.programId,
+          parentId: updates.parentId ?? null,
+        },
+        include: {
+          assignedUser: true,
+          program: true,
+          parent: true,
+          children: true,
+        },
+      });
+
+      const finalAssignedUserId =
+        updates.assignedUserId !== undefined
+          ? updates.assignedUserId
+          : existingPart.assignedUserId;
+      const finalProgramId =
+        updates.programId !== undefined ? updates.programId : existingPart.programId;
+
+      if (finalAssignedUserId) {
+        const assignedUser = await tx.user.findUnique({
+          where: { userId: finalAssignedUserId },
+          select: { disciplineTeamId: true },
+        });
+
+        if (assignedUser?.disciplineTeamId) {
+          const relationExists = await tx.disciplineTeamToProgram.findFirst({
+            where: {
+              disciplineTeamId: assignedUser.disciplineTeamId,
+              programId: finalProgramId,
+            },
+          });
+
+          if (!relationExists) {
+            await tx.disciplineTeamToProgram.create({
+              data: {
+                disciplineTeamId: assignedUser.disciplineTeamId,
+                programId: finalProgramId,
+              },
+            });
+          }
+        }
+      }
+
+      return result;
     });
 
     res.json(updatedPart);
@@ -138,10 +212,10 @@ export const editPart = async (
 };
 
 export const deletePart = async (req: Request, res: Response): Promise<void> => {
-  const { partNumberId } = req.params;
+  const { partId } = req.params;
   try {
-    await prisma.partNumber.delete({
-      where: { id: Number(partNumberId) },
+    await prisma.part.delete({
+      where: { id: Number(partId) },
     });
     res.json({ message: "Part deleted successfully." });
   } catch (error: any) {

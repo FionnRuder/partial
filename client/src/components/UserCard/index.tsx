@@ -68,7 +68,7 @@ const UserCard = ({ user }: Props) => {
         )}
         {user.partNumbers && user.partNumbers.length > 0 && (
           <div>
-            <span className="font-medium">Part Numbers:</span> {user.partNumbers.length}
+            <span className="font-medium">Parts:</span> {user.partNumbers.length}
           </div>
         )}
       </div>

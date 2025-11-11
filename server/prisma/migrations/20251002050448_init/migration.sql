@@ -8,11 +8,11 @@
   - You are about to drop the column `issueId` on the `Comment` table. All the data in the column will be lost.
   - You are about to drop the column `taskId` on the `Comment` table. All the data in the column will be lost.
   - You are about to drop the `Deliverable` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `DeliverableToPartNumber` table. If the table is not empty, all the data it contains will be lost.
+  - You are about to drop the `DeliverableToPart` table. If the table is not empty, all the data it contains will be lost.
   - You are about to drop the `Issue` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `IssueToPartNumber` table. If the table is not empty, all the data it contains will be lost.
+  - You are about to drop the `IssueToPart` table. If the table is not empty, all the data it contains will be lost.
   - You are about to drop the `Task` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `TaskToPartNumber` table. If the table is not empty, all the data it contains will be lost.
+  - You are about to drop the `TaskToPart` table. If the table is not empty, all the data it contains will be lost.
 
 */
 -- CreateEnum
@@ -61,10 +61,10 @@ ALTER TABLE "public"."Deliverable" DROP CONSTRAINT "Deliverable_dueByMilestoneId
 ALTER TABLE "public"."Deliverable" DROP CONSTRAINT "Deliverable_programId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."DeliverableToPartNumber" DROP CONSTRAINT "DeliverableToPartNumber_deliverableId_fkey";
+ALTER TABLE "public"."DeliverableToPart" DROP CONSTRAINT "DeliverableToPart_deliverableId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."DeliverableToPartNumber" DROP CONSTRAINT "DeliverableToPartNumber_partNumberId_fkey";
+ALTER TABLE "public"."DeliverableToPart" DROP CONSTRAINT "DeliverableToPart_partId_fkey";
 
 -- DropForeignKey
 ALTER TABLE "public"."Issue" DROP CONSTRAINT "Issue_assignedUserId_fkey";
@@ -79,10 +79,10 @@ ALTER TABLE "public"."Issue" DROP CONSTRAINT "Issue_dueByMilestoneId_fkey";
 ALTER TABLE "public"."Issue" DROP CONSTRAINT "Issue_programId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."IssueToPartNumber" DROP CONSTRAINT "IssueToPartNumber_issueId_fkey";
+ALTER TABLE "public"."IssueToPart" DROP CONSTRAINT "IssueToPart_issueId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."IssueToPartNumber" DROP CONSTRAINT "IssueToPartNumber_partNumberId_fkey";
+ALTER TABLE "public"."IssueToPart" DROP CONSTRAINT "IssueToPart_partId_fkey";
 
 -- DropForeignKey
 ALTER TABLE "public"."Task" DROP CONSTRAINT "Task_assignedUserId_fkey";
@@ -103,10 +103,10 @@ ALTER TABLE "public"."Task" DROP CONSTRAINT "Task_issueId_fkey";
 ALTER TABLE "public"."Task" DROP CONSTRAINT "Task_programId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."TaskToPartNumber" DROP CONSTRAINT "TaskToPartNumber_partNumberId_fkey";
+ALTER TABLE "public"."TaskToPart" DROP CONSTRAINT "TaskToPart_partId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."TaskToPartNumber" DROP CONSTRAINT "TaskToPartNumber_taskId_fkey";
+ALTER TABLE "public"."TaskToPart" DROP CONSTRAINT "TaskToPart_taskId_fkey";
 
 -- AlterTable
 ALTER TABLE "public"."Attachment" DROP COLUMN "deliverableId",
@@ -124,19 +124,19 @@ ADD COLUMN     "workItemId" INTEGER;
 DROP TABLE "public"."Deliverable";
 
 -- DropTable
-DROP TABLE "public"."DeliverableToPartNumber";
+DROP TABLE "public"."DeliverableToPart";
 
 -- DropTable
 DROP TABLE "public"."Issue";
 
 -- DropTable
-DROP TABLE "public"."IssueToPartNumber";
+DROP TABLE "public"."IssueToPart";
 
 -- DropTable
 DROP TABLE "public"."Task";
 
 -- DropTable
-DROP TABLE "public"."TaskToPartNumber";
+DROP TABLE "public"."TaskToPart";
 
 -- CreateTable
 CREATE TABLE "public"."WorkItem" (
@@ -180,12 +180,12 @@ CREATE TABLE "public"."DeliverableDetail" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."WorkItemToPartNumber" (
+CREATE TABLE "public"."WorkItemToPart" (
     "id" SERIAL NOT NULL,
     "workItemId" INTEGER NOT NULL,
-    "partNumberId" INTEGER NOT NULL,
+    "partId" INTEGER NOT NULL,
 
-    CONSTRAINT "WorkItemToPartNumber_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "WorkItemToPart_pkey" PRIMARY KEY ("id")
 );
 
 -- AddForeignKey
@@ -207,10 +207,10 @@ ALTER TABLE "public"."IssueDetail" ADD CONSTRAINT "IssueDetail_id_fkey" FOREIGN 
 ALTER TABLE "public"."DeliverableDetail" ADD CONSTRAINT "DeliverableDetail_id_fkey" FOREIGN KEY ("id") REFERENCES "public"."WorkItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."WorkItemToPartNumber" ADD CONSTRAINT "WorkItemToPartNumber_workItemId_fkey" FOREIGN KEY ("workItemId") REFERENCES "public"."WorkItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."WorkItemToPart" ADD CONSTRAINT "WorkItemToPart_workItemId_fkey" FOREIGN KEY ("workItemId") REFERENCES "public"."WorkItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."WorkItemToPartNumber" ADD CONSTRAINT "WorkItemToPartNumber_partNumberId_fkey" FOREIGN KEY ("partNumberId") REFERENCES "public"."PartNumber"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."WorkItemToPart" ADD CONSTRAINT "WorkItemToPart_partId_fkey" FOREIGN KEY ("partId") REFERENCES "public"."Part"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Attachment" ADD CONSTRAINT "Attachment_workItemId_fkey" FOREIGN KEY ("workItemId") REFERENCES "public"."WorkItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;

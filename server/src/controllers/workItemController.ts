@@ -27,7 +27,7 @@ type WorkItemCreate = {
   deliverableDetail?: {
     deliverableType: string;
   };
-  partNumberIds?: number[];
+  partIds?: number[];
 };
 
 // Define a type for updates
@@ -56,7 +56,7 @@ type WorkItemUpdate = {
   deliverableDetail?: {
     deliverableType?: string;
   };
-  partNumberIds?: number[];
+  partIds?: number[];
 };
 
 const prisma = new PrismaClient();
@@ -79,11 +79,18 @@ export const getWorkItemById = async (req: Request, res: Response): Promise<void
         assigneeUser: true,
         partNumbers: {
           include: {
-            partNumber: true,
+            part: true,
           },
         },
         attachments: true,
-        comments: true,
+        comments: {
+          include: {
+            commenterUser: true,
+          },
+          orderBy: {
+            dateCommented: "desc",
+          },
+        },
       },
     });
 
@@ -100,10 +107,40 @@ export const getWorkItemById = async (req: Request, res: Response): Promise<void
 
 /**
  * Get WorkItems
- * Supports optional filtering by programId or partNumberId
+ * Supports optional filtering by programId or partId
  */
+const parseBoolean = (value: any): boolean => {
+  if (typeof value === "string") {
+    return value.toLowerCase() === "true";
+  }
+  return Boolean(value);
+};
+
+const getDescendantPartIds = async (rootPartId: number): Promise<number[]> => {
+  const visited = new Set<number>();
+  const queue: number[] = [rootPartId];
+  visited.add(rootPartId);
+
+  while (queue.length > 0) {
+    const currentPartId = queue.shift()!;
+    const children = await prisma.part.findMany({
+      where: { parentId: currentPartId },
+      select: { id: true },
+    });
+
+    for (const child of children) {
+      if (!visited.has(child.id)) {
+        visited.add(child.id);
+        queue.push(child.id);
+      }
+    }
+  }
+
+  return Array.from(visited);
+};
+
 export const getWorkItems = async (req: Request, res: Response): Promise<void> => {
-  const { programId, partNumberId } = req.query;
+  const { programId, partId, includeChildren } = req.query;
 
   try {
     let workItems;
@@ -121,20 +158,35 @@ export const getWorkItems = async (req: Request, res: Response): Promise<void> =
           assigneeUser: true,
           partNumbers: {
             include: {
-              partNumber: true,
+              part: true,
             },
           },
           attachments: true,
-          comments: true,
+          comments: {
+            include: {
+              commenterUser: true,
+            },
+            orderBy: {
+              dateCommented: "desc",
+            },
+          },
         },
       });
-    } else if (partNumberId) {
-      // ✅ filter by partNumberId (via WorkItemToPartNumber join table)
+    } else if (partId) {
+      // ✅ filter by partId (via WorkItemToPart join table)
+      const rootPartId = Number(partId);
+      const shouldIncludeChildren = parseBoolean(includeChildren);
+      const partIds = shouldIncludeChildren
+        ? await getDescendantPartIds(rootPartId)
+        : [rootPartId];
+
       workItems = await prisma.workItem.findMany({
         where: {
           partNumbers: {
             some: {
-              partNumberId: Number(partNumberId),
+              partId: {
+                in: partIds,
+              },
             },
           },
         },
@@ -147,11 +199,18 @@ export const getWorkItems = async (req: Request, res: Response): Promise<void> =
           assigneeUser: true,
           partNumbers: {
             include: {
-              partNumber: true,
+              part: true,
             },
           },
           attachments: true,
-          comments: true,
+          comments: {
+            include: {
+              commenterUser: true,
+            },
+            orderBy: {
+              dateCommented: "desc",
+            },
+          },
         },
       });
     } else {
@@ -166,11 +225,18 @@ export const getWorkItems = async (req: Request, res: Response): Promise<void> =
           assigneeUser: true,
           partNumbers: {
             include: {
-              partNumber: true,
+              part: true,
             },
           },
           attachments: true,
-          comments: true,
+          comments: {
+            include: {
+              commenterUser: true,
+            },
+            orderBy: {
+              dateCommented: "desc",
+            },
+          },
         },
       });
     }
@@ -252,11 +318,11 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
             },
           }
         : undefined,
-      // ✅ partNumber links
-      partNumbers: body.partNumberIds?.length
+      // ✅ part links
+      partNumbers: body.partIds?.length
         ? {
-            create: body.partNumberIds.map((id) => ({
-              partNumber: { connect: { id } },
+            create: body.partIds.map((id) => ({
+              part: { connect: { id } },
             })),
           }
         : undefined,
@@ -272,15 +338,22 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
         issueDetail: true,
         authorUser: true,
         assigneeUser: true,
-        comments: true,
-        partNumbers: { include: { partNumber: true } },
+        comments: {
+          include: {
+            commenterUser: true,
+          },
+          orderBy: {
+            dateCommented: "desc",
+          },
+        },
+        partNumbers: { include: { part: true } },
       },
     });
 
-    // 3️⃣ Flatten partNumberIds for frontend
+    // 3️⃣ Flatten partIds for frontend
     res.status(201).json({
       ...newWorkItem,
-      partNumberIds: newWorkItem.partNumbers.map((p) => p.partNumberId),
+      partIds: newWorkItem.partNumbers.map((p) => p.partId),
     });
   } catch (error: any) {
     console.error("Error creating work item:", error);
@@ -315,17 +388,17 @@ export const editWorkItem = async (req: Request, res: Response) => {
   const updates = req.body as WorkItemUpdate;
 
   try {
-    // 1️⃣ Update part numbers first
-    if (Array.isArray(updates.partNumberIds)) {
-      await prisma.workItemToPartNumber.deleteMany({
+    // 1️⃣ Update part links first
+    if (Array.isArray(updates.partIds)) {
+      await prisma.workItemToPart.deleteMany({
         where: { workItemId: Number(workItemId) },
       });
 
-      if (updates.partNumberIds.length > 0) {
-        await prisma.workItemToPartNumber.createMany({
-          data: updates.partNumberIds.map((partNumberId) => ({
+      if (updates.partIds.length > 0) {
+        await prisma.workItemToPart.createMany({
+          data: updates.partIds.map((partId) => ({
             workItemId: Number(workItemId),
-            partNumberId,
+            partId,
           })),
         });
       }
@@ -362,8 +435,15 @@ export const editWorkItem = async (req: Request, res: Response) => {
         issueDetail: true,
         authorUser: true,
         assigneeUser: true,
-        comments: true,
-        partNumbers: { include: { partNumber: true } },
+        comments: {
+          include: {
+            commenterUser: true,
+          },
+          orderBy: {
+            dateCommented: "desc",
+          },
+        },
+        partNumbers: { include: { part: true } },
       },
     });
 
@@ -431,15 +511,22 @@ export const editWorkItem = async (req: Request, res: Response) => {
         issueDetail: true,
         authorUser: true,
         assigneeUser: true,
-        comments: true,
-        partNumbers: { include: { partNumber: true } },
+        comments: {
+          include: {
+            commenterUser: true,
+          },
+          orderBy: {
+            dateCommented: "desc",
+          },
+        },
+        partNumbers: { include: { part: true } },
       },
     });
 
-    // 7️⃣ Flatten partNumberIds for frontend
+    // 7️⃣ Flatten partIds for frontend
     res.json({
       ...finalWorkItem,
-      partNumberIds: finalWorkItem!.partNumbers.map((p) => p.partNumberId),
+      partIds: finalWorkItem!.partNumbers.map((p) => p.partId),
     });
   } catch (error: any) {
     console.error("Error updating work item:", error);
@@ -452,6 +539,137 @@ export const editWorkItem = async (req: Request, res: Response) => {
   }
 };
 
+
+export const getCommentsForWorkItem = async (req: Request, res: Response): Promise<void> => {
+  const { workItemId } = req.params;
+
+  try {
+    const comments = await prisma.comment.findMany({
+      where: { workItemId: Number(workItemId) },
+      include: {
+        commenterUser: true,
+      },
+      orderBy: {
+        dateCommented: "desc",
+      },
+    });
+
+    res.json(comments);
+  } catch (error: any) {
+    console.error("Error fetching comments:", error);
+    res.status(500).json({ message: `Error retrieving comments: ${error.message}` });
+  }
+};
+
+export const createCommentForWorkItem = async (req: Request, res: Response): Promise<void> => {
+  const { workItemId } = req.params;
+  const { text, commenterUserId } = req.body;
+
+  if (!text || typeof text !== "string") {
+    res.status(400).json({ message: "Comment text is required." });
+    return;
+  }
+  if (commenterUserId === undefined) {
+    res.status(400).json({ message: "commenterUserId is required." });
+    return;
+  }
+
+  try {
+    const newComment = await prisma.comment.create({
+      data: {
+        text,
+        commenterUserId: Number(commenterUserId),
+        workItemId: Number(workItemId),
+      },
+      include: {
+        commenterUser: true,
+      },
+    });
+
+    res.status(201).json(newComment);
+  } catch (error: any) {
+    console.error("Error creating comment:", error);
+    res.status(500).json({ message: `Error creating comment: ${error.message}` });
+  }
+};
+
+export const updateCommentForWorkItem = async (req: Request, res: Response): Promise<void> => {
+  const { workItemId, commentId } = req.params;
+  const { text, requesterUserId } = req.body;
+
+  if (!text || typeof text !== "string") {
+    res.status(400).json({ message: "Comment text is required." });
+    return;
+  }
+  if (requesterUserId === undefined) {
+    res.status(400).json({ message: "requesterUserId is required." });
+    return;
+  }
+
+  try {
+    const existingComment = await prisma.comment.findUnique({
+      where: { id: Number(commentId) },
+    });
+
+    if (!existingComment || existingComment.workItemId !== Number(workItemId)) {
+      res.status(404).json({ message: "Comment not found for this work item." });
+      return;
+    }
+
+    if (existingComment.commenterUserId !== Number(requesterUserId)) {
+      res.status(403).json({ message: "You can only edit your own comments." });
+      return;
+    }
+
+    const updatedComment = await prisma.comment.update({
+      where: { id: Number(commentId) },
+      data: { text },
+      include: {
+        commenterUser: true,
+      },
+    });
+
+    res.json(updatedComment);
+  } catch (error: any) {
+    console.error("Error updating comment:", error);
+    res.status(500).json({ message: `Error updating comment: ${error.message}` });
+  }
+};
+
+export const deleteCommentForWorkItem = async (req: Request, res: Response): Promise<void> => {
+  const { workItemId, commentId } = req.params;
+  const { requesterUserId } = req.body;
+
+  if (requesterUserId === undefined) {
+    res.status(400).json({ message: "requesterUserId is required." });
+    return;
+  }
+
+  try {
+    const existingComment = await prisma.comment.findUnique({
+      where: { id: Number(commentId) },
+    });
+
+    if (!existingComment || existingComment.workItemId !== Number(workItemId)) {
+      res.status(404).json({ message: "Comment not found for this work item." });
+      return;
+    }
+
+    if (existingComment.commenterUserId !== Number(requesterUserId)) {
+      res.status(403).json({ message: "You can only delete your own comments." });
+      return;
+    }
+
+    await prisma.comment.delete({
+      where: { id: Number(commentId) },
+    });
+
+    res.status(204).send();
+  } catch (error: any) {
+    console.error("Error deleting comment:", error);
+    res.status(500).json({ message: `Error deleting comment: ${error.message}` });
+  }
+};
 
 
 /**
@@ -470,7 +688,7 @@ export const deleteWorkItem = async (req: Request, res: Response): Promise<void>
       where: { workItemId: Number(workItemId) },
     });
 
-    await prisma.workItemToPartNumber.deleteMany({
+    await prisma.workItemToPart.deleteMany({
       where: { workItemId: Number(workItemId) },
     });
 
