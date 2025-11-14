@@ -8,12 +8,20 @@ export const getUsers = async (
   res: Response
 ): Promise<void> => {
   try {
+    const organizationId = req.auth.organizationId;
     const users = await prisma.user.findMany({
+      where: { organizationId },
       include: {
         disciplineTeam: true,
-        authoredWorkItems: true,
-        assignedWorkItems: true,
-        partNumbers: true,
+        authoredWorkItems: {
+          where: { organizationId },
+        },
+        assignedWorkItems: {
+          where: { organizationId },
+        },
+        partNumbers: {
+          where: { organizationId },
+        },
       },
     });
     res.json(users);
@@ -31,11 +39,12 @@ export const getUserById = async (
   try {
     const { userId } = req.params;
     
-    const user = await prisma.user.findUnique({
-      where: { userId: Number(userId) },
+    const user = await prisma.user.findFirst({
+      where: { userId: Number(userId), organizationId: req.auth.organizationId },
       include: {
         disciplineTeam: true,
         authoredWorkItems: {
+          where: { organizationId: req.auth.organizationId },
           include: {
             program: true,
             dueByMilestone: true,
@@ -43,13 +52,16 @@ export const getUserById = async (
           },
         },
         assignedWorkItems: {
+          where: { organizationId: req.auth.organizationId },
           include: {
             program: true,
             dueByMilestone: true,
             authorUser: true,
           },
         },
-        partNumbers: true,
+        partNumbers: {
+          where: { organizationId: req.auth.organizationId },
+        },
       },
     });
 
@@ -85,9 +97,19 @@ export const createUser = async (
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
-          { email },
-          { username },
-          { cognitoId }
+          { cognitoId },
+          {
+            AND: [
+              { organizationId: req.auth.organizationId },
+              { email }
+            ]
+          },
+          {
+            AND: [
+              { organizationId: req.auth.organizationId },
+              { username }
+            ]
+          }
         ]
       }
     });
@@ -97,6 +119,20 @@ export const createUser = async (
         message: "User with this email, username, or cognitoId already exists" 
       });
       return;
+    }
+
+    if (disciplineTeamId) {
+      const disciplineTeam = await prisma.disciplineTeam.findFirst({
+        where: {
+          id: Number(disciplineTeamId),
+          organizationId: req.auth.organizationId,
+        },
+      });
+
+      if (!disciplineTeam) {
+        res.status(404).json({ message: "Discipline team not found" });
+        return;
+      }
     }
 
     const user = await prisma.user.create({
@@ -109,6 +145,7 @@ export const createUser = async (
         role,
         profilePictureUrl: profilePictureUrl || null,
         disciplineTeamId: disciplineTeamId ? Number(disciplineTeamId) : null,
+        organizationId: req.auth.organizationId,
       },
       include: {
         disciplineTeam: true,
@@ -131,15 +168,46 @@ export const updateUser = async (
     const { userId } = req.params;
     const { name, phoneNumber, role, profilePictureUrl, disciplineTeamId } = req.body;
 
-    const user = await prisma.user.update({
-      where: { userId: Number(userId) },
+    const userIdNumber = Number(userId);
+    if (!Number.isInteger(userIdNumber)) {
+      res.status(400).json({ message: "userId must be a valid integer" });
+      return;
+    }
+
+    if (disciplineTeamId !== undefined && disciplineTeamId !== null) {
+      const disciplineTeam = await prisma.disciplineTeam.findFirst({
+        where: {
+          id: Number(disciplineTeamId),
+          organizationId: req.auth.organizationId,
+        },
+      });
+
+      if (!disciplineTeam) {
+        res.status(404).json({ message: "Discipline team not found" });
+        return;
+      }
+    }
+
+    const updateResult = await prisma.user.updateMany({
+      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
       data: {
         ...(name && { name }),
         ...(phoneNumber && { phoneNumber }),
         ...(role && { role }),
         ...(profilePictureUrl !== undefined && { profilePictureUrl }),
-        ...(disciplineTeamId !== undefined && { disciplineTeamId: disciplineTeamId ? Number(disciplineTeamId) : null }),
+        ...(disciplineTeamId !== undefined && {
+          disciplineTeamId: disciplineTeamId ? Number(disciplineTeamId) : null,
+        }),
       },
+    });
+
+    if (updateResult.count === 0) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
       include: {
         disciplineTeam: true,
       },

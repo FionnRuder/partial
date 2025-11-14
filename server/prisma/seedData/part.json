@@ -7,27 +7,30 @@
     "revisionLevel": "E",
     "assignedUserId": 1,
     "programId": 1,
-    "parentId": null
+    "parentId": null,
+    "organizationId": 1
   },
   {
     "code": "4100000",
     "partName": "Power System",
     "level": 1,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "C",
     "assignedUserId": 3,
     "programId": 1,
-    "parentId": 1
+    "parentId": 1,
+    "organizationId": 1
   },
   {
     "code": "4101000",
     "partName": "Solar Arrays",
     "level": 2,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "E",
     "assignedUserId": 4,
     "programId": 1,
-    "parentId": 2
+    "parentId": 2,
+    "organizationId": 1
   },
   {
     "code": "4101001",
@@ -37,17 +40,19 @@
     "revisionLevel": "F",
     "assignedUserId": 11,
     "programId": 1,
-    "parentId": 3
+    "parentId": 3,
+    "organizationId": 1
   },
   {
     "code": "4101002",
     "partName": "Solar Panel B",
     "level": 3,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "B",
     "assignedUserId": 8,
     "programId": 1,
-    "parentId": 3
+    "parentId": 3,
+    "organizationId": 1
   },
   {
     "code": "4101003",
@@ -57,17 +62,19 @@
     "revisionLevel": "C",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 3
+    "parentId": 3,
+    "organizationId": 1
   },
   {
     "code": "4102000",
     "partName": "Battery Pack",
     "level": 2,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "D",
     "assignedUserId": 10,
     "programId": 1,
-    "parentId": 2
+    "parentId": 2,
+    "organizationId": 1
   },
   {
     "code": "4102001",
@@ -77,17 +84,19 @@
     "revisionLevel": "C",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 7
+    "parentId": 7,
+    "organizationId": 1
   },
   {
     "code": "4102002",
     "partName": "Battery Cell B",
     "level": 3,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "D",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 7
+    "parentId": 7,
+    "organizationId": 1
   },
   {
     "code": "4102003",
@@ -97,27 +106,30 @@
     "revisionLevel": "E",
     "assignedUserId": 15,
     "programId": 1,
-    "parentId": 7
+    "parentId": 7,
+    "organizationId": 1
   },
   {
     "code": "4103000",
     "partName": "Power Conditioning",
     "level": 2,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "F",
     "assignedUserId": 6,
     "programId": 1,
-    "parentId": 2
+    "parentId": 2,
+    "organizationId": 1
   },
   {
     "code": "4103001",
     "partName": "DC-DC Converter",
     "level": 3,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "E",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 11
+    "parentId": 11,
+    "organizationId": 1
   },
   {
     "code": "4103002",
@@ -127,7 +139,8 @@
     "revisionLevel": "B",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 11
+    "parentId": 11,
+    "organizationId": 1
   },
   {
     "code": "4200000",
@@ -137,17 +150,19 @@
     "revisionLevel": "B",
     "assignedUserId": 2,
     "programId": 1,
-    "parentId": 1
+    "parentId": 1,
+    "organizationId": 1
   },
   {
     "code": "4201000",
     "partName": "Sensors",
     "level": 2,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "B",
     "assignedUserId": 11,
     "programId": 1,
-    "parentId": 14
+    "parentId": 14,
+    "organizationId": 1
   },
   {
     "code": "4201001",
@@ -157,17 +172,19 @@
     "revisionLevel": "C",
     "assignedUserId": 12,
     "programId": 1,
-    "parentId": 15
+    "parentId": 15,
+    "organizationId": 1
   },
   {
     "code": "4201002",
     "partName": "Sun Sensor",
     "level": 3,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "dash",
     "assignedUserId": 12,
     "programId": 1,
-    "parentId": 15
+    "parentId": 15,
+    "organizationId": 1
   },
   {
     "code": "4201003",
@@ -177,27 +194,30 @@
     "revisionLevel": "D",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 15
+    "parentId": 15,
+    "organizationId": 1
   },
   {
     "code": "4202000",
     "partName": "Actuators",
     "level": 2,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "C",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 14
+    "parentId": 14,
+    "organizationId": 1
   },
   {
     "code": "4202001",
     "partName": "Reaction Wheel",
     "level": 3,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "F",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 19
+    "parentId": 19,
+    "organizationId": 1
   },
   {
     "code": "4202002",
@@ -207,17 +227,19 @@
     "revisionLevel": "B",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 19
+    "parentId": 19,
+    "organizationId": 1
   },
   {
     "code": "4203000",
     "partName": "Control Electronics",
     "level": 2,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "C",
     "assignedUserId": 16,
     "programId": 1,
-    "parentId": 14
+    "parentId": 14,
+    "organizationId": 1
   },
   {
     "code": "4203001",
@@ -227,17 +249,19 @@
     "revisionLevel": "C",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 22
+    "parentId": 22,
+    "organizationId": 1
   },
   {
     "code": "4203002",
     "partName": "Inertial Measurement Unit (IMU)",
     "level": 3,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "D",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 22
+    "parentId": 22,
+    "organizationId": 1
   },
   {
     "code": "4300000",
@@ -247,7 +271,8 @@
     "revisionLevel": "B",
     "assignedUserId": 3,
     "programId": 1,
-    "parentId": 1
+    "parentId": 1,
+    "organizationId": 1
   },
   {
     "code": "4301000",
@@ -257,27 +282,30 @@
     "revisionLevel": "dash",
     "assignedUserId": 15,
     "programId": 1,
-    "parentId": 25
+    "parentId": 25,
+    "organizationId": 1
   },
   {
     "code": "4301001",
     "partName": "X-Band Transmitter",
     "level": 3,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "A",
     "assignedUserId": 18,
     "programId": 1,
-    "parentId": 26
+    "parentId": 26,
+    "organizationId": 1
   },
   {
     "code": "4301002",
     "partName": "S-Band Transmitter",
     "level": 3,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "D",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 26
+    "parentId": 26,
+    "organizationId": 1
   },
   {
     "code": "4302000",
@@ -287,27 +315,30 @@
     "revisionLevel": "dash",
     "assignedUserId": 16,
     "programId": 1,
-    "parentId": 25
+    "parentId": 25,
+    "organizationId": 1
   },
   {
     "code": "4302001",
     "partName": "X-Band Receiver",
     "level": 3,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "C",
     "assignedUserId": 19,
     "programId": 1,
-    "parentId": 29
+    "parentId": 29,
+    "organizationId": 1
   },
   {
     "code": "4302002",
     "partName": "S-Band Receiver",
     "level": 3,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "B",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 29
+    "parentId": 29,
+    "organizationId": 1
   },
   {
     "code": "4303000",
@@ -317,7 +348,8 @@
     "revisionLevel": "E",
     "assignedUserId": 3,
     "programId": 1,
-    "parentId": 25
+    "parentId": 25,
+    "organizationId": 1
   },
   {
     "code": "4303001",
@@ -327,27 +359,30 @@
     "revisionLevel": "D",
     "assignedUserId": 17,
     "programId": 1,
-    "parentId": 32
+    "parentId": 32,
+    "organizationId": 1
   },
   {
     "code": "4303002",
     "partName": "Low Gain Antenna",
     "level": 3,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "dash",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 32
+    "parentId": 32,
+    "organizationId": 1
   },
   {
     "code": "4303003",
     "partName": "Antenna Gimbal",
     "level": 3,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "C",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 32
+    "parentId": 32,
+    "organizationId": 1
   },
   {
     "code": "4400000",
@@ -357,17 +392,19 @@
     "revisionLevel": "dash",
     "assignedUserId": 3,
     "programId": 1,
-    "parentId": 1
+    "parentId": 1,
+    "organizationId": 1
   },
   {
     "code": "4401000",
     "partName": "Passive Components",
     "level": 2,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "D",
     "assignedUserId": 15,
     "programId": 1,
-    "parentId": 36
+    "parentId": 36,
+    "organizationId": 1
   },
   {
     "code": "4401001",
@@ -377,7 +414,8 @@
     "revisionLevel": "D",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 37
+    "parentId": 37,
+    "organizationId": 1
   },
   {
     "code": "4401002",
@@ -387,27 +425,30 @@
     "revisionLevel": "A",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 37
+    "parentId": 37,
+    "organizationId": 1
   },
   {
     "code": "4402000",
     "partName": "Active Components",
     "level": 2,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "B",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 36
+    "parentId": 36,
+    "organizationId": 1
   },
   {
     "code": "4402001",
     "partName": "Heater",
     "level": 3,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "C",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 40
+    "parentId": 40,
+    "organizationId": 1
   },
   {
     "code": "4402002",
@@ -417,17 +458,19 @@
     "revisionLevel": "B",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 40
+    "parentId": 40,
+    "organizationId": 1
   },
   {
     "code": "4402003",
     "partName": "Thermal Radiator",
     "level": 3,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "B",
     "assignedUserId": 15,
     "programId": 1,
-    "parentId": 40
+    "parentId": 40,
+    "organizationId": 1
   },
   {
     "code": "4500000",
@@ -437,27 +480,30 @@
     "revisionLevel": "C",
     "assignedUserId": 2,
     "programId": 1,
-    "parentId": 1
+    "parentId": 1,
+    "organizationId": 1
   },
   {
     "code": "4501000",
     "partName": "Onboard Computer",
     "level": 2,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "F",
     "assignedUserId": 9,
     "programId": 1,
-    "parentId": 44
+    "parentId": 44,
+    "organizationId": 1
   },
   {
     "code": "4501001",
     "partName": "Flight Computer",
     "level": 3,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "B",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 45
+    "parentId": 45,
+    "organizationId": 1
   },
   {
     "code": "4501002",
@@ -467,17 +513,19 @@
     "revisionLevel": "D",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 45
+    "parentId": 45,
+    "organizationId": 1
   },
   {
     "code": "4502000",
     "partName": "Memory",
     "level": 2,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "E",
     "assignedUserId": 7,
     "programId": 1,
-    "parentId": 44
+    "parentId": 44,
+    "organizationId": 1
   },
   {
     "code": "4502001",
@@ -487,17 +535,19 @@
     "revisionLevel": "dash",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 48
+    "parentId": 48,
+    "organizationId": 1
   },
   {
     "code": "4502002",
     "partName": "EEPROM Module",
     "level": 3,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "F",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 48
+    "parentId": 48,
+    "organizationId": 1
   },
   {
     "code": "4600000",
@@ -507,17 +557,19 @@
     "revisionLevel": "D",
     "assignedUserId": 1,
     "programId": 1,
-    "parentId": 1
+    "parentId": 1,
+    "organizationId": 1
   },
   {
     "code": "4601000",
     "partName": "Main Structure",
     "level": 2,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "A",
     "assignedUserId": 5,
     "programId": 1,
-    "parentId": 51
+    "parentId": 51,
+    "organizationId": 1
   },
   {
     "code": "4601001",
@@ -527,17 +579,19 @@
     "revisionLevel": "E",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 52
+    "parentId": 52,
+    "organizationId": 1
   },
   {
     "code": "4601002",
     "partName": "Mounting Bracket",
     "level": 3,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "C",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 52
+    "parentId": 52,
+    "organizationId": 1
   },
   {
     "code": "4602000",
@@ -547,17 +601,19 @@
     "revisionLevel": "A",
     "assignedUserId": 3,
     "programId": 1,
-    "parentId": 51
+    "parentId": 51,
+    "organizationId": 1
   },
   {
     "code": "4602001",
     "partName": "Antenna Deployment Mechanism",
     "level": 3,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "C",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 55
+    "parentId": 55,
+    "organizationId": 1
   },
   {
     "code": "4602002",
@@ -567,27 +623,30 @@
     "revisionLevel": "E",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 55
+    "parentId": 55,
+    "organizationId": 1
   },
   {
     "code": "4700000",
     "partName": "Propulsion System",
     "level": 1,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "B",
     "assignedUserId": 3,
     "programId": 1,
-    "parentId": 1
+    "parentId": 1,
+    "organizationId": 1
   },
   {
     "code": "4701000",
     "partName": "Thrusters",
     "level": 2,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "E",
     "assignedUserId": 1,
     "programId": 1,
-    "parentId": 58
+    "parentId": 58,
+    "organizationId": 1
   },
   {
     "code": "4701001",
@@ -597,27 +656,30 @@
     "revisionLevel": "E",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 59
+    "parentId": 59,
+    "organizationId": 1
   },
   {
     "code": "4701002",
     "partName": "Ion Thruster",
     "level": 3,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "F",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 59
+    "parentId": 59,
+    "organizationId": 1
   },
   {
     "code": "4702000",
     "partName": "Propellant Tank",
     "level": 2,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "F",
     "assignedUserId": 2,
     "programId": 1,
-    "parentId": 58
+    "parentId": 58,
+    "organizationId": 1
   },
   {
     "code": "4702001",
@@ -627,7 +689,8 @@
     "revisionLevel": "A",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 62
+    "parentId": 62,
+    "organizationId": 1
   },
   {
     "code": "4702002",
@@ -637,27 +700,30 @@
     "revisionLevel": "A",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 62
+    "parentId": 62,
+    "organizationId": 1
   },
   {
     "code": "4703000",
     "partName": "Feed System",
     "level": 2,
-    "state": "Under Review",
+    "state": "UnderReview",
     "revisionLevel": "D",
     "assignedUserId": 7,
     "programId": 1,
-    "parentId": 58
+    "parentId": 58,
+    "organizationId": 1
   },
   {
     "code": "4703001",
     "partName": "Pressure Regulator",
     "level": 3,
-    "state": "In Work",
+    "state": "InWork",
     "revisionLevel": "B",
     "assignedUserId": 13,
     "programId": 1,
-    "parentId": 65
+    "parentId": 65,
+    "organizationId": 1
   },
   {
     "code": "4703002",
@@ -667,7 +733,8 @@
     "revisionLevel": "E",
     "assignedUserId": 14,
     "programId": 1,
-    "parentId": 65
+    "parentId": 65,
+    "organizationId": 1
   },
   {
     "code": "4703003",
@@ -677,6 +744,557 @@
     "revisionLevel": "C",
     "assignedUserId": 15,
     "programId": 1,
-    "parentId": 65
+    "parentId": 65,
+    "organizationId": 1
+  },
+  {
+    "code": "5000000",
+    "partName": "Next-Gen Satellite Vehicle",
+    "level": 0,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 21,
+    "programId": 2,
+    "parentId": null,
+    "organizationId": 1
+  },
+  {
+    "code": "5100000",
+    "partName": "Power Module",
+    "level": 1,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 22,
+    "programId": 2,
+    "parentId": 69,
+    "organizationId": 1
+  },
+  {
+    "code": "5101000",
+    "partName": "Battery Deck",
+    "level": 2,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 22,
+    "programId": 2,
+    "parentId": 70,
+    "organizationId": 1
+  },
+  {
+    "code": "5101001",
+    "partName": "Battery String Alpha",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 22,
+    "programId": 2,
+    "parentId": 71,
+    "organizationId": 1
+  },
+  {
+    "code": "5101002",
+    "partName": "Battery String Beta",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "B",
+    "assignedUserId": 24,
+    "programId": 2,
+    "parentId": 71,
+    "organizationId": 1
+  },
+  {
+    "code": "5101003",
+    "partName": "Battery Thermal Plate",
+    "level": 3,
+    "state": "UnderReview",
+    "revisionLevel": "A",
+    "assignedUserId": 27,
+    "programId": 2,
+    "parentId": 71,
+    "organizationId": 1
+  },
+  {
+    "code": "5102000",
+    "partName": "Solar Array Interface",
+    "level": 2,
+    "state": "UnderReview",
+    "revisionLevel": "B",
+    "assignedUserId": 24,
+    "programId": 2,
+    "parentId": 70,
+    "organizationId": 1
+  },
+  {
+    "code": "5102001",
+    "partName": "Array Harness Assembly",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 24,
+    "programId": 2,
+    "parentId": 75,
+    "organizationId": 1
+  },
+  {
+    "code": "5102002",
+    "partName": "Deployment Controller",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "B",
+    "assignedUserId": 27,
+    "programId": 2,
+    "parentId": 75,
+    "organizationId": 1
+  },
+  {
+    "code": "5103000",
+    "partName": "Power Regulation Unit",
+    "level": 2,
+    "state": "Implementation",
+    "revisionLevel": "A",
+    "assignedUserId": 23,
+    "programId": 2,
+    "parentId": 70,
+    "organizationId": 1
+  },
+  {
+    "code": "5103001",
+    "partName": "Primary DC-DC Converter",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 23,
+    "programId": 2,
+    "parentId": 78,
+    "organizationId": 1
+  },
+  {
+    "code": "5103002",
+    "partName": "Redundant DC-DC Converter",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 23,
+    "programId": 2,
+    "parentId": 78,
+    "organizationId": 1
+  },
+  {
+    "code": "5200000",
+    "partName": "Avionics Suite",
+    "level": 1,
+    "state": "UnderReview",
+    "revisionLevel": "B",
+    "assignedUserId": 23,
+    "programId": 2,
+    "parentId": 69,
+    "organizationId": 1
+  },
+  {
+    "code": "5201000",
+    "partName": "Guidance Computer",
+    "level": 2,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 23,
+    "programId": 2,
+    "parentId": 81,
+    "organizationId": 1
+  },
+  {
+    "code": "5201001",
+    "partName": "Processor Board",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 23,
+    "programId": 2,
+    "parentId": 82,
+    "organizationId": 1
+  },
+  {
+    "code": "5201002",
+    "partName": "Redundant Processor Board",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "B",
+    "assignedUserId": 26,
+    "programId": 2,
+    "parentId": 82,
+    "organizationId": 1
+  },
+  {
+    "code": "5202000",
+    "partName": "Sensor Interface Unit",
+    "level": 2,
+    "state": "Implementation",
+    "revisionLevel": "A",
+    "assignedUserId": 26,
+    "programId": 2,
+    "parentId": 81,
+    "organizationId": 1
+  },
+  {
+    "code": "5202001",
+    "partName": "Star Tracker Interface",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 26,
+    "programId": 2,
+    "parentId": 85,
+    "organizationId": 1
+  },
+  {
+    "code": "5202002",
+    "partName": "Sun Sensor Interface",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 26,
+    "programId": 2,
+    "parentId": 85,
+    "organizationId": 1
+  },
+  {
+    "code": "5203000",
+    "partName": "Data Handling Network",
+    "level": 2,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 27,
+    "programId": 2,
+    "parentId": 81,
+    "organizationId": 1
+  },
+  {
+    "code": "5203001",
+    "partName": "Time Synchronization Module",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 27,
+    "programId": 2,
+    "parentId": 88,
+    "organizationId": 1
+  },
+  {
+    "code": "5203002",
+    "partName": "Mass Memory Unit",
+    "level": 3,
+    "state": "UnderReview",
+    "revisionLevel": "B",
+    "assignedUserId": 23,
+    "programId": 2,
+    "parentId": 88,
+    "organizationId": 1
+  },
+  {
+    "code": "5203003",
+    "partName": "Telemetry Router",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 27,
+    "programId": 2,
+    "parentId": 88,
+    "organizationId": 1
+  },
+  {
+    "code": "5300000",
+    "partName": "Propulsion Section",
+    "level": 1,
+    "state": "InWork",
+    "revisionLevel": "B",
+    "assignedUserId": 25,
+    "programId": 2,
+    "parentId": 69,
+    "organizationId": 1
+  },
+  {
+    "code": "5301000",
+    "partName": "Main Thruster Assembly",
+    "level": 2,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 25,
+    "programId": 2,
+    "parentId": 92,
+    "organizationId": 1
+  },
+  {
+    "code": "5301001",
+    "partName": "Thruster Chamber",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 25,
+    "programId": 2,
+    "parentId": 93,
+    "organizationId": 1
+  },
+  {
+    "code": "5301002",
+    "partName": "Injector Plate",
+    "level": 3,
+    "state": "UnderReview",
+    "revisionLevel": "B",
+    "assignedUserId": 28,
+    "programId": 2,
+    "parentId": 93,
+    "organizationId": 1
+  },
+  {
+    "code": "5301003",
+    "partName": "Nozzle Extension",
+    "level": 3,
+    "state": "Implementation",
+    "revisionLevel": "A",
+    "assignedUserId": 25,
+    "programId": 2,
+    "parentId": 93,
+    "organizationId": 1
+  },
+  {
+    "code": "5302000",
+    "partName": "Feed System",
+    "level": 2,
+    "state": "UnderReview",
+    "revisionLevel": "B",
+    "assignedUserId": 28,
+    "programId": 2,
+    "parentId": 92,
+    "organizationId": 1
+  },
+  {
+    "code": "5302001",
+    "partName": "Pressurant Tank",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 28,
+    "programId": 2,
+    "parentId": 97,
+    "organizationId": 1
+  },
+  {
+    "code": "5302002",
+    "partName": "Flow Control Valve",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "B",
+    "assignedUserId": 25,
+    "programId": 2,
+    "parentId": 97,
+    "organizationId": 1
+  },
+  {
+    "code": "5302003",
+    "partName": "Line Filter Assembly",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 28,
+    "programId": 2,
+    "parentId": 97,
+    "organizationId": 1
+  },
+  {
+    "code": "5303000",
+    "partName": "Electric Propulsion Unit",
+    "level": 2,
+    "state": "Implementation",
+    "revisionLevel": "A",
+    "assignedUserId": 25,
+    "programId": 2,
+    "parentId": 92,
+    "organizationId": 1
+  },
+  {
+    "code": "5303001",
+    "partName": "Hall Thruster",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 25,
+    "programId": 2,
+    "parentId": 101,
+    "organizationId": 1
+  },
+  {
+    "code": "5303002",
+    "partName": "Power Processing Unit",
+    "level": 3,
+    "state": "UnderReview",
+    "revisionLevel": "B",
+    "assignedUserId": 24,
+    "programId": 2,
+    "parentId": 101,
+    "organizationId": 1
+  },
+  {
+    "code": "5400000",
+    "partName": "Communications Payload",
+    "level": 1,
+    "state": "UnderReview",
+    "revisionLevel": "A",
+    "assignedUserId": 24,
+    "programId": 2,
+    "parentId": 69,
+    "organizationId": 1
+  },
+  {
+    "code": "5401000",
+    "partName": "High Gain Antenna System",
+    "level": 2,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 24,
+    "programId": 2,
+    "parentId": 104,
+    "organizationId": 1
+  },
+  {
+    "code": "5401001",
+    "partName": "Reflector Dish",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 24,
+    "programId": 2,
+    "parentId": 105,
+    "organizationId": 1
+  },
+  {
+    "code": "5401002",
+    "partName": "Gimbal Drive",
+    "level": 3,
+    "state": "Implementation",
+    "revisionLevel": "A",
+    "assignedUserId": 27,
+    "programId": 2,
+    "parentId": 105,
+    "organizationId": 1
+  },
+  {
+    "code": "5401003",
+    "partName": "Pointing Sensor",
+    "level": 3,
+    "state": "UnderReview",
+    "revisionLevel": "B",
+    "assignedUserId": 23,
+    "programId": 2,
+    "parentId": 105,
+    "organizationId": 1
+  },
+  {
+    "code": "5402000",
+    "partName": "Transceiver Suite",
+    "level": 2,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 27,
+    "programId": 2,
+    "parentId": 104,
+    "organizationId": 1
+  },
+  {
+    "code": "5402001",
+    "partName": "Ka-Band Transmitter",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 27,
+    "programId": 2,
+    "parentId": 109,
+    "organizationId": 1
+  },
+  {
+    "code": "5402002",
+    "partName": "S-Band Uplink Receiver",
+    "level": 3,
+    "state": "UnderReview",
+    "revisionLevel": "B",
+    "assignedUserId": 23,
+    "programId": 2,
+    "parentId": 109,
+    "organizationId": 1
+  },
+  {
+    "code": "5402003",
+    "partName": "Signal Conditioning Module",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 27,
+    "programId": 2,
+    "parentId": 109,
+    "organizationId": 1
+  },
+  {
+    "code": "5500000",
+    "partName": "Thermal Control Assembly",
+    "level": 1,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 27,
+    "programId": 2,
+    "parentId": 69,
+    "organizationId": 1
+  },
+  {
+    "code": "5501000",
+    "partName": "Radiator Panel",
+    "level": 2,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 27,
+    "programId": 2,
+    "parentId": 113,
+    "organizationId": 1
+  },
+  {
+    "code": "5501001",
+    "partName": "Deployable Radiator Leaf",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "A",
+    "assignedUserId": 27,
+    "programId": 2,
+    "parentId": 114,
+    "organizationId": 1
+  },
+  {
+    "code": "5501002",
+    "partName": "Heat Pipe Manifold",
+    "level": 3,
+    "state": "InWork",
+    "revisionLevel": "B",
+    "assignedUserId": 28,
+    "programId": 2,
+    "parentId": 114,
+    "organizationId": 1
+  },
+  {
+    "code": "5502000",
+    "partName": "Active Thermal Control",
+    "level": 2,
+    "state": "UnderReview",
+    "revisionLevel": "B",
+    "assignedUserId": 28,
+    "programId": 2,
+    "parentId": 113,
+    "organizationId": 1
+  },
+  {
+    "code": "5502001",
+    "partName": "Pump Assembly",
+    "level": 3,
+    "state": "Implementation",
+    "revisionLevel": "A",
+    "assignedUserId": 28,
+    "programId": 2,
+    "parentId": 117,
+    "organizationId": 1
   }
 ]

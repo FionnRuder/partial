@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import ModalNewWorkItem from '@/components/ModalNewWorkItem';
 import BurndownChart from '@/components/BurndownChart';
 import { dataGridClassNames, dataGridSxStyles } from '@/lib/utils';
-import { WorkItem, WorkItemType, Priority, Status, DeliverableType, DeliverableTypeLabels, useGetWorkItemsByUserQuery, useGetTeamsQuery, useGetUsersQuery, useGetProgramsQuery } from '@/state/api';
+import { WorkItem, WorkItemType, Priority, Status, DeliverableType, DeliverableTypeLabels, useGetWorkItemsQuery, useGetTeamsQuery, useGetUsersQuery, useGetProgramsQuery } from '@/state/api';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import React, { useState } from 'react';
 import { format } from 'date-fns';
@@ -151,11 +151,8 @@ const DeliverablesPage = () => {
     const [ selectedTeamId, setSelectedTeamId ] = useState<number | "all">("all");
     const [ selectedProgramId, setSelectedProgramId ] = useState<number | "all">("all");
     const [ selectedDeliverableType, setSelectedDeliverableType ] = useState<DeliverableType | "all">("all");
-    
-    const userId = 12; // HARDCODED BEFORE WE HAVE USER AUTHENTICATION COGNITO BUILT IN
-    const { data: workItems, isLoading, isError: isTasksError } = useGetWorkItemsByUserQuery(userId || 0, {
-        skip: userId === null
-    });
+
+    const { data: workItems, isLoading, isError: isWorkItemsError } = useGetWorkItemsQuery();
     const { data: teams } = useGetTeamsQuery();
     const { data: users } = useGetUsersQuery();
     const { data: programs } = useGetProgramsQuery();
@@ -187,7 +184,7 @@ const DeliverablesPage = () => {
         ? teamFilteredWorkItems?.filter((item) => item.status !== Status.Completed)
         : teamFilteredWorkItems;
 
-    if (isTasksError || !workItems) return <div>Error fetching work items.</div>
+    if (isWorkItemsError) return <div>Error fetching work items.</div>
 
     // Priority filtering for the table
     const filteredWorkItemsByPriority =

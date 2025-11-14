@@ -32,7 +32,24 @@ const useWorkItemData = (parts: Part[]) => {
     
     setLoadingParts(prev => new Set(prev).add(partId));
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/workItems?partId=${partId}`);
+      const headers: HeadersInit = {};
+      if (typeof window !== 'undefined') {
+        const storedUser = window.localStorage.getItem('authUser');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            if (parsedUser?.userId) {
+              headers['x-user-id'] = String(parsedUser.userId);
+            }
+          } catch (error) {
+            console.warn('Failed to parse authUser from localStorage', error);
+          }
+        }
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/workItems?partId=${partId}`, {
+        headers,
+      });
       const workItems = await response.json();
       setWorkItemData(prev => new Map(prev).set(partId, workItems));
     } catch (error) {

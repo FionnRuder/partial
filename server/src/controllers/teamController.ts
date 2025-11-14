@@ -5,15 +5,22 @@ const prisma = new PrismaClient();
 
 export const getTeams = async (req: Request, res: Response): Promise<void> => {
   try {
-    const teams = await prisma.disciplineTeam.findMany();
+    const teams = await prisma.disciplineTeam.findMany({
+      where: {
+        organizationId: req.auth.organizationId,
+      },
+    });
 
     const teamsWithUsernames = await Promise.all(
       teams.map(async (team: any) => {
         let teamManager = null;
         
         if (team.teamManagerUserId) {
-          teamManager = await prisma.user.findUnique({
-            where: { userId: team.teamManagerUserId },
+          teamManager = await prisma.user.findFirst({
+            where: {
+              userId: team.teamManagerUserId,
+              organizationId: req.auth.organizationId,
+            },
             select: { username: true, name: true },
           });
         }
@@ -40,11 +47,29 @@ export const createTeam = async (
 ): Promise<void> => {
   const { name, description, teamManagerUserId } = req.body;
   try {
+    if (teamManagerUserId !== undefined && teamManagerUserId !== null) {
+      const teamManager = await prisma.user.findFirst({
+        where: {
+          userId: Number(teamManagerUserId),
+          organizationId: req.auth.organizationId,
+        },
+      });
+
+      if (!teamManager) {
+        res.status(404).json({ message: "Team manager not found" });
+        return;
+      }
+    }
+
     const newTeam = await prisma.disciplineTeam.create({
       data: {
+        organizationId: req.auth.organizationId,
         name,
         description,
-        teamManagerUserId,
+        teamManagerUserId:
+          teamManagerUserId !== undefined && teamManagerUserId !== null
+            ? Number(teamManagerUserId)
+            : null,
       },
     });
     res.status(201).json(newTeam);

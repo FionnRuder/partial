@@ -12,6 +12,8 @@ import searchRoutes from "./routes/searchRoutes";
 import teamRoutes from "./routes/teamRoutes";
 import userRoutes from "./routes/userRoutes";
 import workItemRoutes from "./routes/workItemRoutes";
+import onboardingRoutes from "./routes/onboardingRoutes";
+import { authenticate } from "./middleware/authenticate";
 
 
 /* CONFIGURATIONS */
@@ -29,6 +31,12 @@ app.use(cors());
 app.get("/", (req, res) => {
   res.send("This is home route");
 });
+
+// Onboarding routes (no authentication required)
+app.use("/onboarding", onboardingRoutes);
+
+// All other routes require authentication
+app.use(authenticate);
 
 app.use("/milestones", milestoneRoutes);
 app.use("/parts", partRoutes);

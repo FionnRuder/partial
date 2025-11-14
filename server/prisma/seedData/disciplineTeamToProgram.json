@@ -30,5 +30,17 @@
   {
     "disciplineTeamId": 4,
     "programId": 2
+  },
+  {
+    "disciplineTeamId": 5,
+    "programId": 2
+  },
+  {
+    "disciplineTeamId": 6,
+    "programId": 2
+  },
+  {
+    "disciplineTeamId": 7,
+    "programId": 2
   }
 ]

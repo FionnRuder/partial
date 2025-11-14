@@ -11,6 +11,7 @@ export const search = async (req: Request, res: Response): Promise<void> => {
     // 🔎 Search across all WorkItems
     const workItems = await prisma.workItem.findMany({
       where: {
+        organizationId: req.auth.organizationId,
         OR: [
           { title: { contains: query, mode: "insensitive" } },
           { description: { contains: query, mode: "insensitive" } },
@@ -33,6 +34,7 @@ export const search = async (req: Request, res: Response): Promise<void> => {
     // 🔎 Other entities
     const programs = await prisma.program.findMany({
       where: {
+        organizationId: req.auth.organizationId,
         OR: [
           { name: { contains: query, mode: "insensitive" } },
           { description: { contains: query, mode: "insensitive" } },
@@ -52,6 +54,7 @@ export const search = async (req: Request, res: Response): Promise<void> => {
 
     const users = await prisma.user.findMany({
       where: {
+        organizationId: req.auth.organizationId,
         OR: [
           { username: { contains: query, mode: "insensitive" } },
           { name: { contains: query, mode: "insensitive" } },
@@ -69,6 +72,7 @@ export const search = async (req: Request, res: Response): Promise<void> => {
 
     const milestones = await prisma.milestone.findMany({
       where: {
+        organizationId: req.auth.organizationId,
         OR: [
           { name: { contains: query, mode: "insensitive" } },
           { description: { contains: query, mode: "insensitive" } },
@@ -82,6 +86,7 @@ export const search = async (req: Request, res: Response): Promise<void> => {
 
     const parts = await prisma.part.findMany({
       where: {
+        organizationId: req.auth.organizationId,
         OR: [
           { code: { contains: query, mode: "insensitive" } },
           { partName: { contains: query, mode: "insensitive" } },

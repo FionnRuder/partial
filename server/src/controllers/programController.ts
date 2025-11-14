@@ -9,6 +9,9 @@ export const getPrograms = async (
 ): Promise<void> => {
   try {
     const programs = await prisma.program.findMany({
+      where: {
+        organizationId: req.auth.organizationId,
+      },
       include: {
         partNumbers: true,
         disciplineTeams: {
@@ -34,11 +37,34 @@ export const createProgram = async (
 ): Promise<void> => {
   const { name, description, programManagerUserId, startDate, endDate } = req.body;
   try {
+    if (!name || !description || !startDate || !endDate) {
+      res.status(400).json({ message: "Missing required fields" });
+      return;
+    }
+
+    if (programManagerUserId !== undefined && programManagerUserId !== null) {
+      const programManager = await prisma.user.findFirst({
+        where: {
+          userId: Number(programManagerUserId),
+          organizationId: req.auth.organizationId,
+        },
+      });
+
+      if (!programManager) {
+        res.status(404).json({ message: "Program manager not found" });
+        return;
+      }
+    }
+
     const newProgram = await prisma.program.create({
       data: {
+        organizationId: req.auth.organizationId,
         name,
         description,
-        programManagerUserId,
+        programManagerUserId:
+          programManagerUserId !== undefined && programManagerUserId !== null
+            ? Number(programManagerUserId)
+            : null,
         startDate,
         endDate,
       },
@@ -59,14 +85,56 @@ export const updateProgram = async (
   const { name, description, programManagerUserId, startDate, endDate } = req.body;
 
   try {
-    const updatedProgram = await prisma.program.update({
-      where: { id: Number(programId) },
+    const programIdNumber = Number(programId);
+    if (!Number.isInteger(programIdNumber)) {
+      res.status(400).json({ message: "programId must be a valid integer" });
+      return;
+    }
+
+    if (programManagerUserId !== undefined && programManagerUserId !== null) {
+      const programManager = await prisma.user.findFirst({
+        where: {
+          userId: Number(programManagerUserId),
+          organizationId: req.auth.organizationId,
+        },
+      });
+
+      if (!programManager) {
+        res.status(404).json({ message: "Program manager not found" });
+        return;
+      }
+    }
+
+    const updateResult = await prisma.program.updateMany({
+      where: { id: programIdNumber, organizationId: req.auth.organizationId },
       data: {
         ...(name !== undefined && { name }),
         ...(description !== undefined && { description }),
-        ...(programManagerUserId !== undefined && { programManagerUserId }),
+        ...(programManagerUserId !== undefined && {
+          programManagerUserId:
+            programManagerUserId !== null ? Number(programManagerUserId) : null,
+        }),
         ...(startDate !== undefined && { startDate }),
         ...(endDate !== undefined && { endDate }),
+      },
+    });
+
+    if (updateResult.count === 0) {
+      res.status(404).json({ message: "Program not found" });
+      return;
+    }
+
+    const updatedProgram = await prisma.program.findUnique({
+      where: { id: programIdNumber },
+      include: {
+        partNumbers: true,
+        disciplineTeams: {
+          include: {
+            disciplineTeam: true,
+          },
+        },
+        milestones: true,
+        workItems: true,
       },
     });
 

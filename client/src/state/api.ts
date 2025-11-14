@@ -139,6 +139,7 @@ export interface DisciplineTeamToProgram {
 
 export interface Program {
   id: number;
+  organizationId: number;
   name: string;
   description?: string;
   programManagerUserId?: number;
@@ -153,6 +154,7 @@ export interface Program {
 
 export interface User {
   userId: number;
+  organizationId: number;
   cognitoId: string;
   username: string;
   name: string;
@@ -172,6 +174,7 @@ export interface User {
 
 export interface Milestone {
   id: number;
+  organizationId: number;
   name: string;
   description: string;
   date: string;
@@ -197,6 +200,7 @@ export const PartStateLabels: Record<PartState, string> = {
 
 export interface Part {
   id: number;
+  organizationId: number;
   code: string;
   partName: string;
   level: number;
@@ -215,6 +219,7 @@ export interface Part {
 
 export interface WorkItem {
   id: number;
+  organizationId: number;
   workItemType: WorkItemType;
   title: string;
   description: string;
@@ -266,6 +271,7 @@ export interface WorkItemToPart {
 
 export interface Attachment {
   id: number;
+  organizationId: number;
   fileUrl: string;
   fileName: string;
   dateAttached: string;
@@ -275,6 +281,7 @@ export interface Attachment {
 
 export interface Comment {
   id: number;
+  organizationId: number;
   text: string;
   dateCommented: string;
   commenterUserId: number;
@@ -284,6 +291,7 @@ export interface Comment {
 
 export interface DisciplineTeam {
   id: number;
+  organizationId: number;
   name: string;
   description: string;
   teamManagerUserId?: number;
@@ -364,7 +372,31 @@ export interface WorkItemEditInput {
 =================== */
 
 export const api = createApi({
-  baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+    prepareHeaders: (headers) => {
+      if (typeof window !== "undefined") {
+        const storedUser = window.localStorage.getItem("authUser");
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            if (parsedUser?.userId) {
+              const userId = String(parsedUser.userId);
+              headers.set("x-user-id", userId);
+              console.log("Setting x-user-id header:", userId, "from user:", parsedUser);
+            } else {
+              console.warn("authUser in localStorage missing userId:", parsedUser);
+            }
+          } catch (error) {
+            console.warn("Failed to parse authUser from localStorage", error);
+          }
+        } else {
+          console.warn("No authUser found in localStorage");
+        }
+      }
+      return headers;
+    },
+  }),
   reducerPath: "api",
   tagTypes: ["WorkItems", "Milestones", "Parts", "Programs", "Teams", "Users", "Comments"],
   endpoints: (build) => ({

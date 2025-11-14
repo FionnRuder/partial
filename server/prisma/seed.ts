@@ -9,7 +9,9 @@ async function deleteAllData(orderedFileNames: string[]) {
     return modelName.charAt(0).toUpperCase() + modelName.slice(1);
   });
 
-  for (const modelName of modelNames) {
+  const deletionOrder = [...modelNames].reverse();
+
+  for (const modelName of deletionOrder) {
     const model: any = prisma[modelName as keyof typeof prisma];
     try {
       await model.deleteMany({});
@@ -20,10 +22,36 @@ async function deleteAllData(orderedFileNames: string[]) {
   }
 }
 
+async function resetSequences() {
+  const sequenceNames = [
+    '"Organization_id_seq"',
+    '"Attachment_id_seq"',
+    '"Comment_id_seq"',
+    '"WorkItemToPart_id_seq"',
+    '"WorkItem_id_seq"',
+    '"Milestone_id_seq"',
+    '"Part_id_seq"',
+    '"DisciplineTeamToProgram_id_seq"',
+    '"Program_id_seq"',
+    '"User_userId_seq"',
+    '"DisciplineTeam_id_seq"',
+  ];
+
+  for (const sequence of sequenceNames) {
+    try {
+      await prisma.$executeRawUnsafe(`ALTER SEQUENCE ${sequence} RESTART WITH 1;`);
+      console.log(`Reset sequence ${sequence}`);
+    } catch (error) {
+      console.error(`Error resetting sequence ${sequence}:`, error);
+    }
+  }
+}
+
 async function main() {
   const dataDirectory = path.join(__dirname, "seedData");
 
   const orderedFileNames = [
+    "organization.json",
     "disciplineTeam.json",
     "user.json",
     "program.json",
@@ -39,6 +67,7 @@ async function main() {
   ];
 
   await deleteAllData(orderedFileNames);
+  await resetSequences();
 
   for (const fileName of orderedFileNames) {
     const filePath = path.join(dataDirectory, fileName);
