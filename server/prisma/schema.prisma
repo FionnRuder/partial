@@ -93,15 +93,17 @@ enum PartState {
 
 model User {
   userId            Int     @id @default(autoincrement())
+  organizationId    Int
   cognitoId         String  @unique
-  username          String  @unique
+  username          String
   name              String
-  email             String  @unique
+  email             String
   phoneNumber       String
   role              String
   profilePictureUrl String?
   disciplineTeamId  Int?
 
+  organization   Organization    @relation(fields: [organizationId], references: [id])
   disciplineTeam DisciplineTeam? @relation(fields: [disciplineTeamId], references: [id])
 
   authoredWorkItems WorkItem[] @relation("WorkItemAuthor")
@@ -110,26 +112,49 @@ model User {
   partNumbers Part[]
   attachments Attachment[]
   comments    Comment[]
+
+  @@unique([organizationId, username])
+  @@unique([organizationId, email])
+}
+
+model Organization {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users           User[]
+  disciplineTeams DisciplineTeam[]
+  programs        Program[]
+  parts           Part[]
+  milestones      Milestone[]
+  workItems       WorkItem[]
+  attachments     Attachment[]
+  comments        Comment[]
 }
 
 model DisciplineTeam {
   id                Int    @id @default(autoincrement())
+  organizationId    Int
   name              String
   description       String
   teamManagerUserId Int?
 
-  users    User[]
-  programs DisciplineTeamToProgram[]
+  organization Organization              @relation(fields: [organizationId], references: [id])
+  users        User[]
+  programs     DisciplineTeamToProgram[]
 }
 
 model Program {
   id                   Int      @id @default(autoincrement())
+  organizationId       Int
   name                 String
   description          String
   programManagerUserId Int?
   startDate            DateTime
   endDate              DateTime
 
+  organization    Organization              @relation(fields: [organizationId], references: [id])
   partNumbers     Part[]
   disciplineTeams DisciplineTeamToProgram[]
   milestones      Milestone[]
@@ -146,19 +171,22 @@ model DisciplineTeamToProgram {
 }
 
 model Milestone {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String
-  date        DateTime
-  programId   Int
+  id             Int      @id @default(autoincrement())
+  organizationId Int
+  name           String
+  description    String
+  date           DateTime
+  programId      Int
 
-  program   Program    @relation(fields: [programId], references: [id])
-  workItems WorkItem[]
+  organization Organization @relation(fields: [organizationId], references: [id])
+  program      Program      @relation(fields: [programId], references: [id])
+  workItems    WorkItem[]
 }
 
 model Part {
   id             Int       @id @default(autoincrement())
-  code           String    @unique @map("number")
+  organizationId Int
+  code           String    @map("number")
   partName       String
   level          Int
   state          PartState
@@ -167,14 +195,15 @@ model Part {
   programId      Int
   parentId       Int?
 
-  assignedUser User    @relation(fields: [assignedUserId], references: [userId])
-  program      Program @relation(fields: [programId], references: [id])
-  parent       Part?   @relation("ParentChildren", fields: [parentId], references: [id])
-  children     Part[]  @relation("ParentChildren")
+  organization Organization @relation(fields: [organizationId], references: [id])
+  assignedUser User         @relation(fields: [assignedUserId], references: [userId])
+  program      Program      @relation(fields: [programId], references: [id])
+  parent       Part?        @relation("ParentChildren", fields: [parentId], references: [id])
+  children     Part[]       @relation("ParentChildren")
 
   workItemLinks WorkItemToPart[]
 
-  @@map("PartNumber")
+  @@unique([organizationId, code])
 }
 
 // ===================
@@ -183,6 +212,7 @@ model Part {
 
 model WorkItem {
   id                      Int          @id @default(autoincrement())
+  organizationId          Int
   workItemType            WorkItemType
   title                   String
   description             String
@@ -200,10 +230,11 @@ model WorkItem {
   authorUserId            Int
   assignedUserId          Int
 
-  program        Program   @relation(fields: [programId], references: [id])
-  dueByMilestone Milestone @relation(fields: [dueByMilestoneId], references: [id])
-  authorUser     User      @relation("WorkItemAuthor", fields: [authorUserId], references: [userId])
-  assigneeUser   User      @relation("WorkItemAssignee", fields: [assignedUserId], references: [userId])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  program        Program      @relation(fields: [programId], references: [id])
+  dueByMilestone Milestone    @relation(fields: [dueByMilestoneId], references: [id])
+  authorUser     User         @relation("WorkItemAuthor", fields: [authorUserId], references: [userId])
+  assigneeUser   User         @relation("WorkItemAssignee", fields: [assignedUserId], references: [userId])
 
   // Relations
   partNumbers WorkItemToPart[]
@@ -238,33 +269,35 @@ model DeliverableDetail {
 model WorkItemToPart {
   id         Int @id @default(autoincrement())
   workItemId Int
-  partId     Int @map("partNumberId")
+  partId     Int
 
   workItem WorkItem @relation(fields: [workItemId], references: [id])
   part     Part     @relation(fields: [partId], references: [id])
-
-  @@map("WorkItemToPartNumber")
 }
 
 model Attachment {
   id               Int      @id @default(autoincrement())
+  organizationId   Int
   fileUrl          String
   fileName         String
   dateAttached     DateTime @default(now())
   uploadedByUserId Int
   workItemId       Int?
 
-  uploadedByUser User      @relation(fields: [uploadedByUserId], references: [userId])
-  workItem       WorkItem? @relation(fields: [workItemId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  uploadedByUser User         @relation(fields: [uploadedByUserId], references: [userId])
+  workItem       WorkItem?    @relation(fields: [workItemId], references: [id])
 }
 
 model Comment {
   id              Int      @id @default(autoincrement())
+  organizationId  Int
   text            String
   dateCommented   DateTime @default(now())
   commenterUserId Int
   workItemId      Int?
 
-  commenterUser User      @relation(fields: [commenterUserId], references: [userId])
-  workItem      WorkItem? @relation(fields: [workItemId], references: [id])
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  commenterUser User         @relation(fields: [commenterUserId], references: [userId])
+  workItem      WorkItem?    @relation(fields: [workItemId], references: [id])
 }

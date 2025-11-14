@@ -15,7 +15,8 @@
     "programId": 1,
     "dueByMilestoneId": 1,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -33,7 +34,8 @@
     "programId": 1,
     "dueByMilestoneId": 2,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -51,7 +53,8 @@
     "programId": 1,
     "dueByMilestoneId": 5,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -69,7 +72,8 @@
     "programId": 1,
     "dueByMilestoneId": 5,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -87,7 +91,8 @@
     "programId": 1,
     "dueByMilestoneId": 6,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -105,7 +110,8 @@
     "programId": 1,
     "dueByMilestoneId": 6,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -123,7 +129,8 @@
     "programId": 1,
     "dueByMilestoneId": 7,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -141,7 +148,8 @@
     "programId": 1,
     "dueByMilestoneId": 8,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -159,7 +167,8 @@
     "programId": 1,
     "dueByMilestoneId": 8,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -177,7 +186,8 @@
     "programId": 1,
     "dueByMilestoneId": 9,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -195,7 +205,8 @@
     "programId": 1,
     "dueByMilestoneId": 9,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -213,7 +224,8 @@
     "programId": 1,
     "dueByMilestoneId": 13,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -231,7 +243,8 @@
     "programId": 1,
     "dueByMilestoneId": 13,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -249,7 +262,8 @@
     "programId": 1,
     "dueByMilestoneId": 14,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -267,7 +281,8 @@
     "programId": 1,
     "dueByMilestoneId": 14,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -285,7 +300,8 @@
     "programId": 1,
     "dueByMilestoneId": 15,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -303,7 +319,8 @@
     "programId": 1,
     "dueByMilestoneId": 16,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -321,7 +338,8 @@
     "programId": 1,
     "dueByMilestoneId": 16,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -339,7 +357,8 @@
     "programId": 1,
     "dueByMilestoneId": 17,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -357,7 +376,8 @@
     "programId": 1,
     "dueByMilestoneId": 17,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -375,7 +395,8 @@
     "programId": 1,
     "dueByMilestoneId": 18,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -393,7 +414,8 @@
     "programId": 1,
     "dueByMilestoneId": 19,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -411,7 +433,8 @@
     "programId": 1,
     "dueByMilestoneId": 20,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -429,7 +452,8 @@
     "programId": 1,
     "dueByMilestoneId": 20,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -447,7 +471,8 @@
     "programId": 1,
     "dueByMilestoneId": 21,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Deliverable",
@@ -465,7 +490,8 @@
     "programId": 1,
     "dueByMilestoneId": 22,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -483,7 +509,8 @@
     "programId": 1,
     "dueByMilestoneId": 11,
     "authorUserId": 1,
-    "assignedUserId": 13
+    "assignedUserId": 13,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -501,7 +528,8 @@
     "programId": 1,
     "dueByMilestoneId": 12,
     "authorUserId": 6,
-    "assignedUserId": 5
+    "assignedUserId": 5,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -519,7 +547,8 @@
     "programId": 1,
     "dueByMilestoneId": 12,
     "authorUserId": 8,
-    "assignedUserId": 19
+    "assignedUserId": 19,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -537,7 +566,8 @@
     "programId": 1,
     "dueByMilestoneId": 12,
     "authorUserId": 19,
-    "assignedUserId": 2
+    "assignedUserId": 2,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -555,7 +585,8 @@
     "programId": 1,
     "dueByMilestoneId": 6,
     "authorUserId": 3,
-    "assignedUserId": 10
+    "assignedUserId": 10,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -573,7 +604,8 @@
     "programId": 1,
     "dueByMilestoneId": 13,
     "authorUserId": 10,
-    "assignedUserId": 10
+    "assignedUserId": 10,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -591,7 +623,8 @@
     "programId": 1,
     "dueByMilestoneId": 14,
     "authorUserId": 14,
-    "assignedUserId": 1
+    "assignedUserId": 1,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -609,7 +642,8 @@
     "programId": 1,
     "dueByMilestoneId": 16,
     "authorUserId": 17,
-    "assignedUserId": 10
+    "assignedUserId": 10,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -627,7 +661,8 @@
     "programId": 1,
     "dueByMilestoneId": 18,
     "authorUserId": 6,
-    "assignedUserId": 7
+    "assignedUserId": 7,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -645,7 +680,8 @@
     "programId": 1,
     "dueByMilestoneId": 18,
     "authorUserId": 8,
-    "assignedUserId": 19
+    "assignedUserId": 19,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -663,7 +699,8 @@
     "programId": 1,
     "dueByMilestoneId": 10,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -681,7 +718,8 @@
     "programId": 1,
     "dueByMilestoneId": 11,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -699,7 +737,8 @@
     "programId": 1,
     "dueByMilestoneId": 12,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -717,7 +756,8 @@
     "programId": 1,
     "dueByMilestoneId": 13,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -735,7 +775,8 @@
     "programId": 1,
     "dueByMilestoneId": 14,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Issue",
@@ -753,7 +794,8 @@
     "programId": 1,
     "dueByMilestoneId": 15,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -771,7 +813,8 @@
     "programId": 1,
     "dueByMilestoneId": 1,
     "authorUserId": 1,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -789,7 +832,8 @@
     "programId": 1,
     "dueByMilestoneId": 2,
     "authorUserId": 13,
-    "assignedUserId": 14
+    "assignedUserId": 14,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -807,7 +851,8 @@
     "programId": 1,
     "dueByMilestoneId": 8,
     "authorUserId": 6,
-    "assignedUserId": 15
+    "assignedUserId": 15,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -825,7 +870,8 @@
     "programId": 1,
     "dueByMilestoneId": 5,
     "authorUserId": 14,
-    "assignedUserId": 7
+    "assignedUserId": 7,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -843,7 +889,8 @@
     "programId": 1,
     "dueByMilestoneId": 15,
     "authorUserId": 14,
-    "assignedUserId": 13
+    "assignedUserId": 13,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -861,7 +908,8 @@
     "programId": 1,
     "dueByMilestoneId": 8,
     "authorUserId": 11,
-    "assignedUserId": 14
+    "assignedUserId": 14,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -879,7 +927,8 @@
     "programId": 1,
     "dueByMilestoneId": 7,
     "authorUserId": 13,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -897,7 +946,8 @@
     "programId": 1,
     "dueByMilestoneId": 9,
     "authorUserId": 19,
-    "assignedUserId": 15
+    "assignedUserId": 15,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -915,7 +965,8 @@
     "programId": 1,
     "dueByMilestoneId": 20,
     "authorUserId": 2,
-    "assignedUserId": 13
+    "assignedUserId": 13,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -933,7 +984,8 @@
     "programId": 1,
     "dueByMilestoneId": 22,
     "authorUserId": 5,
-    "assignedUserId": 14
+    "assignedUserId": 14,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -951,7 +1003,8 @@
     "programId": 1,
     "dueByMilestoneId": 9,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -969,7 +1022,8 @@
     "programId": 1,
     "dueByMilestoneId": 13,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -987,9 +1041,9 @@
     "programId": 1,
     "dueByMilestoneId": 14,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
-
   {
     "workItemType": "Task",
     "title": "Sun Sensor - Circuit Board Assembly",
@@ -1006,7 +1060,8 @@
     "programId": 1,
     "dueByMilestoneId": 9,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -1024,7 +1079,8 @@
     "programId": 1,
     "dueByMilestoneId": 13,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
   },
   {
     "workItemType": "Task",
@@ -1042,6 +1098,216 @@
     "programId": 1,
     "dueByMilestoneId": 14,
     "authorUserId": 12,
-    "assignedUserId": 12
+    "assignedUserId": 12,
+    "organizationId": 1
+  },
+  {
+    "workItemType": "Deliverable",
+    "title": "NGS System Requirements Specification",
+    "description": "Capture and baseline system-level requirements for the Next-Gen Satellite vehicle.",
+    "status": "WorkInProgress",
+    "priority": "High",
+    "tags": "Requirements",
+    "dateOpened": "2025-04-10T00:00:00.000Z",
+    "dueDate": "2025-09-01T00:00:00.000Z",
+    "estimatedCompletionDate": "2025-09-20T00:00:00.000Z",
+    "actualCompletionDate": null,
+    "percentComplete": 45,
+    "inputStatus": "Internal review in progress",
+    "programId": 2,
+    "dueByMilestoneId": 24,
+    "authorUserId": 21,
+    "assignedUserId": 21,
+    "organizationId": 1
+  },
+  {
+    "workItemType": "Deliverable",
+    "title": "Power Module Interface Control Document",
+    "description": "Define interfaces between the power module and spacecraft bus subsystems.",
+    "status": "ToDo",
+    "priority": "High",
+    "tags": "Power Module",
+    "dateOpened": "2025-05-15T00:00:00.000Z",
+    "dueDate": "2025-10-01T00:00:00.000Z",
+    "estimatedCompletionDate": "2025-10-05T00:00:00.000Z",
+    "actualCompletionDate": null,
+    "percentComplete": 0,
+    "inputStatus": "Awaiting subsystem inputs",
+    "programId": 2,
+    "dueByMilestoneId": 27,
+    "authorUserId": 24,
+    "assignedUserId": 24,
+    "organizationId": 1
+  },
+  {
+    "workItemType": "Deliverable",
+    "title": "Propulsion Qualification Plan",
+    "description": "Plan outlining qualification strategy for chemical and electric propulsion units.",
+    "status": "UnderReview",
+    "priority": "Medium",
+    "tags": "Propulsion",
+    "dateOpened": "2025-06-20T00:00:00.000Z",
+    "dueDate": "2026-02-01T00:00:00.000Z",
+    "estimatedCompletionDate": "2026-01-15T00:00:00.000Z",
+    "actualCompletionDate": null,
+    "percentComplete": 60,
+    "inputStatus": "Awaiting propulsion lead sign-off",
+    "programId": 2,
+    "dueByMilestoneId": 29,
+    "authorUserId": 25,
+    "assignedUserId": 25,
+    "organizationId": 1
+  },
+  {
+    "workItemType": "Task",
+    "title": "Lay Out Solar Array Harness",
+    "description": "Produce final cable routing and connector layout for the solar array interface.",
+    "status": "WorkInProgress",
+    "priority": "High",
+    "tags": "Power Module",
+    "dateOpened": "2025-07-05T00:00:00.000Z",
+    "dueDate": "2025-08-15T00:00:00.000Z",
+    "estimatedCompletionDate": "2025-08-25T00:00:00.000Z",
+    "actualCompletionDate": null,
+    "percentComplete": 35,
+    "inputStatus": "Routing draft under review",
+    "programId": 2,
+    "dueByMilestoneId": 26,
+    "authorUserId": 24,
+    "assignedUserId": 24,
+    "organizationId": 1
+  },
+  {
+    "workItemType": "Task",
+    "title": "Integrate Time Synchronization Module",
+    "description": "Integrate the avionics time sync module with data handling network.",
+    "status": "ToDo",
+    "priority": "Medium",
+    "tags": "Avionics",
+    "dateOpened": "2025-08-01T00:00:00.000Z",
+    "dueDate": "2025-09-30T00:00:00.000Z",
+    "estimatedCompletionDate": "2025-10-05T00:00:00.000Z",
+    "actualCompletionDate": null,
+    "percentComplete": 0,
+    "inputStatus": "Pending hardware availability",
+    "programId": 2,
+    "dueByMilestoneId": 27,
+    "authorUserId": 23,
+    "assignedUserId": 27,
+    "organizationId": 1
+  },
+  {
+    "workItemType": "Task",
+    "title": "Validate Ka-Band Transmitter Thermal Margin",
+    "description": "Execute thermal analysis and testing to confirm transmitter margin.",
+    "status": "WorkInProgress",
+    "priority": "Medium",
+    "tags": "Communications",
+    "dateOpened": "2025-09-12T00:00:00.000Z",
+    "dueDate": "2025-12-01T00:00:00.000Z",
+    "estimatedCompletionDate": "2025-12-10T00:00:00.000Z",
+    "actualCompletionDate": null,
+    "percentComplete": 25,
+    "inputStatus": "Thermal model calibration underway",
+    "programId": 2,
+    "dueByMilestoneId": 32,
+    "authorUserId": 27,
+    "assignedUserId": 27,
+    "organizationId": 1
+  },
+  {
+    "workItemType": "Issue",
+    "title": "Pressurant Tank Weld Porosity",
+    "description": "NDE detected localized porosity in the pressurant tank weld seam.",
+    "status": "UnderReview",
+    "priority": "Urgent",
+    "tags": "Propulsion, Feed System",
+    "dateOpened": "2025-11-05T00:00:00.000Z",
+    "dueDate": "2025-12-01T00:00:00.000Z",
+    "estimatedCompletionDate": "2025-12-05T00:00:00.000Z",
+    "actualCompletionDate": null,
+    "percentComplete": 50,
+    "inputStatus": "Supplier corrective action in work",
+    "programId": 2,
+    "dueByMilestoneId": 33,
+    "authorUserId": 28,
+    "assignedUserId": 28,
+    "organizationId": 1
+  },
+  {
+    "workItemType": "Issue",
+    "title": "Telemetry Router Packet Loss",
+    "description": "Intermittent packet loss observed during integrated network testing.",
+    "status": "WorkInProgress",
+    "priority": "High",
+    "tags": "Avionics, Data Handling",
+    "dateOpened": "2026-01-10T00:00:00.000Z",
+    "dueDate": "2026-02-15T00:00:00.000Z",
+    "estimatedCompletionDate": "2026-02-10T00:00:00.000Z",
+    "actualCompletionDate": null,
+    "percentComplete": 30,
+    "inputStatus": "Replicating failure in lab environment",
+    "programId": 2,
+    "dueByMilestoneId": 34,
+    "authorUserId": 23,
+    "assignedUserId": 27,
+    "organizationId": 1
+  },
+  {
+    "workItemType": "Task",
+    "title": "Stabilize Power Conditioning Control Loop",
+    "description": "Tune control parameters to remove oscillation in the power conditioning unit.",
+    "status": "WorkInProgress",
+    "priority": "High",
+    "tags": "Power Conditioning",
+    "dateOpened": "2025-09-20T00:00:00.000Z",
+    "dueDate": "2025-10-25T00:00:00.000Z",
+    "estimatedCompletionDate": "2025-10-30T00:00:00.000Z",
+    "actualCompletionDate": null,
+    "percentComplete": 40,
+    "inputStatus": "Controller retuned, awaiting verification",
+    "programId": 1,
+    "dueByMilestoneId": 9,
+    "authorUserId": 6,
+    "assignedUserId": 15,
+    "organizationId": 1
+  },
+  {
+    "workItemType": "Task",
+    "title": "Finalize Reaction Wheel Manufacturing Plan",
+    "description": "Align vendor schedule and inspection checkpoints for reaction wheel builds.",
+    "status": "ToDo",
+    "priority": "Medium",
+    "tags": "Actuators",
+    "dateOpened": "2025-09-22T00:00:00.000Z",
+    "dueDate": "2025-10-20T00:00:00.000Z",
+    "estimatedCompletionDate": "2025-10-25T00:00:00.000Z",
+    "actualCompletionDate": null,
+    "percentComplete": 0,
+    "inputStatus": "Waiting on supplier confirmation",
+    "programId": 1,
+    "dueByMilestoneId": 10,
+    "authorUserId": 14,
+    "assignedUserId": 13,
+    "organizationId": 1
+  },
+  {
+    "workItemType": "Task",
+    "title": "Update IMU Calibration Procedure",
+    "description": "Refresh calibration steps incorporating latest thermal compensation constants.",
+    "status": "WorkInProgress",
+    "priority": "Medium",
+    "tags": "Control Electronics",
+    "dateOpened": "2025-09-25T00:00:00.000Z",
+    "dueDate": "2025-10-22T00:00:00.000Z",
+    "estimatedCompletionDate": "2025-10-28T00:00:00.000Z",
+    "actualCompletionDate": null,
+    "percentComplete": 20,
+    "inputStatus": "Draft procedure circulating for feedback",
+    "programId": 1,
+    "dueByMilestoneId": 11,
+    "authorUserId": 16,
+    "assignedUserId": 14,
+    "organizationId": 1
   }
 ]

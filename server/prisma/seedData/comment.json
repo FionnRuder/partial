@@ -3,120 +3,140 @@
     "text": "Reviewed the system requirements, looks good overall.",
     "dateCommented": "2025-09-17T10:30:00.000Z",
     "commenterUserId": 12,
-    "workItemId": 43
+    "workItemId": 43,
+    "organizationId": 1
   },
   {
     "text": "Please update the ICD with the latest interface changes.",
     "dateCommented": "2025-09-17T11:00:00.000Z",
     "commenterUserId": 14,
-    "workItemId": 44
+    "workItemId": 44,
+    "organizationId": 1
   },
   {
     "text": "Structural analysis shows stress concentrations near the mounting points.",
     "dateCommented": "2025-09-17T12:15:00.000Z",
     "commenterUserId": 15,
-    "workItemId": 8
+    "workItemId": 8,
+    "organizationId": 1
   },
   {
     "text": "Need to finalize the PDR package before the review meeting.",
     "dateCommented": "2025-09-17T09:45:00.000Z",
     "commenterUserId": 7,
-    "workItemId": 3
+    "workItemId": 3,
+    "organizationId": 1
   },
   {
     "text": "Test plan draft is missing environmental tests section.",
     "dateCommented": "2025-09-17T13:00:00.000Z",
     "commenterUserId": 13,
-    "workItemId": 47
+    "workItemId": 47,
+    "organizationId": 1
   },
   {
     "text": "Thermal analysis results indicate temperature spikes near electronics bay.",
     "dateCommented": "2025-09-17T14:20:00.000Z",
     "commenterUserId": 14,
-    "workItemId": 9
+    "workItemId": 9,
+    "organizationId": 1
   },
   {
     "text": "BOM needs review by procurement team.",
     "dateCommented": "2025-09-17T15:10:00.000Z",
     "commenterUserId": 12,
-    "workItemId": 7
+    "workItemId": 7,
+    "organizationId": 1
   },
   {
     "text": "DFM/DFT report draft requires feedback from manufacturing engineers.",
     "dateCommented": "2025-09-17T16:00:00.000Z",
     "commenterUserId": 15,
-    "workItemId": 11
+    "workItemId": 11,
+    "organizationId": 1
   },
   {
     "text": "User manual draft needs updated screenshots.",
     "dateCommented": "2025-09-17T16:30:00.000Z",
     "commenterUserId": 13,
-    "workItemId": 51
+    "workItemId": 51,
+    "organizationId": 1
   },
   {
     "text": "Lessons learned report outline looks solid, start adding detailed notes.",
     "dateCommented": "2025-09-17T17:00:00.000Z",
     "commenterUserId": 14,
-    "workItemId": 26
+    "workItemId": 26,
+    "organizationId": 1
   },
   {
     "text": "Star tracker alignment shows minor deviation, needs recalibration.",
     "dateCommented": "2025-09-17T17:30:00.000Z",
     "commenterUserId": 12,
-    "workItemId": 53
+    "workItemId": 53,
+    "organizationId": 1
   },
   {
     "text": "Firmware integration test encountered unexpected reset errors.",
     "dateCommented": "2025-09-17T18:00:00.000Z",
     "commenterUserId": 12,
-    "workItemId": 54
+    "workItemId": 54,
+    "organizationId": 1
   },
   {
     "text": "Thermal vacuum test passed all requirements except high-temperature hold time.",
     "dateCommented": "2025-09-17T18:30:00.000Z",
     "commenterUserId": 12,
-    "workItemId": 55
+    "workItemId": 55,
+    "organizationId": 1
   },
   {
     "text": "Sun sensor PCB assembly requires rework on connector pins.",
     "dateCommented": "2025-09-17T19:00:00.000Z",
     "commenterUserId": 12,
-    "workItemId": 56
+    "workItemId": 56,
+    "organizationId": 1
   },
   {
     "text": "Calibration procedure draft is missing bias correction steps.",
     "dateCommented": "2025-09-17T19:30:00.000Z",
     "commenterUserId": 12,
-    "workItemId": 57
+    "workItemId": 57,
+    "organizationId": 1
   },
   {
     "text": "Final acceptance test for sun sensor completed successfully.",
     "dateCommented": "2025-09-17T20:00:00.000Z",
     "commenterUserId": 12,
-    "workItemId": 58
+    "workItemId": 58,
+    "organizationId": 1
   },
   {
     "text": "Unexpected vibration detected in test, requires investigation.",
     "dateCommented": "2025-09-17T20:30:00.000Z",
     "commenterUserId": 14,
-    "workItemId": 32
+    "workItemId": 32,
+    "organizationId": 1
   },
   {
     "text": "Missing resistor in PCB layout, needs correction.",
     "dateCommented": "2025-09-17T21:00:00.000Z",
     "commenterUserId": 15,
-    "workItemId": 34
+    "workItemId": 34,
+    "organizationId": 1
   },
   {
     "text": "BOM discrepancies between supplier list and master list.",
     "dateCommented": "2025-09-17T21:30:00.000Z",
     "commenterUserId": 12,
-    "workItemId": 35
+    "workItemId": 35,
+    "organizationId": 1
   },
   {
     "text": "Software test failed during thermal cycle, re-run scheduled.",
     "dateCommented": "2025-09-17T22:00:00.000Z",
     "commenterUserId": 13,
-    "workItemId": 39
+    "workItemId": 39,
+    "organizationId": 1
   }
 ]

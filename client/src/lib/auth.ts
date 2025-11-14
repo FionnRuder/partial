@@ -3,6 +3,7 @@
 
 export interface AuthUser {
   userId: number;
+  organizationId: number;
   cognitoId: string;
   username: string;
   name: string;
@@ -68,7 +69,16 @@ export class MockAuthService implements AuthService {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('authUser');
       if (stored) {
-        this.currentUser = JSON.parse(stored);
+        try {
+          const parsed: AuthUser = JSON.parse(stored);
+          this.currentUser = {
+            ...parsed,
+            organizationId: parsed?.organizationId ?? 1,
+          };
+        } catch (error) {
+          console.warn('Failed to parse stored auth user', error);
+          this.currentUser = null;
+        }
       }
     }
   }
@@ -96,16 +106,19 @@ export class MockAuthService implements AuthService {
     const cognitoId = `mock-${Date.now()}`;
     const username = data.email.split('@')[0];
     
-    // Try to save user to database
-    let user: AuthUser;
+    // Try to save user to database via onboarding endpoint
+    let user: AuthUser | null = null;
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
     
     try {
-      const response = await fetch(`${apiBaseUrl}/users`, {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      // Use onboarding endpoint which creates both organization and user
+      const response = await fetch(`${apiBaseUrl}/onboarding/signup`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           cognitoId,
           username,
@@ -113,45 +126,83 @@ export class MockAuthService implements AuthService {
           email: data.email,
           phoneNumber: data.phoneNumber,
           role: data.role,
+          // organizationName is optional - backend will use default name if not provided
         }),
       });
 
       if (response.ok) {
-        // User created in database successfully
-        user = await response.json();
-        console.log('User saved to database:', user);
-      } else {
-        // If user already exists or database error, use local storage
-        const errorData = await response.json();
-        console.warn('Failed to save user to database:', errorData.message);
+        // User and organization created in database successfully
+        const result = await response.json();
+        console.log('Onboarding response:', result);
         
-        // Create user object for local storage
+        // Ensure userId is present - Prisma returns userId as the primary key
+        if (!result.user?.userId) {
+          console.error('User object missing userId:', result.user);
+          throw new Error('User creation response missing userId');
+        }
+        
         user = {
-          userId: Math.floor(Math.random() * 10000),
-          cognitoId,
-          username,
-          name: data.name,
-          email: data.email,
-          phoneNumber: data.phoneNumber,
-          role: data.role,
+          userId: result.user.userId,
+          organizationId: result.organization.id,
+          cognitoId: result.user.cognitoId,
+          username: result.user.username,
+          name: result.user.name,
+          email: result.user.email,
+          phoneNumber: result.user.phoneNumber,
+          role: result.user.role,
+          profilePictureUrl: result.user.profilePictureUrl || undefined,
+          disciplineTeamId: result.user.disciplineTeamId || undefined,
         };
+        console.log('User and organization created in database:', user);
+      } else {
+        // If user already exists or database error
+        const errorData = await response.json();
+        console.error('Failed to save user to database:', errorData);
+        
+        // If user already exists (409), use that user data
+        if (response.status === 409 && errorData.user) {
+          user = {
+            userId: errorData.user.userId,
+            organizationId: errorData.user.organizationId,
+            cognitoId: errorData.user.cognitoId,
+            username: errorData.user.username,
+            name: errorData.user.name,
+            email: errorData.user.email,
+            phoneNumber: errorData.user.phoneNumber,
+            role: errorData.user.role,
+            profilePictureUrl: errorData.user.profilePictureUrl || undefined,
+            disciplineTeamId: errorData.user.disciplineTeamId || undefined,
+          };
+          console.log('Using existing user from error response:', user);
+        } else {
+          // For other errors, throw so the UI can handle it
+          throw new Error(errorData.message || 'Failed to create user account');
+        }
       }
     } catch (error) {
-      // If API call fails (e.g., server not running), use local storage
-      console.warn('Database API not available, using local storage only:', error);
-      user = {
-        userId: Math.floor(Math.random() * 10000),
-        cognitoId,
-        username,
-        name: data.name,
-        email: data.email,
-        phoneNumber: data.phoneNumber,
-        role: data.role,
-      };
+      // If API call fails (e.g., server not running), throw error
+      console.error('Onboarding API call failed:', error);
+      throw new Error(
+        error instanceof Error 
+          ? error.message 
+          : 'Unable to create account. Please check your connection and try again.'
+      );
     }
 
+    // Verify user was created successfully
+    if (!user) {
+      throw new Error('User creation failed: no user object returned');
+    }
+
+    // Verify user has required fields before saving
+    if (!user.userId || !user.organizationId) {
+      console.error('User object missing required fields:', user);
+      throw new Error('User creation failed: missing userId or organizationId');
+    }
+    
     this.currentUser = user;
     this.saveToStorage();
+    console.log('User saved to localStorage:', this.currentUser);
     this.notifyListeners();
     
     return user;
@@ -168,10 +219,14 @@ export class MockAuthService implements AuthService {
         const existingUser = JSON.parse(storedUser);
         // Verify email matches
         if (existingUser.email === data.email) {
-          this.currentUser = existingUser;
+          const normalizedUser: AuthUser = {
+            ...existingUser,
+            organizationId: existingUser?.organizationId ?? 1,
+          };
+          this.currentUser = normalizedUser;
           this.saveToStorage();
           this.notifyListeners();
-          return existingUser;
+          return normalizedUser;
         }
       }
     }
@@ -204,6 +259,7 @@ export class MockAuthService implements AuthService {
       throw new Error('No authenticated user');
     }
 
+    const baseUser = this.currentUser;
     // Try to update user in database
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
     
@@ -212,6 +268,7 @@ export class MockAuthService implements AuthService {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': String(this.currentUser.userId),
         },
         body: JSON.stringify(updates),
       });
@@ -219,23 +276,45 @@ export class MockAuthService implements AuthService {
       if (response.ok) {
         // User updated in database successfully
         const updatedUser = await response.json();
-        this.currentUser = updatedUser;
+        const mergedUser: AuthUser = {
+          ...baseUser,
+          ...updatedUser,
+          userId: baseUser.userId,
+          organizationId: updatedUser?.organizationId ?? baseUser.organizationId,
+        };
+        this.currentUser = mergedUser;
         console.log('User updated in database:', updatedUser);
       } else {
         // If database update fails, still update local storage
         console.warn('Failed to update user in database, using local storage only');
-        this.currentUser = { ...this.currentUser, ...updates };
+        const mergedUser: AuthUser = {
+          ...baseUser,
+          ...updates,
+          userId: baseUser.userId,
+          organizationId: baseUser.organizationId,
+        };
+        this.currentUser = mergedUser;
       }
     } catch (error) {
       // If API call fails, use local storage
       console.warn('Database API not available, using local storage only:', error);
-      this.currentUser = { ...this.currentUser, ...updates };
+      const mergedUser: AuthUser = {
+        ...baseUser,
+        ...updates,
+        userId: baseUser.userId,
+        organizationId: baseUser.organizationId,
+      };
+      this.currentUser = mergedUser;
     }
 
     this.saveToStorage();
     this.notifyListeners();
     
-    return this.currentUser;
+    const finalUser = this.currentUser;
+    if (!finalUser) {
+      throw new Error('Failed to update user profile');
+    }
+    return finalUser;
   }
 
   async changePassword(oldPassword: string, newPassword: string): Promise<void> {
