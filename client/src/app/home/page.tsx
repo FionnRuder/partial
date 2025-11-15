@@ -186,25 +186,45 @@ const HomePage = () => {
     setShowPastMilestones(false);
   }, [selectedProgramId]);
 
+  // Call all hooks unconditionally to follow rules of hooks
+  const {
+    data: allWorkItems,
+    isLoading: isAllWorkItemsLoading,
+    isError: allWorkItemsError,
+  } = useGetWorkItemsQuery();
 
-  // Conditionally choose which work item query to use
   const {
-    data: workItems,
-    isLoading: isWorkItemsLoading,
-    isError: workItemsError,
-  } =
-    selectedProgramId === "all"
-      ? useGetWorkItemsQuery()
-      : useGetWorkItemsByProgramQuery({ programId: selectedProgramId });
-  
+    data: programWorkItems,
+    isLoading: isProgramWorkItemsLoading,
+    isError: programWorkItemsError,
+  } = useGetWorkItemsByProgramQuery(
+    { programId: selectedProgramId === "all" ? 0 : selectedProgramId },
+    { skip: selectedProgramId === "all" }
+  );
+
   const {
-    data: milestones,
-    isLoading: milestonesLoading,
-    isError: milestonesError
-  } = 
-    selectedProgramId === "all"
-      ? useGetMilestonesQuery()
-      : useGetMilestonesByProgramQuery({ programId: selectedProgramId });
+    data: allMilestones,
+    isLoading: isAllMilestonesLoading,
+    isError: allMilestonesError,
+  } = useGetMilestonesQuery();
+
+  const {
+    data: programMilestones,
+    isLoading: isProgramMilestonesLoading,
+    isError: programMilestonesError,
+  } = useGetMilestonesByProgramQuery(
+    { programId: selectedProgramId === "all" ? 0 : selectedProgramId },
+    { skip: selectedProgramId === "all" }
+  );
+
+  // Conditionally use the appropriate data based on selectedProgramId
+  const workItems = selectedProgramId === "all" ? allWorkItems : programWorkItems;
+  const isWorkItemsLoading = selectedProgramId === "all" ? isAllWorkItemsLoading : isProgramWorkItemsLoading;
+  const workItemsError = selectedProgramId === "all" ? allWorkItemsError : programWorkItemsError;
+
+  const milestones = selectedProgramId === "all" ? allMilestones : programMilestones;
+  const milestonesLoading = selectedProgramId === "all" ? isAllMilestonesLoading : isProgramMilestonesLoading;
+  const milestonesError = selectedProgramId === "all" ? allMilestonesError : programMilestonesError;
 
   const displayedMilestones =
     selectedProgramId === "all"
