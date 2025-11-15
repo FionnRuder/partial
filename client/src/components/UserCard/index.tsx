@@ -22,7 +22,7 @@ const UserCard = ({ user }: Props) => {
       <div className="flex items-center gap-3 mb-3">
         {user.profilePictureUrl ? (
           <Image
-            src={`/p1.jpeg`}
+            src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/p1.jpeg`}
             alt="profile picture"
             width={48}
             height={48}

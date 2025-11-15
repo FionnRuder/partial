@@ -120,7 +120,7 @@ const Navbar = () => {
                         {safeProfilePictureUrl ? (
                             <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600">
                                 <Image
-                                    src={safeProfilePictureUrl}
+                                    src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${safeProfilePictureUrl}`}
                                     alt={user.name || user.username}
                                     width={32}
                                     height={32}

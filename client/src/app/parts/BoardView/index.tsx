@@ -531,7 +531,7 @@ const WorkItem = ({ workItem, setEditingWorkItem, onOpenComments }: WorkItemProp
                 )}
                 {workItem.attachments && workItem.attachments.length > 0 && (
                 // <Image
-                //     src={`/${workItem.attachments[0].fileUrl}`}
+                //     src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${workItem.attachments[0].fileUrl}`}
                 //     alt={workItem.attachments[0].fileName}
                 //     width={400}
                 //     height={200}
@@ -562,7 +562,7 @@ const WorkItem = ({ workItem, setEditingWorkItem, onOpenComments }: WorkItemProp
                                     className="cursor-pointer"
                                 >
                                     <Image
-                                        src={`/${user.profilePictureUrl}`}
+                                        src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${user.profilePictureUrl}`}
                                         alt={user.username}
                                         title={tooltip}  // <-- tooltip on hover
                                         width={30}

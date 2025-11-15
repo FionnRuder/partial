@@ -299,7 +299,7 @@ const UserDetailPage = ({ params }: Props) => {
           <div className="h-24 w-24 flex-shrink-0">
             {formData.profilePictureUrl ? (
               <Image
-                src={formData.profilePictureUrl}
+                src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${formData.profilePictureUrl}`}
                 alt={user.username}
                 width={96}
                 height={96}
