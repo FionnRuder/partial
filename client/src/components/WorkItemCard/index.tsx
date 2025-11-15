@@ -164,7 +164,7 @@ const WorkItemCard = ({ workItem }: Props) => {
               {workItem.attachments.slice(0, 3).map((attachment) => (
                 <div key={attachment.id} className="relative h-20 w-20 overflow-hidden rounded-md border">
                   <Image
-                    src={`/${attachment.fileUrl}`}
+                    src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${attachment.fileUrl}`}
                     alt={attachment.fileName}
                     fill
                     className="object-cover"

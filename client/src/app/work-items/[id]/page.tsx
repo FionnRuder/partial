@@ -357,7 +357,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
             <div className="flex items-center gap-3 mt-2">
               {workItem.authorUser?.profilePictureUrl ? (
                 <Image
-                  src={`/${workItem.authorUser.profilePictureUrl}`}
+                  src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${workItem.authorUser.profilePictureUrl}`}
                   alt={workItem.authorUser.username}
                   width={40}
                   height={40}
@@ -384,7 +384,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
             <div className="flex items-center gap-3 mt-2">
               {workItem.assigneeUser?.profilePictureUrl ? (
                 <Image
-                  src={`/${workItem.assigneeUser.profilePictureUrl}`}
+                  src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${workItem.assigneeUser.profilePictureUrl}`}
                   alt={workItem.assigneeUser.username}
                   width={40}
                   height={40}

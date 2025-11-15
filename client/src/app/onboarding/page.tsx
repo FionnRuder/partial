@@ -34,7 +34,7 @@ const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
           {/* Logo */}
           <div className="mb-8">
             <Image
-              src="/logo1.png"
+              src="https://partial-s3-images.s3.us-east-1.amazonaws.com/logo1.png"
               alt="Partial Logo"
               width={120}
               height={120}
@@ -211,7 +211,7 @@ const AuthScreen = ({ onBack, onNext, initialMode = "signup" }: {
           
           <div className="text-center">
             <Image
-              src="/logo1.png"
+              src="https://partial-s3-images.s3.us-east-1.amazonaws.com/logo1.png"
               alt="Partial Logo"
               width={80}
               height={80}
