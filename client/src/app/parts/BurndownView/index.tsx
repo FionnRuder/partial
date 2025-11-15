@@ -41,9 +41,6 @@ const BurndownView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChild
 
   const [selectedWorkItemType, setSelectedWorkItemType] = useState<WorkItemType | "all">("all");
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>An error occurred while fetching work items</div>;
-
   // Filter work items based on search query
   const searchFilteredWorkItems = useMemo(() => {
     return filterWorkItemsBySearch(workItems || [], searchQuery);
@@ -54,6 +51,9 @@ const BurndownView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChild
     () => (searchFilteredWorkItems ?? []).filter((w) => w.dueDate),
     [searchFilteredWorkItems]
   );
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>An error occurred while fetching work items</div>;
 
   // Work Items filtered by Type:
   const filteredWorkItemsForChart = 
