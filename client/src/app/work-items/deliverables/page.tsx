@@ -5,12 +5,13 @@ import Header from '@/components/Header';
 import ModalNewWorkItem from '@/components/ModalNewWorkItem';
 import BurndownChart from '@/components/BurndownChart';
 import { dataGridClassNames, dataGridSxStyles } from '@/lib/utils';
-import { WorkItem, WorkItemType, Priority, Status, DeliverableType, DeliverableTypeLabels, useGetWorkItemsQuery, useGetTeamsQuery, useGetUsersQuery, useGetProgramsQuery } from '@/state/api';
+import { WorkItem, WorkItemType, Priority, Status, DeliverableTypeLabels, useGetWorkItemsQuery, useGetTeamsQuery, useGetUsersQuery, useGetProgramsQuery, useGetDeliverableTypesQuery } from '@/state/api';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { PlusSquare } from 'lucide-react';
+import { PlusSquare, SquarePen } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 const getStatusColor = (status: Status) => {
   switch (status) {
@@ -145,17 +146,19 @@ const workItemColumns: GridColDef<WorkItem>[] = [
 
 const DeliverablesPage = () => {
     const router = useRouter();
+    const { user } = useAuth();
     const [ isModalNewWorkItemOpen, setIsModalNewWorkItemOpen ] = useState(false);
     const [ selectedPriority, setSelectedPriority ] = useState<Priority | "all">("all");
     const [ workItemFilter, setWorkItemFilter ] = useState<"all" | "open">("all");
     const [ selectedTeamId, setSelectedTeamId ] = useState<number | "all">("all");
     const [ selectedProgramId, setSelectedProgramId ] = useState<number | "all">("all");
-    const [ selectedDeliverableType, setSelectedDeliverableType ] = useState<DeliverableType | "all">("all");
+    const [ selectedDeliverableType, setSelectedDeliverableType ] = useState<string | "all">("all");
 
     const { data: workItems, isLoading, isError: isWorkItemsError } = useGetWorkItemsQuery();
     const { data: teams } = useGetTeamsQuery();
     const { data: users } = useGetUsersQuery();
     const { data: programs } = useGetProgramsQuery();
+    const { data: deliverableTypes } = useGetDeliverableTypesQuery();
 
     const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 
@@ -165,7 +168,11 @@ const DeliverablesPage = () => {
     // Apply deliverable type filtering
     const deliverableTypeFilteredWorkItems = selectedDeliverableType === "all"
         ? typeFilteredWorkItems
-        : typeFilteredWorkItems?.filter((item) => item.deliverableDetail?.deliverableType === selectedDeliverableType);
+        : typeFilteredWorkItems?.filter((item) => {
+            const type = item.deliverableDetail?.deliverableType;
+            const typeName = typeof type === 'string' ? type : (type && typeof type === 'object' && 'name' in type ? (type as { name: string }).name : '');
+            return typeName === selectedDeliverableType;
+          });
     
     // Apply program filtering
     const programFilteredWorkItems = selectedProgramId === "all"
@@ -223,6 +230,17 @@ const DeliverablesPage = () => {
                                 <PlusSquare className="mr-2 h-5 w-5" />
                                 Add Deliverable
                         </button>
+                        
+                        {/* Edit Deliverable Types button - only visible to Admins, Managers, and Program Managers */}
+                        {user?.role && ['Admin', 'Manager', 'Program Manager'].includes(user.role) && (
+                            <button
+                                onClick={() => router.push('/deliverable-types')}
+                                className="flex items-center rounded-md bg-gray-300 px-3 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:bg-dark-tertiary dark:text-white dark:hover:bg-gray-600"
+                            >
+                                <SquarePen className="mr-2 h-4 w-4" />
+                                Edit Deliverable Types
+                            </button>
+                        )}
                         
                         {/* Work Item Status Toggle */}
                         <div className="flex items-center gap-2">
@@ -298,13 +316,13 @@ const DeliverablesPage = () => {
                     value={selectedDeliverableType}
                     onChange={(e) => {
                         const value = e.target.value;
-                        setSelectedDeliverableType(value === "all" ? "all" : value as DeliverableType);
+                        setSelectedDeliverableType(value === "all" ? "all" : value);
                     }}
                 >
                     <option value="all">All Deliverable Types</option>
-                    {Object.values(DeliverableType).map((type) => (
-                        <option key={type} value={type}>
-                            {DeliverableTypeLabels[type]}
+                    {deliverableTypes?.map((type) => (
+                        <option key={type.id} value={type.name}>
+                            {DeliverableTypeLabels[type.name] || type.name}
                         </option>
                     ))}
                 </select>

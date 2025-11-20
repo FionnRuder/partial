@@ -47,10 +47,14 @@ const Navbar = () => {
 
     const handleLogout = async () => {
         try {
+            // signOut() will redirect to server logout endpoint
+            // which handles session clearing and Cognito logout
             await signOut();
-            router.push("/onboarding");
+            // Don't call router.push here - signOut() handles the redirect
         } catch (error) {
             console.error('Logout error:', error);
+            // On error, still try to redirect to onboarding
+            router.push("/onboarding");
         }
     };
 

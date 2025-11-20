@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { validatePassword } from "@/lib/cognito";
@@ -14,6 +14,7 @@ import {
   useCreateProgramMutation,
   useCreateMilestoneMutation,
   useCreatePartMutation,
+  useValidateInvitationQuery,
   PartState,
   PartStateLabels,
 } from "@/state/api";
@@ -369,13 +370,21 @@ const AuthScreen = ({ onBack, onNext, initialMode = "signup" }: {
   );
 };
 
-const RoleSelectionScreen = ({ onBack, onNext }: {
+const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization }: {
   onBack: () => void;
   onNext: (role: string) => void;
+  invitationData?: {
+    organization: { id: number; name: string };
+    role: string;
+    invitedEmail?: string;
+  } | null;
+  isNewOrganization?: boolean;
 }) => {
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const { updateProfile } = useAuth();
+
+  // Note: For new organization creation, we show a special Admin assignment screen
+  // The backend will automatically assign Admin role regardless of what's passed
 
   const roles = [
     {
@@ -412,6 +421,87 @@ const RoleSelectionScreen = ({ onBack, onNext }: {
     }
   ];
 
+  // For new organization creation, show Admin assignment message
+  if (isNewOrganization && !invitationData) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Setting Up Your Organization
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+              As the first user, you'll be automatically assigned the Admin role
+            </p>
+          </div>
+
+          <div className="max-w-2xl mx-auto">
+            <div className="p-8 border-2 border-blue-500 dark:border-blue-500 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+              <div className="flex items-start space-x-4">
+                <div className="p-3 rounded-lg bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-400">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    Admin Role
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    As the organization administrator, you'll have full access to manage users, teams, programs, and invite new members.
+                  </p>
+                  <ul className="space-y-2">
+                    <li className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                      <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Manage users and assign roles
+                    </li>
+                    <li className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                      <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Create and manage teams
+                    </li>
+                    <li className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                      <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Invite new members to your organization
+                    </li>
+                    <li className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                      <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Full access to all programs and work items
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-8">
+            <button
+              onClick={() => onNext("Admin")}
+              disabled={isLoading}
+              className="px-8 py-3 rounded-lg font-semibold text-lg transition-colors duration-200 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Setting up...
+                </div>
+              ) : (
+                "Continue"
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -427,15 +517,64 @@ const RoleSelectionScreen = ({ onBack, onNext }: {
           </button>
           
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Choose Your Role
+            {invitationData ? 'Join Organization' : 'Choose Your Role'}
           </h2>
+          {invitationData && (
+            <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">
+                You've been invited to join:
+              </p>
+              <p className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                {invitationData.organization.name}
+              </p>
+              {invitationData.invitedEmail && (
+                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                  Invited as: {invitationData.invitedEmail}
+                </p>
+              )}
+              <p className="text-sm text-blue-700 dark:text-blue-300 mt-2">
+                Role: <span className="font-medium">{invitationData.role}</span>
+              </p>
+            </div>
+          )}
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Select your primary role to customize your experience
+            {invitationData 
+              ? 'Your role has been pre-selected. Click continue to proceed.'
+              : 'Select your primary role to customize your experience'}
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-8">
-          {roles.map((role) => (
+          {invitationData ? (
+            // If invitation exists, show pre-selected role and continue button
+            <div className="col-span-2 p-6 border-2 border-blue-500 dark:border-blue-500 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-lg font-medium text-gray-900 dark:text-white">
+                    {invitationData.role}
+                  </span>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    This role was assigned by the organization administrator.
+                  </p>
+                </div>
+                <svg
+                  className="w-5 h-5 text-blue-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </div>
+            </div>
+          ) : (
+            // Normal role selection
+            roles.map((role) => (
             <div
               key={role.id}
               onClick={() => setSelectedRole(role.id)}
@@ -473,28 +612,32 @@ const RoleSelectionScreen = ({ onBack, onNext }: {
                 </div>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
 
         <div className="text-center">
           <button
-            onClick={async () => {
-              if (!selectedRole) return;
-              setIsLoading(true);
-              try {
-                // Update user profile with selected role
-                await updateProfile({ role: selectedRole });
-                onNext(selectedRole);
-              } catch (error) {
-                console.error('Failed to update role:', error);
-                onNext(selectedRole); // Continue anyway
-              } finally {
+            onClick={() => {
+              if (invitationData) {
+                // If invitation exists, use the role from invitation
+                setIsLoading(true);
+                onNext(invitationData.role);
+                setIsLoading(false);
+              } else if (selectedRole) {
+                setIsLoading(true);
+                // For new organization, role is automatically Admin (handled by backend)
+                // But we still need to pass something - backend will override it
+                // Map role ID to display name for backend
+                // "engineer" -> "Engineer", "program-manager" -> "Program Manager"
+                const roleDisplayName = selectedRole === "engineer" ? "Engineer" : "Program Manager";
+                onNext(roleDisplayName);
                 setIsLoading(false);
               }
             }}
-            disabled={!selectedRole || isLoading}
+            disabled={(!invitationData && !selectedRole) || isLoading}
             className={`px-8 py-3 rounded-lg font-semibold text-lg transition-colors duration-200 ${
-              selectedRole && !isLoading
+              (invitationData || selectedRole) && !isLoading
                 ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl"
                 : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
             }`}
@@ -505,10 +648,113 @@ const RoleSelectionScreen = ({ onBack, onNext }: {
                 Updating...
               </div>
             ) : (
-              "Continue"
+              invitationData ? "Continue" : "Continue"
             )}
           </button>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const OrganizationNameScreen = ({ 
+  onBack, 
+  onNext, 
+  invitationData 
+}: { 
+  onBack: () => void; 
+  onNext: (organizationName: string) => void;
+  invitationData?: {
+    organization: { id: number; name: string };
+    role: string;
+    invitedEmail?: string;
+  } | null;
+}) => {
+  const [organizationName, setOrganizationName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Skip this screen if joining via invitation (organization already exists)
+  useEffect(() => {
+    if (invitationData) {
+      onNext(""); // Skip organization name for invitations
+    }
+  }, [invitationData, onNext]);
+
+  if (invitationData) {
+    return null; // Don't render if invitation exists
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!organizationName.trim()) {
+      return;
+    }
+    setIsLoading(true);
+    onNext(organizationName.trim());
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-8">
+          <button
+            onClick={onBack}
+            className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 mx-auto"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+          </button>
+          
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Name Your Organization
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            Give your organization a name. You can change this later in settings.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="organizationName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Organization Name
+              </label>
+              <input
+                id="organizationName"
+                type="text"
+                value={organizationName}
+                onChange={(e) => setOrganizationName(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Enter your organization name"
+                required
+                autoFocus
+              />
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                This will be the name of your organization. All users you invite will be part of this organization.
+              </p>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={onBack}
+                className="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+              >
+                Back
+              </button>
+              <button
+                type="submit"
+                disabled={!organizationName.trim() || isLoading}
+                className="px-6 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? "Creating..." : "Continue"}
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -519,6 +765,7 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
   onNext: (result: { requiresSetup: boolean; teamId: number | null }) => void;
 }) => {
   const { user, updateProfile } = useAuth();
+  const [isRefreshingUser, setIsRefreshingUser] = useState(false);
   const { data: teams, isLoading: teamsLoading } = useGetTeamsQuery();
   const { data: programs } = useGetProgramsQuery();
   const [createTeam, { isLoading: isCreatingTeam }] = useCreateTeamMutation();
@@ -537,6 +784,30 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
   const [profilePictureUrl, setProfilePictureUrl] = useState<string>(sanitizeProfilePictureUrl(user?.profilePictureUrl));
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Refresh user on mount if not available (user was just created in role selection)
+  useEffect(() => {
+    const refreshUser = async () => {
+      if (!user && !isRefreshingUser) {
+        setIsRefreshingUser(true);
+        try {
+          const { authService } = await import('@/lib/auth');
+          const refreshedUser = await authService.getCurrentUser();
+          if (refreshedUser) {
+            // User found - auth context will update via listeners
+            console.log('User refreshed in profile screen:', refreshedUser);
+          }
+        } catch (error) {
+          console.error('Failed to refresh user:', error);
+        } finally {
+          setIsRefreshingUser(false);
+        }
+      }
+    };
+    // Small delay to ensure user creation is complete
+    const timer = setTimeout(refreshUser, 300);
+    return () => clearTimeout(timer);
+  }, [user, isRefreshingUser]);
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamDescription, setNewTeamDescription] = useState("");
   const [showCreateTeam, setShowCreateTeam] = useState(false);
@@ -548,11 +819,26 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
     setError(null);
 
     try {
+      // If user doesn't exist in context yet, refresh from server
+      // (User should have been created in role selection step)
+      let currentUser = user;
+      if (!currentUser) {
+        const { authService } = await import('@/lib/auth');
+        currentUser = await authService.getCurrentUser();
+        
+        if (!currentUser) {
+          setError("User not found. Please complete role selection first.");
+          setIsSaving(false);
+          return;
+        }
+      }
+
       await updateProfile({
         disciplineTeamId: selectedTeamId || undefined,
         profilePictureUrl: sanitizeProfilePictureUrl(profilePictureUrl),
       });
 
+      // Use user from context (should be available after refresh above)
       const teamId = selectedTeamId ?? user?.disciplineTeamId ?? null;
       let requiresSetup = false;
       if (teamId) {
@@ -719,12 +1005,27 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
                         }
 
                         try {
+                          // During onboarding, automatically assign the current user as team manager
+                          const currentUserId = user?.userId;
+                          if (!currentUserId) {
+                            setCreateTeamError("User not found. Please refresh the page.");
+                            return;
+                          }
+
                           const newTeam = await createTeam({
                             name: newTeamName.trim(),
                             description: newTeamDescription.trim(),
+                            teamManagerUserId: currentUserId, // Automatically assign creator as team manager
                           }).unwrap();
 
+                          // Automatically assign user to the newly created team
                           setSelectedTeamId(newTeam.id);
+                          
+                          // Update user's disciplineTeamId immediately
+                          await updateProfile({
+                            disciplineTeamId: newTeam.id,
+                          });
+
                           setShowCreateTeam(false);
                           setNewTeamName("");
                           setNewTeamDescription("");
@@ -863,7 +1164,7 @@ const ProgramSetupScreen = ({
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400">
             {mode === "create"
-              ? "Program Managers use programs to organize milestones, part codes, and work items. Let's create your first program to get your team started."
+              ? "Program Managers use programs to organize milestones, parts, and work items. Let's create your first program to get your team started."
               : "Already have programs running? Choose one below so your team can plug into its milestones, parts, and work items right away."}
           </p>
         </div>
@@ -1225,8 +1526,8 @@ const PartSetupScreen = ({
   const [createPart, { isLoading, error }] = useCreatePartMutation();
   const [partCode, setPartCode] = useState("");
   const [partName, setPartName] = useState("");
-  const [level, setLevel] = useState("1");
-  const [revisionLevel, setRevisionLevel] = useState("A");
+  const [level, setLevel] = useState("0");
+  const [revisionLevel, setRevisionLevel] = useState("-");
   const [state, setState] = useState<PartState>(PartState.InWork);
   const [formError, setFormError] = useState<string | null>(null);
   const [createdPart, setCreatedPart] = useState<boolean>(false);
@@ -1256,7 +1557,7 @@ const PartSetupScreen = ({
         <div className="max-w-xl mx-auto text-center">
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Milestone required</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Please create at least one milestone for "{program.name}" before adding part codes.
+            Please create at least one milestone for "{program.name}" before adding parts.
           </p>
           <button
             onClick={onBack}
@@ -1276,7 +1577,7 @@ const PartSetupScreen = ({
       return;
     }
     if (!currentUser?.userId) {
-      setFormError("An assigned user is required to create a part code. Please sign in again.");
+      setFormError("An assigned user is required to create a part. Please sign in again.");
       return;
     }
 
@@ -1284,9 +1585,9 @@ const PartSetupScreen = ({
       await createPart({
         code: partCode,
         partName,
-        level: Number(level || "1"),
+        level: Number(level || "0"),
         state,
-        revisionLevel: revisionLevel || "A",
+        revisionLevel: revisionLevel || "-",
         assignedUserId: currentUser.userId,
         programId: program.id,
       }).unwrap();
@@ -1294,8 +1595,8 @@ const PartSetupScreen = ({
       setCreatedPart(true);
       onComplete();
     } catch (e) {
-      setFormError("Failed to create part code. Please try again.");
-      console.error("Failed to create part code:", e);
+      setFormError("Failed to create part. Please try again.");
+      console.error("Failed to create part:", e);
     }
   };
 
@@ -1314,10 +1615,10 @@ const PartSetupScreen = ({
           </button>
 
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Create a Part Code for "{program.name}"
+            Create a Part for "{program.name}"
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Every program starts with at least one part code assigned to an engineer. Create the first part code so your team can begin collaborating.
+            Every program starts with at least one part assigned to an engineer. Create the first part so your team can begin collaborating.
           </p>
         </div>
 
@@ -1397,7 +1698,7 @@ const PartSetupScreen = ({
 
             {error && (
               <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
-                Failed to create part code. Please try again.
+                Failed to create part. Please try again.
               </div>
             )}
 
@@ -1407,12 +1708,12 @@ const PartSetupScreen = ({
               disabled={isLoading || createdPart}
               className="flex w-full justify-center rounded-md bg-blue-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isLoading ? "Creating Part Code..." : createdPart ? "Part Code Created" : "Create Part Code"}
+              {isLoading ? "Creating Part..." : createdPart ? "Part Created" : "Create Part"}
             </button>
 
             {createdPart && (
               <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
-                Part code created successfully.
+                Part created successfully.
               </div>
             )}
 
@@ -1473,6 +1774,7 @@ type OnboardingStep =
   | "landing"
   | "auth"
   | "role-selection"
+  | "organization-name"
   | "profile"
   | "program-setup"
   | "milestone-setup"
@@ -1482,34 +1784,148 @@ type OnboardingStep =
 // Main Onboarding Component
 const OnboardingPage = () => {
   const router = useRouter();
-  const { user: authUser } = useAuth();
-  const [step, setStep] = useState<OnboardingStep>(() => (authUser ? "role-selection" : "landing"));
+  const searchParams = useSearchParams();
+  const { user: authUser, isLoading: authLoading } = useAuth();
+  const [step, setStep] = useState<OnboardingStep>("landing");
   const [requiresSetup, setRequiresSetup] = useState(false);
   const [createdProgram, setCreatedProgram] = useState<Program | null>(null);
   const [createdMilestone, setCreatedMilestone] = useState<Milestone | null>(null);
   const [userRole, setUserRole] = useState<string>("");
+  const [organizationName, setOrganizationName] = useState<string>("");
   const [showLearnMore, setShowLearnMore] = useState(false);
   const [authMode, setAuthMode] = useState<"signup" | "login">("signup");
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [invitationToken, setInvitationToken] = useState<string | null>(null);
+  const [invitationData, setInvitationData] = useState<{
+    organization: { id: number; name: string };
+    role: string;
+    invitedEmail?: string;
+  } | null>(null);
 
   const goToStep = (next: OnboardingStep) => {
     setStep(next);
   };
 
+  // Check for error and invitation parameters in URL
   useEffect(() => {
-    if (authUser && step === "landing") {
+    const errorParam = searchParams.get('error');
+    const invitationParam = searchParams.get('invitation');
+    
+    if (errorParam === 'authentication_failed') {
+      setAuthError('Authentication failed. Please try again.');
+      // Clear the error parameter from URL
+      router.replace('/onboarding', { scroll: false });
+    }
+    
+    if (invitationParam) {
+      setInvitationToken(invitationParam);
+    }
+  }, [searchParams, router]);
+
+  // Validate invitation token if present
+  const { data: invitationValidation, isLoading: isValidatingInvitation, error: invitationError } = useValidateInvitationQuery(
+    invitationToken || '',
+    { skip: !invitationToken }
+  );
+
+  // Store invitation data when validation succeeds
+  useEffect(() => {
+    if (invitationValidation?.invitation) {
+      setInvitationData({
+        organization: invitationValidation.invitation.organization,
+        role: invitationValidation.invitation.role,
+        invitedEmail: invitationValidation.invitation.invitedEmail,
+      });
+    }
+  }, [invitationValidation]);
+
+  // Check Cognito session on mount
+  useEffect(() => {
+    const checkCognitoSession = async () => {
+      setCheckingSession(true);
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      
+      try {
+        const response = await fetch(`${apiBaseUrl}/auth/me`, {
+          method: 'GET',
+          credentials: 'include', // Include session cookie
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.isAuthenticated && data.userExistsInDb) {
+            // User has Cognito session AND exists in database - redirect to home
+            router.push('/home');
+            return;
+          } else if (data.isAuthenticated && !data.userExistsInDb) {
+            // User has Cognito session but NOT in database
+            // If invitation token exists, validate it first
+            if (invitationToken && !isValidatingInvitation) {
+              if (invitationError || !invitationValidation) {
+                // Invalid invitation - show error
+                setAuthError('Invalid or expired invitation. Please contact the organization administrator.');
+                setStep("landing");
+                setCheckingSession(false);
+                return;
+              }
+              // Valid invitation - show role selection with invitation data
+              setStep("role-selection");
+              setCheckingSession(false);
+              return;
+            } else if (!invitationToken) {
+              // No invitation - show role selection (new user creating org)
+              setStep("role-selection");
+              setCheckingSession(false);
+              return;
+            }
+            // Still validating invitation
+            return;
+          }
+        }
+        
+        // No Cognito session - if invitation exists, user needs to login first
+        if (invitationToken) {
+          // Show landing page but indicate invitation is pending
+          setStep("landing");
+        } else {
+          setStep("landing");
+        }
+      } catch (error) {
+        console.error('Failed to check Cognito session:', error);
+        // On error, show landing page
+        setStep("landing");
+      } finally {
+        setCheckingSession(false);
+      }
+    };
+
+    // Only check session if not validating invitation
+    if (!isValidatingInvitation) {
+      checkCognitoSession();
+    }
+  }, [router, invitationToken, isValidatingInvitation, invitationError, invitationValidation]);
+
+  // If user is authenticated (from local storage), skip to role selection
+  useEffect(() => {
+    if (!checkingSession && authUser && step === "landing") {
       setStep("role-selection");
     }
-  }, [authUser, step]);
+  }, [authUser, step, checkingSession]);
 
-  const handleGetStarted = () => {
-    setAuthMode("signup");
-    goToStep("auth");
+  const redirectToLogin = () => {
+    // Clear any auth error when user tries to login again
+    setAuthError(null);
+    // Preserve invitation token in the login redirect if present
+    const loginUrl = invitationToken 
+      ? `/auth/login?invitation=${invitationToken}`
+      : "/auth/login";
+    router.replace(loginUrl);
   };
 
-  const handleLogin = () => {
-    setAuthMode("login");
-    goToStep("auth");
-  };
+  const handleGetStarted = redirectToLogin;
+  const handleLogin = redirectToLogin;
 
   const handleLearnMore = () => {
     setShowLearnMore(true);
@@ -1519,9 +1935,131 @@ const OnboardingPage = () => {
     goToStep("role-selection");
   };
 
-  const handleRoleNext = (role: string) => {
+  const handleRoleNext = async (role: string) => {
     setUserRole(role);
-    goToStep("profile");
+    
+    // For invitations, create user immediately and go to profile
+    // For new organization creation, go to organization name step first
+    if (invitationToken) {
+      // Create user immediately for invitations
+      await createUserInDatabase(role);
+      goToStep("profile");
+    } else {
+      // For new organization, go to organization name step
+      goToStep("organization-name");
+    }
+  };
+
+  const handleOrganizationNameNext = async (orgName: string) => {
+    setOrganizationName(orgName);
+    try {
+      // Create user with organization name
+      await createUserInDatabase(userRole, orgName);
+      goToStep("profile");
+    } catch (error) {
+      console.error('Error creating user with organization:', error);
+      // Error is already shown via alert in createUserInDatabase
+      // Don't proceed to profile if user creation failed
+    }
+  };
+
+  const createUserInDatabase = async (role: string, orgName?: string) => {
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+    try {
+      const sessionCheck = await fetch(`${apiBaseUrl}/auth/me`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (sessionCheck.ok) {
+        const sessionData = await sessionCheck.json();
+        
+        // If user has Cognito session but not in DB, create user
+        if (sessionData.isAuthenticated && !sessionData.userExistsInDb) {
+          const userInfo = sessionData.userInfo;
+          
+          // Extract username from email (before @)
+          const username = userInfo.email?.split('@')[0] || userInfo.username || 'user';
+          
+          // Call signup endpoint to create user in database
+          // Include invitationToken if present
+          // For new organization creation, backend will automatically assign Admin role
+          // For invitations, use the role from the invitation
+          let roleToSend = role;
+          if (!invitationData) {
+            // For new organization creation, backend will override role to Admin
+            // But we still need to pass a valid role format
+            if (role === "engineer") {
+              roleToSend = "Engineer";
+            } else if (role === "program-manager") {
+              roleToSend = "Program Manager";
+            } else if (role === "Admin") {
+              roleToSend = "Admin"; // Already correct - backend will accept and override
+            }
+            // If role is already in display format, keep it as is
+          } else {
+            // Use role from invitation (already in display format)
+            roleToSend = invitationData.role;
+          }
+          
+          // Ensure phone number is provided (required by backend)
+          const phoneNumber = userInfo.phone_number || userInfo.phoneNumber || '+1234567890'; // Fallback if not provided
+          
+          const signupBody: any = {
+            username: username,
+            name: userInfo.name || '',
+            email: userInfo.email || '',
+            phoneNumber: phoneNumber,
+            role: roleToSend, // Backend will override to Admin for new orgs (no invitation token)
+          };
+          
+          // Include organization name for new organization creation
+          if (orgName && !invitationToken) {
+            signupBody.organizationName = orgName;
+          }
+          
+          if (invitationToken) {
+            signupBody.invitationToken = invitationToken;
+          }
+          
+          const signupResponse = await fetch(`${apiBaseUrl}/onboarding/signup`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include', // Include session cookie
+            body: JSON.stringify(signupBody),
+          });
+
+          if (signupResponse.ok) {
+            const result = await signupResponse.json();
+            console.log('User created in database:', result);
+            
+            // User is now created - the profile screen will refresh user on mount
+            // Small delay to ensure database is ready
+            await new Promise(resolve => setTimeout(resolve, 500));
+          } else {
+            let errorData;
+            try {
+              errorData = await signupResponse.json();
+            } catch (e) {
+              errorData = { message: `HTTP ${signupResponse.status}: ${signupResponse.statusText}` };
+            }
+            console.error('Failed to create user:', errorData);
+            console.error('Response status:', signupResponse.status);
+            console.error('Response headers:', Object.fromEntries(signupResponse.headers.entries()));
+            
+            // Show error to user - use alert for now since we don't have error state in this component
+            alert(errorData.message || `Failed to create user: ${signupResponse.status}`);
+            // Don't continue - show error instead
+            throw new Error(errorData.message || 'Failed to create user');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error; // Re-throw so caller can handle it
+    }
   };
 
   const handleProfileNext = ({ requiresSetup }: { requiresSetup: boolean; teamId: number | null }) => {
@@ -1575,10 +2113,17 @@ const OnboardingPage = () => {
         previous = "landing";
         break;
       case "role-selection":
-        previous = "auth";
+        // If user came from Cognito (no auth step), go back to landing
+        // Otherwise go back to auth
+        previous = "landing"; // Skip auth step for Cognito users
+        break;
+      case "organization-name":
+        previous = "role-selection";
         break;
       case "profile":
-        previous = "role-selection";
+        // If invitation exists, go back to role-selection (skip organization-name)
+        // Otherwise go back to organization-name
+        previous = invitationToken ? "role-selection" : "organization-name";
         break;
       case "program-setup":
         previous = "profile";
@@ -1599,15 +2144,85 @@ const OnboardingPage = () => {
     }
   };
 
+      // Show loading while checking Cognito session or validating invitation
+      if (checkingSession || isValidatingInvitation) {
+        return (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">
+                {isValidatingInvitation ? 'Validating invitation...' : 'Checking authentication...'}
+              </p>
+            </div>
+          </div>
+        );
+      }
+      
+      // Show error if invitation validation failed
+      if (invitationToken && invitationError) {
+        return (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="max-w-md mx-auto text-center p-8">
+              <div className="mb-4">
+                <svg className="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Invalid Invitation</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                This invitation link is invalid, expired, or has already been used. Please contact the organization administrator for a new invitation.
+              </p>
+              <button
+                onClick={() => {
+                  setInvitationToken(null);
+                  router.replace('/onboarding');
+                }}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Go to Home
+              </button>
+            </div>
+          </div>
+        );
+      }
+
   const renderCurrentStep = () => {
     switch (step) {
       case "landing":
         return (
-          <LandingScreen
-            onGetStarted={handleGetStarted}
-            onLogin={handleLogin}
-            onLearnMore={handleLearnMore}
-          />
+          <>
+            {authError && (
+              <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 shadow-lg">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm font-medium text-red-800 dark:text-red-200">{authError}</p>
+                    </div>
+                    <div className="ml-4 flex-shrink-0">
+                      <button
+                        onClick={() => setAuthError(null)}
+                        className="inline-flex text-red-400 hover:text-red-600 dark:hover:text-red-300"
+                      >
+                        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <LandingScreen
+              onGetStarted={handleGetStarted}
+              onLogin={handleLogin}
+              onLearnMore={handleLearnMore}
+            />
+          </>
         );
       case "auth":
         return (
@@ -1617,13 +2232,23 @@ const OnboardingPage = () => {
             initialMode={authMode}
           />
         );
-      case "role-selection":
-        return (
-          <RoleSelectionScreen
-            onBack={handleBack}
-            onNext={handleRoleNext}
-          />
-        );
+          case "role-selection":
+            return (
+              <RoleSelectionScreen
+                onBack={handleBack}
+                onNext={handleRoleNext}
+                invitationData={invitationData}
+                isNewOrganization={!invitationToken}
+              />
+            );
+          case "organization-name":
+            return (
+              <OrganizationNameScreen
+                onBack={handleBack}
+                onNext={handleOrganizationNameNext}
+                invitationData={invitationData}
+              />
+            );
       case "profile":
         return (
           <ProfileCompletionScreen

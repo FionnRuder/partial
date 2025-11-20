@@ -110,7 +110,8 @@ const Programs = () => {
                 if (!typeCount[item.workItemType].subtypes) {
                     typeCount[item.workItemType].subtypes = {};
                 }
-                const subtype = item.deliverableDetail.deliverableType;
+                const type = item.deliverableDetail.deliverableType;
+                const subtype = typeof type === 'string' ? type : (type && typeof type === 'object' && 'name' in type ? (type as { name: string }).name : 'Unknown');
                 if (!typeCount[item.workItemType].subtypes![subtype]) {
                     typeCount[item.workItemType].subtypes![subtype] = { openCount: 0, completedCount: 0, totalCount: 0 };
                 }
@@ -124,7 +125,8 @@ const Programs = () => {
                 if (!typeCount[item.workItemType].subtypes) {
                     typeCount[item.workItemType].subtypes = {};
                 }
-                const subtype = item.issueDetail.issueType;
+                const type = item.issueDetail.issueType;
+                const subtype = typeof type === 'string' ? type : (type && typeof type === 'object' && 'name' in type ? (type as { name: string }).name : 'Unknown');
                 if (!typeCount[item.workItemType].subtypes![subtype]) {
                     typeCount[item.workItemType].subtypes![subtype] = { openCount: 0, completedCount: 0, totalCount: 0 };
                 }
@@ -171,17 +173,45 @@ const Programs = () => {
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const ganttTasks = useMemo(() => {
-        return (
-            programs?.map((program) => ({
-                start: new Date(program.startDate as string),
-                end: new Date(program.endDate as string),
-                name: program.name,
-                id: `Program-${program.id}`,
-                type: "program" as TaskTypeItems,
-                progress: 50,
-                isDisabled: false
-            })) || []
-        )
+        if (!programs || programs.length === 0) {
+            return [];
+        }
+        
+        const validTasks = programs
+            .filter((program) => {
+                // Only include programs with valid start and end dates
+                return program.startDate && program.endDate;
+            })
+            .map((program) => {
+                const startDate = new Date(program.startDate as string);
+                const endDate = new Date(program.endDate as string);
+                
+                // Validate dates are not invalid
+                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                    return null;
+                }
+                
+                return {
+                    start: startDate,
+                    end: endDate,
+                    name: program.name,
+                    id: `Program-${program.id}`,
+                    type: "project" as TaskTypeItems, // Use "project" instead of "program" - valid Gantt type
+                    progress: 50,
+                    isDisabled: false
+                };
+            })
+            .filter((task) => task !== null);
+        
+        return validTasks as Array<{
+            start: Date;
+            end: Date;
+            name: string;
+            id: string;
+            type: TaskTypeItems;
+            progress: number;
+            isDisabled: boolean;
+        }>;
     }, [programs]);
 
     const handleViewModeChange = (
@@ -300,15 +330,21 @@ const Programs = () => {
 
                 <div className="overflow-hidden rounded-md bg-white shadow dark:bg-dark-secondary dark:text-white">
                     <div className="timeline">
-                        <Gantt
-                            tasks={ganttTasks}
-                            {...displayOptions}
-                            columnWidth={displayOptions.viewMode === ViewMode.Month ? 150 : 100}
-                            listCellWidth="200px"
-                            projectBackgroundColor={isDarkMode ? "#101214" : "#1f2937"}
-                            projectProgressColor={isDarkMode ? "#1f2937" : "#aeb8c2"}
-                            projectProgressSelectedColor={isDarkMode ? "#000" : "#9ba1a6"}
-                        />
+                        {ganttTasks.length > 0 ? (
+                            <Gantt
+                                tasks={ganttTasks}
+                                {...displayOptions}
+                                columnWidth={displayOptions.viewMode === ViewMode.Month ? 150 : 100}
+                                listCellWidth="200px"
+                                projectBackgroundColor={isDarkMode ? "#101214" : "#1f2937"}
+                                projectProgressColor={isDarkMode ? "#1f2937" : "#aeb8c2"}
+                                projectProgressSelectedColor={isDarkMode ? "#000" : "#9ba1a6"}
+                            />
+                        ) : (
+                            <div className="flex items-center justify-center p-8 text-gray-500 dark:text-gray-400">
+                                No programs with valid dates to display. Create a program with start and end dates to see it on the timeline.
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

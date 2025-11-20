@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, UserRole } from "@prisma/client";
+import { isValidRole, roleToPrismaEnum } from "../lib/roles";
 
 const prisma = new PrismaClient();
 
@@ -135,6 +136,9 @@ export const createUser = async (
       }
     }
 
+    // Convert role to Prisma enum format (e.g., "Program Manager" -> "ProgramManager")
+    const prismaRole: UserRole = roleToPrismaEnum(role);
+
     const user = await prisma.user.create({
       data: {
         cognitoId,
@@ -142,7 +146,7 @@ export const createUser = async (
         name,
         email,
         phoneNumber,
-        role,
+        role: prismaRole, // Use Prisma enum format
         profilePictureUrl: profilePictureUrl || null,
         disciplineTeamId: disciplineTeamId ? Number(disciplineTeamId) : null,
         organizationId: req.auth.organizationId,
@@ -188,17 +192,30 @@ export const updateUser = async (
       }
     }
 
+    // Convert role to Prisma enum format if provided
+    const updateData: any = {
+      ...(name && { name }),
+      ...(phoneNumber && { phoneNumber }),
+      ...(profilePictureUrl !== undefined && { profilePictureUrl }),
+      ...(disciplineTeamId !== undefined && {
+        disciplineTeamId: disciplineTeamId ? Number(disciplineTeamId) : null,
+      }),
+    };
+    
+    if (role) {
+      // Validate role before updating
+      if (!isValidRole(role)) {
+        res.status(400).json({ 
+          message: `Invalid role. Must be one of: Admin, Manager, Program Manager, Engineer, Viewer` 
+        });
+        return;
+      }
+      updateData.role = roleToPrismaEnum(role) as UserRole; // Convert to Prisma enum format
+    }
+
     const updateResult = await prisma.user.updateMany({
       where: { userId: userIdNumber, organizationId: req.auth.organizationId },
-      data: {
-        ...(name && { name }),
-        ...(phoneNumber && { phoneNumber }),
-        ...(role && { role }),
-        ...(profilePictureUrl !== undefined && { profilePictureUrl }),
-        ...(disciplineTeamId !== undefined && {
-          disciplineTeamId: disciplineTeamId ? Number(disciplineTeamId) : null,
-        }),
-      },
+      data: updateData,
     });
 
     if (updateResult.count === 0) {

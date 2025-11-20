@@ -12,6 +12,7 @@ export interface AuthUser {
   role: string;
   profilePictureUrl?: string;
   disciplineTeamId?: number;
+  organizationName?: string;
 }
 
 export interface AuthTokens {
@@ -100,15 +101,18 @@ export class MockAuthService implements AuthService {
   }
 
   async signUp(data: SignUpData): Promise<AuthUser> {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // NOTE: With Cognito integration, signup flow has changed:
+    // 1. User must first sign up in Cognito (via Cognito hosted UI or API)
+    // 2. After Cognito authentication, user is redirected to /auth/callback
+    // 3. Callback checks if user exists in DB, if not redirects to /onboarding
+    // 4. Onboarding page calls /onboarding/signup with session cookie (cognitoId comes from session)
     
-    const cognitoId = `mock-${Date.now()}`;
+    // For mock auth service, we'll still try to call the endpoint
+    // but the backend will reject it if there's no Cognito session
     const username = data.email.split('@')[0];
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
     
-    // Try to save user to database via onboarding endpoint
     let user: AuthUser | null = null;
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
     
     try {
       const headers: HeadersInit = {
@@ -116,11 +120,13 @@ export class MockAuthService implements AuthService {
       };
 
       // Use onboarding endpoint which creates both organization and user
+      // NOTE: This will fail without a Cognito session - user should authenticate first
       const response = await fetch(`${apiBaseUrl}/onboarding/signup`, {
         method: 'POST',
         headers,
+        credentials: 'include', // Include session cookie
         body: JSON.stringify({
-          cognitoId,
+          // cognitoId is now retrieved from session on server side
           username,
           name: data.name,
           email: data.email,
@@ -152,6 +158,7 @@ export class MockAuthService implements AuthService {
           role: result.user.role,
           profilePictureUrl: result.user.profilePictureUrl || undefined,
           disciplineTeamId: result.user.disciplineTeamId || undefined,
+          organizationName: result.organization.name || undefined,
         };
         console.log('User and organization created in database:', user);
       } else {
@@ -236,9 +243,16 @@ export class MockAuthService implements AuthService {
   }
 
   async signOut(): Promise<void> {
+    // Clear local storage first
     this.currentUser = null;
     this.saveToStorage();
     this.notifyListeners();
+    
+    // Redirect to server logout endpoint
+    // The server will clear the session and redirect to Cognito logout,
+    // which will then redirect back to the frontend
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+    window.location.href = `${apiBaseUrl}/auth/logout`;
   }
 
   async refreshTokens(): Promise<AuthTokens> {
@@ -251,6 +265,53 @@ export class MockAuthService implements AuthService {
   }
 
   async getCurrentUser(): Promise<AuthUser | null> {
+    // First check if we have a local user
+    if (this.currentUser) {
+      return this.currentUser;
+    }
+
+    // Check for Cognito session on server
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+    try {
+      const response = await fetch(`${apiBaseUrl}/auth/me`, {
+        method: 'GET',
+        credentials: 'include', // Include session cookie
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // If user has Cognito session and exists in database, use that
+        if (data.isAuthenticated && data.userExistsInDb && data.user) {
+          const user: AuthUser = {
+            userId: data.user.userId,
+            organizationId: data.user.organizationId,
+            cognitoId: data.userInfo?.sub || '',
+            username: data.user.username,
+            name: data.user.name,
+            email: data.user.email,
+            phoneNumber: data.user.phoneNumber,
+            role: data.user.role,
+            profilePictureUrl: data.user.profilePictureUrl || undefined,
+            disciplineTeamId: data.user.disciplineTeamId || undefined,
+            organizationName: data.organization?.name || undefined,
+          };
+          this.currentUser = user;
+          this.saveToStorage();
+          this.notifyListeners();
+          return user;
+        }
+        
+        // If user has Cognito session but not in DB, return null (they need onboarding)
+        // The onboarding page will handle this case
+        if (data.isAuthenticated && !data.userExistsInDb) {
+          return null; // User needs to complete onboarding
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check Cognito session:', error);
+    }
+
     return this.currentUser;
   }
 

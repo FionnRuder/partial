@@ -3,30 +3,45 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+/**
+ * Authentication middleware - Cognito session-based only
+ * Requires user to be authenticated via Cognito OIDC and have a valid session
+ */
 export const authenticate = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const userIdHeader = req.header("x-user-id");
-
-    if (!userIdHeader) {
-      res.status(401).json({ message: "Missing x-user-id header" });
+    // Check for session-based authentication (Cognito OIDC)
+    if (!req.session?.userInfo) {
+      // Session exists but no userInfo - likely session was lost (server restart with memory store)
+      // or user never completed login. Destroy the invalid session and return 401.
+      if (req.session) {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error('Error destroying invalid session:', err);
+          }
+        });
+      }
+      
+      res.status(401).json({ 
+        message: "Session expired or invalid. Please log in again.",
+        requiresLogin: true
+      });
       return;
     }
 
-    const userId = Number(userIdHeader);
-
-    if (!Number.isInteger(userId) || userId <= 0) {
-      res
-        .status(400)
-        .json({ message: "x-user-id header must be a positive integer" });
-      return;
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { userId },
+    const userInfo = req.session.userInfo;
+    
+    // Try to find user by email or cognitoId (sub)
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: userInfo.email },
+          { cognitoId: userInfo.sub },
+        ],
+      },
       select: {
         userId: true,
         organizationId: true,
@@ -35,11 +50,17 @@ export const authenticate = async (
     });
 
     if (!user) {
-      console.error(`User not found for userId: ${userId} (type: ${typeof userId})`);
-      res.status(401).json({ message: "User not found for provided x-user-id" });
+      // User authenticated with Cognito but not found in database
+      // This happens during first login - redirect to onboarding
+      console.warn(`Cognito user not found in database: ${userInfo.email || userInfo.sub}`);
+      res.status(401).json({ 
+        message: "User authenticated but not found in database. Please complete onboarding.",
+        requiresOnboarding: true
+      });
       return;
     }
 
+    // User found - attach to request and continue
     req.auth = {
       userId: user.userId,
       organizationId: user.organizationId,

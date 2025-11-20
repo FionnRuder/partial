@@ -20,12 +20,14 @@ type WorkItemCreate = {
   authorUserId: number;
   assignedUserId: number;
   issueDetail?: {
-    issueType: string;
+    issueTypeId?: number; // New: prefer ID
+    issueType?: string; // Legacy: name (will be looked up)
     rootCause?: string;
     correctiveAction?: string;
   };
   deliverableDetail?: {
-    deliverableType: string;
+    deliverableTypeId?: number; // New: prefer ID
+    deliverableType?: string; // Legacy: name (will be looked up)
   };
   partIds?: number[];
 };
@@ -49,12 +51,14 @@ type WorkItemUpdate = {
   authorUserId?: number;
   assignedUserId?: number;
   issueDetail?: {
-    issueType?: string;
+    issueTypeId?: number; // New: prefer ID
+    issueType?: string; // Legacy: name (will be looked up)
     rootCause?: string;
     correctiveAction?: string;
   };
   deliverableDetail?: {
-    deliverableType?: string;
+    deliverableTypeId?: number; // New: prefer ID
+    deliverableType?: string; // Legacy: name (will be looked up)
   };
   partIds?: number[];
 };
@@ -79,8 +83,16 @@ export const getWorkItemById = async (req: Request, res: Response): Promise<void
       include: {
         program: true,
         dueByMilestone: true,
-        deliverableDetail: true,
-        issueDetail: true,
+        deliverableDetail: {
+          include: {
+            deliverableType: true,
+          },
+        },
+        issueDetail: {
+          include: {
+            issueType: true,
+          },
+        },
         authorUser: true,
         assigneeUser: true,
         partNumbers: {
@@ -156,8 +168,16 @@ export const getWorkItems = async (req: Request, res: Response): Promise<void> =
     const workItemInclude = {
       program: true,
       dueByMilestone: true,
-      deliverableDetail: true,
-      issueDetail: true,
+      deliverableDetail: {
+        include: {
+          deliverableType: true,
+        },
+      },
+      issueDetail: {
+        include: {
+          issueType: true,
+        },
+      },
       authorUser: true,
       assigneeUser: true,
       partNumbers: {
@@ -282,8 +302,16 @@ export const getWorkItemsByUser = async (req: Request, res: Response): Promise<v
         ],
       },
       include: {
-        deliverableDetail: true,
-        issueDetail: true,
+        deliverableDetail: {
+          include: {
+            deliverableType: true,
+          },
+        },
+        issueDetail: {
+          include: {
+            issueType: true,
+          },
+        },
         authorUser: true,
         assigneeUser: true,
       },
@@ -366,6 +394,44 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
         }
       }
 
+      // Look up issue type ID if name is provided
+      let issueTypeId: number | undefined;
+      if (body.issueDetail) {
+        if (body.issueDetail.issueTypeId) {
+          issueTypeId = body.issueDetail.issueTypeId;
+        } else if (body.issueDetail.issueType) {
+          const issueType = await tx.issueType.findFirst({
+            where: {
+              organizationId,
+              name: body.issueDetail.issueType,
+            },
+          });
+          if (!issueType) {
+            throw new Error(`Issue type "${body.issueDetail.issueType}" not found`);
+          }
+          issueTypeId = issueType.id;
+        }
+      }
+
+      // Look up deliverable type ID if name is provided
+      let deliverableTypeId: number | undefined;
+      if (body.deliverableDetail) {
+        if (body.deliverableDetail.deliverableTypeId) {
+          deliverableTypeId = body.deliverableDetail.deliverableTypeId;
+        } else if (body.deliverableDetail.deliverableType) {
+          const deliverableType = await tx.deliverableType.findFirst({
+            where: {
+              organizationId,
+              name: body.deliverableDetail.deliverableType,
+            },
+          });
+          if (!deliverableType) {
+            throw new Error(`Deliverable type "${body.deliverableDetail.deliverableType}" not found`);
+          }
+          deliverableTypeId = deliverableType.id;
+        }
+      }
+
       const workItemData: any = {
         organizationId,
         workItemType: body.workItemType,
@@ -384,19 +450,19 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
         dueByMilestoneId: Number(body.dueByMilestoneId),
         authorUserId: Number(body.authorUserId),
         assignedUserId: Number(body.assignedUserId),
-        issueDetail: body.issueDetail
+        issueDetail: body.issueDetail && issueTypeId
           ? {
               create: {
-                issueType: body.issueDetail.issueType,
+                issueTypeId: issueTypeId,
                 rootCause: body.issueDetail.rootCause,
                 correctiveAction: body.issueDetail.correctiveAction,
               },
             }
           : undefined,
-        deliverableDetail: body.deliverableDetail
+        deliverableDetail: body.deliverableDetail && deliverableTypeId
           ? {
               create: {
-                deliverableType: body.deliverableDetail.deliverableType,
+                deliverableTypeId: deliverableTypeId,
               },
             }
           : undefined,
@@ -415,8 +481,16 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
         include: {
           program: true,
           dueByMilestone: true,
-          deliverableDetail: true,
-          issueDetail: true,
+          deliverableDetail: {
+            include: {
+              deliverableType: true,
+            },
+          },
+          issueDetail: {
+            include: {
+              issueType: true,
+            },
+          },
           authorUser: true,
           assigneeUser: true,
           comments: {
@@ -445,10 +519,25 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
       "Assigned user not found",
       "One or more parts not found",
     ]);
+    
+    const knownTypeNotFoundMessages = new Set([
+      /^Issue type ".*" not found$/,
+      /^Deliverable type ".*" not found$/,
+    ]);
 
     if (error instanceof Error && knownNotFoundMessages.has(error.message)) {
       res.status(404).json({ message: error.message });
       return;
+    }
+
+    // Check for type not found errors
+    if (error instanceof Error) {
+      for (const pattern of knownTypeNotFoundMessages) {
+        if (pattern.test(error.message)) {
+          res.status(404).json({ message: error.message });
+          return;
+        }
+      }
     }
 
     res.status(500).json({ message: `Error creating work item: ${error.message}` });
@@ -624,8 +713,16 @@ export const editWorkItem = async (req: Request, res: Response) => {
         include: {
           program: true,
           dueByMilestone: true,
-          deliverableDetail: true,
-          issueDetail: true,
+          deliverableDetail: {
+            include: {
+              deliverableType: true,
+            },
+          },
+          issueDetail: {
+            include: {
+              issueType: true,
+            },
+          },
           authorUser: true,
           assigneeUser: true,
           comments: {
@@ -640,55 +737,114 @@ export const editWorkItem = async (req: Request, res: Response) => {
         },
       });
 
-      if (updates.issueDetail && updates.issueDetail.issueType) {
-        const existingIssueDetail = await tx.issueDetail.findUnique({
-          where: { id: workItemIdNumber },
-        });
+      // Handle issue detail updates
+      if (updates.issueDetail) {
+        let issueTypeId: number | undefined;
+        
+        if (updates.issueDetail.issueTypeId) {
+          issueTypeId = updates.issueDetail.issueTypeId;
+        } else if (updates.issueDetail.issueType) {
+          const issueType = await tx.issueType.findFirst({
+            where: {
+              organizationId,
+              name: updates.issueDetail.issueType,
+            },
+          });
+          if (!issueType) {
+            throw new Error(`Issue type "${updates.issueDetail.issueType}" not found`);
+          }
+          issueTypeId = issueType.id;
+        }
 
-        if (existingIssueDetail) {
-          await tx.issueDetail.update({
+        if (issueTypeId !== undefined) {
+          const existingIssueDetail = await tx.issueDetail.findUnique({
             where: { id: workItemIdNumber },
-            data: {
-              issueType: updates.issueDetail.issueType as any,
-              ...(updates.issueDetail.rootCause !== undefined && {
-                rootCause: updates.issueDetail.rootCause,
-              }),
-              ...(updates.issueDetail.correctiveAction !== undefined && {
-                correctiveAction: updates.issueDetail.correctiveAction,
-              }),
-            },
           });
-        } else {
-          await tx.issueDetail.create({
-            data: {
-              id: workItemIdNumber,
-              issueType: updates.issueDetail.issueType as any,
-              rootCause: updates.issueDetail.rootCause || null,
-              correctiveAction: updates.issueDetail.correctiveAction || null,
-            },
+
+          if (existingIssueDetail) {
+            await tx.issueDetail.update({
+              where: { id: workItemIdNumber },
+              data: {
+                issueTypeId: issueTypeId,
+                ...(updates.issueDetail.rootCause !== undefined && {
+                  rootCause: updates.issueDetail.rootCause,
+                }),
+                ...(updates.issueDetail.correctiveAction !== undefined && {
+                  correctiveAction: updates.issueDetail.correctiveAction,
+                }),
+              },
+            });
+          } else {
+            await tx.issueDetail.create({
+              data: {
+                id: workItemIdNumber,
+                issueTypeId: issueTypeId,
+                rootCause: updates.issueDetail.rootCause || null,
+                correctiveAction: updates.issueDetail.correctiveAction || null,
+              },
+            });
+          }
+        } else if (updates.issueDetail.rootCause !== undefined || updates.issueDetail.correctiveAction !== undefined) {
+          // Update rootCause/correctiveAction without changing type
+          const existingIssueDetail = await tx.issueDetail.findUnique({
+            where: { id: workItemIdNumber },
           });
+
+          if (existingIssueDetail) {
+            await tx.issueDetail.update({
+              where: { id: workItemIdNumber },
+              data: {
+                ...(updates.issueDetail.rootCause !== undefined && {
+                  rootCause: updates.issueDetail.rootCause,
+                }),
+                ...(updates.issueDetail.correctiveAction !== undefined && {
+                  correctiveAction: updates.issueDetail.correctiveAction,
+                }),
+              },
+            });
+          }
         }
       }
 
-      if (updates.deliverableDetail && updates.deliverableDetail.deliverableType) {
-        const existingDeliverableDetail = await tx.deliverableDetail.findUnique({
-          where: { id: workItemIdNumber },
-        });
+      // Handle deliverable detail updates
+      if (updates.deliverableDetail) {
+        let deliverableTypeId: number | undefined;
+        
+        if (updates.deliverableDetail.deliverableTypeId) {
+          deliverableTypeId = updates.deliverableDetail.deliverableTypeId;
+        } else if (updates.deliverableDetail.deliverableType) {
+          const deliverableType = await tx.deliverableType.findFirst({
+            where: {
+              organizationId,
+              name: updates.deliverableDetail.deliverableType,
+            },
+          });
+          if (!deliverableType) {
+            throw new Error(`Deliverable type "${updates.deliverableDetail.deliverableType}" not found`);
+          }
+          deliverableTypeId = deliverableType.id;
+        }
 
-        if (existingDeliverableDetail) {
-          await tx.deliverableDetail.update({
+        if (deliverableTypeId !== undefined) {
+          const existingDeliverableDetail = await tx.deliverableDetail.findUnique({
             where: { id: workItemIdNumber },
-            data: {
-              deliverableType: updates.deliverableDetail.deliverableType as any,
-            },
           });
-        } else {
-          await tx.deliverableDetail.create({
-            data: {
-              id: workItemIdNumber,
-              deliverableType: updates.deliverableDetail.deliverableType as any,
-            },
-          });
+
+          if (existingDeliverableDetail) {
+            await tx.deliverableDetail.update({
+              where: { id: workItemIdNumber },
+              data: {
+                deliverableTypeId: deliverableTypeId,
+              },
+            });
+          } else {
+            await tx.deliverableDetail.create({
+              data: {
+                id: workItemIdNumber,
+                deliverableTypeId: deliverableTypeId,
+              },
+            });
+          }
         }
       }
 
@@ -697,8 +853,16 @@ export const editWorkItem = async (req: Request, res: Response) => {
         include: {
           program: true,
           dueByMilestone: true,
-          deliverableDetail: true,
-          issueDetail: true,
+          deliverableDetail: {
+            include: {
+              deliverableType: true,
+            },
+          },
+          issueDetail: {
+            include: {
+              issueType: true,
+            },
+          },
           authorUser: true,
           assigneeUser: true,
           comments: {
