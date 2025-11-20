@@ -30,7 +30,23 @@ const UserCard = ({ user }: Props) => {
           />
         ) : (
           <div className="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm font-medium">
-            {user.username?.substring(0, 2).toUpperCase() || "?"}
+            {(() => {
+              // Get initials from name (first letter of first name and first letter of last name)
+              if (user.name) {
+                const names = user.name.trim().split(" ").filter(Boolean);
+                if (names.length >= 2) {
+                  return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+                }
+                if (names.length === 1 && names[0].length > 0) {
+                  return names[0][0].toUpperCase();
+                }
+              }
+              // Fallback to username if name is not available
+              if (user.username) {
+                return user.username.substring(0, 2).toUpperCase();
+              }
+              return "?";
+            })()}
           </div>
         )}
         <div>

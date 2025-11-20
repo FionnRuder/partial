@@ -110,7 +110,17 @@ const WorkItemCard = ({ workItem }: Props) => {
             <p className="font-medium mb-1">Issue Details:</p>
             <div className="ml-3 space-y-1 text-xs">
               <div>
-                <span className="font-medium">Type:</span> {IssueTypeLabels[workItem.issueDetail.issueType]}
+                <span className="font-medium">Type:</span> {(() => {
+                  const type = workItem.issueDetail.issueType;
+                  if (typeof type === 'string') {
+                    return IssueTypeLabels[type] || type;
+                  }
+                  if (type && typeof type === 'object' && 'name' in type) {
+                    const typeName = (type as { name: string }).name;
+                    return IssueTypeLabels[typeName] || typeName;
+                  }
+                  return 'Unknown';
+                })()}
               </div>
               {workItem.issueDetail.rootCause && (
                 <div>
@@ -130,7 +140,17 @@ const WorkItemCard = ({ workItem }: Props) => {
           <div className="border-t pt-2">
             <p className="font-medium mb-1">Deliverable Details:</p>
             <div className="ml-3 text-xs">
-              <span className="font-medium">Type:</span> {DeliverableTypeLabels[workItem.deliverableDetail.deliverableType]}
+              <span className="font-medium">Type:</span> {(() => {
+                const type = workItem.deliverableDetail.deliverableType;
+                if (typeof type === 'string') {
+                  return DeliverableTypeLabels[type] || type;
+                }
+                if (type && typeof type === 'object' && 'name' in type) {
+                  const typeName = (type as { name: string }).name;
+                  return DeliverableTypeLabels[typeName] || typeName;
+                }
+                return 'Unknown';
+              })()}
             </div>
           </div>
         )}

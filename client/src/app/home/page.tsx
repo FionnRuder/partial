@@ -19,6 +19,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Header from "@/components/Header";
 import BurndownChart from "@/components/BurndownChart";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Bar,
   BarChart,
@@ -171,11 +172,17 @@ const formatDate = (dateString: string) => {
 
 const HomePage = () => {
   const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [selectedProgramId, setSelectedProgramId] = useState<number | "all">("all");
   const [chartMode, setChartMode] = useState<"type" | "priority">("type");
 
-  const { data: programs, isLoading: isProgramsLoading } = useGetProgramsQuery();
-  const { data: teams, isLoading: isTeamsLoading } = useGetTeamsQuery();
+  // Call hooks unconditionally (React rules of hooks)
+  const { data: programs, isLoading: isProgramsLoading } = useGetProgramsQuery(undefined, {
+    skip: !isAuthenticated, // Skip API calls if not authenticated
+  });
+  const { data: teams, isLoading: isTeamsLoading } = useGetTeamsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
   const [selectedWorkItemType, setSelectedWorkItemType] = useState<WorkItemType | "all">("all");
   const [selectedPriority, setSelectedPriority] = useState<Priority | "all">("all");
@@ -186,12 +193,21 @@ const HomePage = () => {
     setShowPastMilestones(false);
   }, [selectedProgramId]);
 
+  // Redirect to onboarding if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push("/onboarding");
+    }
+  }, [isAuthenticated, authLoading, router]);
+
   // Call all hooks unconditionally to follow rules of hooks
   const {
     data: allWorkItems,
     isLoading: isAllWorkItemsLoading,
     isError: allWorkItemsError,
-  } = useGetWorkItemsQuery();
+  } = useGetWorkItemsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
   const {
     data: programWorkItems,
@@ -199,14 +215,16 @@ const HomePage = () => {
     isError: programWorkItemsError,
   } = useGetWorkItemsByProgramQuery(
     { programId: selectedProgramId === "all" ? 0 : selectedProgramId },
-    { skip: selectedProgramId === "all" }
+    { skip: selectedProgramId === "all" || !isAuthenticated }
   );
 
   const {
     data: allMilestones,
     isLoading: isAllMilestonesLoading,
     isError: allMilestonesError,
-  } = useGetMilestonesQuery();
+  } = useGetMilestonesQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
   const {
     data: programMilestones,
@@ -214,7 +232,7 @@ const HomePage = () => {
     isError: programMilestonesError,
   } = useGetMilestonesByProgramQuery(
     { programId: selectedProgramId === "all" ? 0 : selectedProgramId },
-    { skip: selectedProgramId === "all" }
+    { skip: selectedProgramId === "all" || !isAuthenticated }
   );
 
   // Conditionally use the appropriate data based on selectedProgramId
@@ -249,6 +267,15 @@ const HomePage = () => {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+
+  // Don't render anything if not authenticated (will redirect)
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   if (isWorkItemsLoading || isProgramsLoading || isTeamsLoading)
     return <div>Loading...</div>;

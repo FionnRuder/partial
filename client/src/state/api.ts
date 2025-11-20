@@ -26,98 +26,61 @@ export const StatusLabels: Record<Status, string> = {
   [Status.Completed]: "Completed",
 };
 
-export enum DeliverableType {
-  SystemSubsystemRequirementsSpecificationSRS = "SystemSubsystemRequirementsSpecificationSRS",
-  InterfaceControlDocumentICD = "InterfaceControlDocumentICD",
-  PreliminaryDesignReviewPDRPackage = "PreliminaryDesignReviewPDRPackage",
-  RiskFailureModeEffectsAnalysisFMEADFMEAReport = "RiskFailureModeEffectsAnalysisFMEADFMEAReport",
-  DevelopmentVerificationPlanVVMatrix = "DevelopmentVerificationPlanVVMatrix",
-  EngineeringDrawingCADModel = "EngineeringDrawingCADModel",
-  BillofMaterialsBOM = "BillofMaterialsBOM",
-  StressStructuralAnalysisReport = "StressStructuralAnalysisReport",
-  ThermalAnalysisReport = "ThermalAnalysisReport",
-  ElectricalSchematicsPCBLayouts = "ElectricalSchematicsPCBLayouts",
-  DesignforManufacturabilityDFMDesignforTestDFTReviewReport = "DesignforManufacturabilityDFMDesignforTestDFTReviewReport",
-  CriticalDesignReviewCDRPackage = "CriticalDesignReviewCDRPackage",
-  WorkInstructionsAssemblyProcedures = "WorkInstructionsAssemblyProcedures",
-  FirstArticleInspectionFAIReport = "FirstArticleInspectionFAIReport",
-  SupplierQualityRecordsCertificatesofConformanceCoC = "SupplierQualityRecordsCertificatesofConformanceCoC",
-  TestPlansandProcedures = "TestPlansandProcedures",
-  QualificationTestReport = "QualificationTestReport",
-  AcceptanceTestProcedureATPReport = "AcceptanceTestProcedureATPReport",
-  CalibrationCertificates = "CalibrationCertificates",
-  NonConformanceCorrectiveActionReportNCRCAR = "NonConformanceCorrectiveActionReportNCRCAR",
-  RequirementsVerificationReport = "RequirementsVerificationReport",
-  AsBuiltConfigurationEndItemDataPackage = "AsBuiltConfigurationEndItemDataPackage",
-  UserOperationsManual = "UserOperationsManual",
-  MaintenanceRepairManualSparePartsList = "MaintenanceRepairManualSparePartsList",
-  CertificatesofCompliance = "CertificatesofCompliance",
-  LessonsLearnedPostProjectReport = "LessonsLearnedPostProjectReport",
-  Other = "Other",
+// DeliverableType and IssueType are now table-based models
+// Types are fetched from the API instead of using enums
+export type DeliverableType = string; // Now a string type from API
+export type IssueType = string; // Now a string type from API
+
+// Legacy type labels for display - maps type names to human-readable labels
+// Since types now come from the API with proper formatting, these labels are mainly for backward compatibility
+// If a type name is not found in the labels, the type name itself is used
+export const DeliverableTypeLabels: Record<string, string> = {
+  // Legacy camelCase keys for backward compatibility
+  "SystemSubsystemRequirementsSpecificationSRS": "System/Subsystem Requirements Specification (SRS)",
+  "InterfaceControlDocumentICD": "Interface Control Document (ICD)",
+  "PreliminaryDesignReviewPDRPackage": "Preliminary Design Review (PDR) Package",
+  "RiskFailureModeEffectsAnalysisFMEADFMEAReport": "Risk/Failure Mode & Effects Analysis (FMEA/DFMEA) Report",
+  "DevelopmentVerificationPlanVVMatrix": "Development & Verification Plan / V&V Matrix",
+  "EngineeringDrawingCADModel": "Engineering Drawing & CAD Model",
+  "BillofMaterialsBOM": "Bill of Materials (BOM)",
+  "StressStructuralAnalysisReport": "Stress/Structural Analysis Report",
+  "ThermalAnalysisReport": "Thermal Analysis Report",
+  "ElectricalSchematicsPCBLayouts": "Electrical Schematics / PCB Layouts",
+  "DesignforManufacturabilityDFMDesignforTestDFTReviewReport": "Design for Manufacturability (DFM) & Design for Test (DFT) Review Report",
+  "CriticalDesignReviewCDRPackage": "Critical Design Review (CDR) Package",
+  "WorkInstructionsAssemblyProcedures": "Work Instructions / Assembly Procedures",
+  "FirstArticleInspectionFAIReport": "First Article Inspection (FAI) Report",
+  "SupplierQualityRecordsCertificatesofConformanceCoC": "Supplier Quality Records / Certificates of Conformance (CoC)",
+  "TestPlansandProcedures": "Test Plans and Procedures",
+  "QualificationTestReport": "Qualification Test Report",
+  "AcceptanceTestProcedureATPReport": "Acceptance Test Procedure (ATP) & Report",
+  "CalibrationCertificates": "Calibration Certificates",
+  "NonConformanceCorrectiveActionReportNCRCAR": "Non-Conformance / Corrective Action Report (NCR/CAR)",
+  "RequirementsVerificationReport": "Requirements Verification Report",
+  "AsBuiltConfigurationEndItemDataPackage": "As-Built Configuration / End-Item Data Package",
+  "UserOperationsManual": "User / Operations Manual",
+  "MaintenanceRepairManualSparePartsList": "Maintenance & Repair Manual / Spare Parts List",
+  "CertificatesofCompliance": "Certificates of Compliance",
+  "LessonsLearnedPostProjectReport": "Lessons-Learned & Post-Project Report",
+  "Other": "Other",
 }
 
-export const DeliverableTypeLabels: Record<DeliverableType, string> = {
-  [DeliverableType.SystemSubsystemRequirementsSpecificationSRS]: "System/Subsystem Requirements Specification (SRS)",
-  [DeliverableType.InterfaceControlDocumentICD]: "Interface Control Document (ICD)",
-  [DeliverableType.PreliminaryDesignReviewPDRPackage]: "Preliminary Design Review (PDR) Package",
-  [DeliverableType.RiskFailureModeEffectsAnalysisFMEADFMEAReport]: "Risk/Failure Mode & Effects Analysis (FMEA/DFMEA) Report",
-  [DeliverableType.DevelopmentVerificationPlanVVMatrix]: "Development & Verification Plan / V&V Matrix",
-  [DeliverableType.EngineeringDrawingCADModel]: "Engineering Drawing & CAD Model",
-  [DeliverableType.BillofMaterialsBOM]: "Bill of Materials (BOM)",
-  [DeliverableType.StressStructuralAnalysisReport]: "Stress/Structural Analysis Report",
-  [DeliverableType.ThermalAnalysisReport]: "Thermal Analysis Report",
-  [DeliverableType.ElectricalSchematicsPCBLayouts]: "Electrical Schematics / PCB Layouts",
-  [DeliverableType.DesignforManufacturabilityDFMDesignforTestDFTReviewReport]: "Design for Manufacturability (DFM) & Design for Test (DFT) Review Report",
-  [DeliverableType.CriticalDesignReviewCDRPackage]: "Critical Design Review (CDR) Package",
-  [DeliverableType.WorkInstructionsAssemblyProcedures]: "Work Instructions / Assembly Procedures",
-  [DeliverableType.FirstArticleInspectionFAIReport]: "First Article Inspection (FAI) Report",
-  [DeliverableType.SupplierQualityRecordsCertificatesofConformanceCoC]: "Supplier Quality Records / Certificates of Conformance (CoC)",
-  [DeliverableType.TestPlansandProcedures]: "Test Plans and Procedures",
-  [DeliverableType.QualificationTestReport]: "Qualification Test Report",
-  [DeliverableType.AcceptanceTestProcedureATPReport]: "Acceptance Test Procedure (ATP) & Report",
-  [DeliverableType.CalibrationCertificates]: "Calibration Certificates",
-  [DeliverableType.NonConformanceCorrectiveActionReportNCRCAR]: "Non-Conformance / Corrective Action Report (NCR/CAR)",
-  [DeliverableType.RequirementsVerificationReport]: "Requirements Verification Report",
-  [DeliverableType.AsBuiltConfigurationEndItemDataPackage]: "As-Built Configuration / End-Item Data Package",
-  [DeliverableType.UserOperationsManual]: "User / Operations Manual",
-  [DeliverableType.MaintenanceRepairManualSparePartsList]: "Maintenance & Repair Manual / Spare Parts List",
-  [DeliverableType.CertificatesofCompliance]: "Certificates of Compliance",
-  [DeliverableType.LessonsLearnedPostProjectReport]: "Lessons-Learned & Post-Project Report",
-  [DeliverableType.Other]: "Other",
-}
-
-export enum IssueType {
-  Defect = "Defect",
-  Failure = "Failure",
-  RequirementWaiver = "RequirementWaiver",
-  NonConformanceReportNCR = "NonConformanceReportNCR",
-  ProcessManufacturingIssue = "ProcessManufacturingIssue",
-  SupplyChainProcurementIssue = "SupplyChainProcurementIssue",
-  IntegrationInterfaceIssue = "IntegrationInterfaceIssue",
-  TestVerificationAnomaly = "TestVerificationAnomaly",
-  EnvironmentalReliabilityIssue = "EnvironmentalReliabilityIssue",
-  ConfigurationDocumentationControlIssue = "ConfigurationDocumentationControlIssue",
-  SafetyRegulatoryIssue = "SafetyRegulatoryIssue",
-  ProgrammaticRiskItem = "ProgrammaticRiskItem",
-  ObsolescenceEndOfLifeIssue = "ObsolescenceEndOfLifeIssue",
-  Other = "Other",
-}
-
-export const IssueTypeLabels: Record<IssueType, string> = {
-  [IssueType.Defect]: "Defect",
-  [IssueType.Failure]: "Failure",
-  [IssueType.RequirementWaiver]: "Requirement Waiver",
-  [IssueType.NonConformanceReportNCR]: "Non-Conformance Report (NCR)",
-  [IssueType.ProcessManufacturingIssue]: "Process / Manufacturing Issue",
-  [IssueType.SupplyChainProcurementIssue]: "Supply-Chain / Procurement Issue",
-  [IssueType.IntegrationInterfaceIssue]: "Integration / Interface Issue",
-  [IssueType.TestVerificationAnomaly]: "Test / Verification Anomaly",
-  [IssueType.EnvironmentalReliabilityIssue]: "Environmental / Reliability Issue",
-  [IssueType.ConfigurationDocumentationControlIssue]: "Configuration / Documentation Control Issue",
-  [IssueType.SafetyRegulatoryIssue]: "Safety / Regulatory Issue",
-  [IssueType.ProgrammaticRiskItem]: "Programmatic / Risk Item",
-  [IssueType.ObsolescenceEndOfLifeIssue]: "Obsolescence / End-of-Life Issue",
-  [IssueType.Other]: "Other",
+export const IssueTypeLabels: Record<string, string> = {
+  // Legacy camelCase keys for backward compatibility
+  "Defect": "Defect",
+  "Failure": "Failure",
+  "RequirementWaiver": "Requirement Waiver",
+  "NonConformanceReportNCR": "Non-Conformance Report (NCR)",
+  "ProcessManufacturingIssue": "Process / Manufacturing Issue",
+  "SupplyChainProcurementIssue": "Supply-Chain / Procurement Issue",
+  "IntegrationInterfaceIssue": "Integration / Interface Issue",
+  "TestVerificationAnomaly": "Test / Verification Anomaly",
+  "EnvironmentalReliabilityIssue": "Environmental / Reliability Issue",
+  "ConfigurationDocumentationControlIssue": "Configuration / Documentation Control Issue",
+  "SafetyRegulatoryIssue": "Safety / Regulatory Issue",
+  "ProgrammaticRiskItem": "Programmatic / Risk Item",
+  "ObsolescenceEndOfLifeIssue": "Obsolescence / End-of-Life Issue",
+  "Other": "Other",
 }
 
 export enum WorkItemType {
@@ -252,14 +215,16 @@ export interface WorkItem {
 
 export interface IssueDetail {
   id: number;
-  issueType: IssueType;
+  issueType: string | IssueTypeModel; // Type name (string) or full type object (when included)
+  issueTypeId?: number; // Type ID (for new API)
   rootCause?: string;
   correctiveAction?: string;
 }
 
 export interface DeliverableDetail {
   id: number;
-  deliverableType: DeliverableType;
+  deliverableType: string | DeliverableTypeModel; // Type name (string) or full type object (when included)
+  deliverableTypeId?: number; // Type ID (for new API)
 }
 
 export interface WorkItemToPart {
@@ -308,6 +273,84 @@ export interface SearchResults {
   users?: User[];
   milestones?: Milestone[];
   parts?: Part[];
+}
+
+export interface Invitation {
+  id: number;
+  organizationId: number;
+  token: string;
+  invitedEmail?: string;
+  role: string;
+  expiresAt: string;
+  used: boolean;
+  usedAt?: string;
+  usedByUserId?: number;
+  createdByUserId: number;
+  createdAt: string;
+  organization?: {
+    id: number;
+    name: string;
+  };
+  createdBy?: {
+    userId: number;
+    name: string;
+    email: string;
+  };
+  usedBy?: {
+    userId: number;
+    name: string;
+    email: string;
+  };
+}
+
+export interface InvitationCreateInput {
+  invitedEmail?: string;
+  role: string;
+  expiresInDays?: number;
+}
+
+export interface DeliverableTypeModel {
+  id: number;
+  organizationId: number;
+  name: string;
+  isSystem: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IssueTypeModel {
+  id: number;
+  organizationId: number;
+  name: string;
+  isSystem: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DeliverableTypeCreateInput {
+  name: string;
+}
+
+export interface IssueTypeCreateInput {
+  name: string;
+}
+
+export interface InvitationValidationResponse {
+  invitation: {
+    id: number;
+    invitedEmail?: string;
+    role: string;
+    expiresAt: string;
+    organization: {
+      id: number;
+      name: string;
+    };
+    createdBy: {
+      name: string;
+      email: string;
+    };
+    createdAt: string;
+  };
 }
 
 export interface WorkItemCreateInput {
@@ -372,33 +415,61 @@ export interface WorkItemEditInput {
 =================== */
 
 export const api = createApi({
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
-    prepareHeaders: (headers) => {
-      if (typeof window !== "undefined") {
-        const storedUser = window.localStorage.getItem("authUser");
-        if (storedUser) {
-          try {
-            const parsedUser = JSON.parse(storedUser);
-            if (parsedUser?.userId) {
-              const userId = String(parsedUser.userId);
-              headers.set("x-user-id", userId);
-              console.log("Setting x-user-id header:", userId, "from user:", parsedUser);
-            } else {
-              console.warn("authUser in localStorage missing userId:", parsedUser);
+  baseQuery: async (args, api, extraOptions) => {
+    const baseQuery = fetchBaseQuery({
+      baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+      credentials: 'include', // Include session cookie with all requests
+      prepareHeaders: (headers) => {
+        if (typeof window !== "undefined") {
+          const storedUser = window.localStorage.getItem("authUser");
+          if (storedUser) {
+            try {
+              const parsedUser = JSON.parse(storedUser);
+              if (parsedUser?.userId) {
+                const userId = String(parsedUser.userId);
+                headers.set("x-user-id", userId);
+                console.log("Setting x-user-id header:", userId, "from user:", parsedUser);
+              } else {
+                console.warn("authUser in localStorage missing userId:", parsedUser);
+              }
+            } catch (error) {
+              console.warn("Failed to parse authUser from localStorage", error);
             }
-          } catch (error) {
-            console.warn("Failed to parse authUser from localStorage", error);
+          } else {
+            console.warn("No authUser found in localStorage");
           }
-        } else {
-          console.warn("No authUser found in localStorage");
+        }
+        return headers;
+      },
+    });
+
+    const result = await baseQuery(args, api, extraOptions);
+    
+    // Handle 401 errors - session expired or invalid
+    if (result.error && 'status' in result.error && result.error.status === 401) {
+      const errorData = result.error.data as any;
+      
+      // If server indicates login is required, redirect to login
+      if (errorData?.requiresLogin || errorData?.message?.includes('Session expired') || errorData?.message?.includes('Authentication required')) {
+        // Clear local storage
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("authUser");
+          localStorage.removeItem("isAuthenticated");
+          
+          // Only redirect if we're not already on the onboarding/login page
+          const currentPath = window.location.pathname;
+          if (!currentPath.startsWith('/onboarding') && !currentPath.startsWith('/auth/')) {
+            console.log('Session expired, redirecting to login...');
+            window.location.href = '/onboarding';
+          }
         }
       }
-      return headers;
-    },
-  }),
-  reducerPath: "api",
-  tagTypes: ["WorkItems", "Milestones", "Parts", "Programs", "Teams", "Users", "Comments"],
+    }
+    
+    return result;
+  },
+      reducerPath: "api",
+      tagTypes: ["WorkItems", "Milestones", "Parts", "Programs", "Teams", "Users", "Comments", "Invitations", "DeliverableTypes", "IssueTypes"],
   endpoints: (build) => ({
     /* ---------- WORK ITEMS ---------- */
     getWorkItems: build.query<WorkItem[], void>({
@@ -739,6 +810,73 @@ export const api = createApi({
     search: build.query<SearchResults, string>({
       query: (query) => `search?query=${query}`,
     }),
+
+    /* ---------- INVITATIONS ---------- */
+    getInvitations: build.query<Invitation[], void>({
+      query: () => "invitations",
+      providesTags: ["Invitations"],
+    }),
+    validateInvitation: build.query<InvitationValidationResponse, string>({
+      query: (token) => `invitations/validate/${token}`,
+      // Don't cache this - always fetch fresh
+    }),
+    createInvitation: build.mutation<{ invitation: Invitation; invitationUrl: string }, InvitationCreateInput>({
+      query: (body) => ({
+        url: "invitations",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Invitations"],
+    }),
+    revokeInvitation: build.mutation<void, number>({
+      query: (invitationId) => ({
+        url: `invitations/${invitationId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Invitations"],
+    }),
+
+    /* ---------- DELIVERABLE TYPES ---------- */
+    getDeliverableTypes: build.query<DeliverableTypeModel[], void>({
+      query: () => "deliverableTypes",
+      providesTags: ["DeliverableTypes"],
+    }),
+    createDeliverableType: build.mutation<DeliverableTypeModel, DeliverableTypeCreateInput>({
+      query: (body) => ({
+        url: "deliverableTypes",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["DeliverableTypes"],
+    }),
+    deleteDeliverableType: build.mutation<void, number>({
+      query: (typeId) => ({
+        url: `deliverableTypes/${typeId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["DeliverableTypes"],
+    }),
+
+    /* ---------- ISSUE TYPES ---------- */
+    getIssueTypes: build.query<IssueTypeModel[], void>({
+      query: () => "issueTypes",
+      providesTags: ["IssueTypes"],
+    }),
+    createIssueType: build.mutation<IssueTypeModel, IssueTypeCreateInput>({
+      query: (body) => ({
+        url: "issueTypes",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["IssueTypes"],
+    }),
+    deleteIssueType: build.mutation<void, number>({
+      query: (typeId) => ({
+        url: `issueTypes/${typeId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["IssueTypes"],
+    }),
   }),
 });
 
@@ -786,4 +924,17 @@ export const {
   useUpdateUserMutation,
 
   useSearchQuery,
+
+  useGetInvitationsQuery,
+  useValidateInvitationQuery,
+  useCreateInvitationMutation,
+  useRevokeInvitationMutation,
+
+  useGetDeliverableTypesQuery,
+  useCreateDeliverableTypeMutation,
+  useDeleteDeliverableTypeMutation,
+
+  useGetIssueTypesQuery,
+  useCreateIssueTypeMutation,
+  useDeleteIssueTypeMutation,
 } = api;

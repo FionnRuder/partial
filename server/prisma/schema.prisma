@@ -27,52 +27,8 @@ enum Status {
   Completed
 }
 
-enum DeliverableType {
-  SystemSubsystemRequirementsSpecificationSRS
-  InterfaceControlDocumentICD
-  PreliminaryDesignReviewPDRPackage
-  RiskFailureModeEffectsAnalysisFMEADFMEAReport
-  DevelopmentVerificationPlanVVMatrix
-  EngineeringDrawingCADModel
-  BillofMaterialsBOM
-  StressStructuralAnalysisReport
-  ThermalAnalysisReport
-  ElectricalSchematicsPCBLayouts
-  DesignforManufacturabilityDFMDesignforTestDFTReviewReport
-  CriticalDesignReviewCDRPackage
-  WorkInstructionsAssemblyProcedures
-  FirstArticleInspectionFAIReport
-  SupplierQualityRecordsCertificatesofConformanceCoC
-  TestPlansandProcedures
-  QualificationTestReport
-  AcceptanceTestProcedureATPReport
-  CalibrationCertificates
-  NonConformanceCorrectiveActionReportNCRCAR
-  RequirementsVerificationReport
-  AsBuiltConfigurationEndItemDataPackage
-  UserOperationsManual
-  MaintenanceRepairManualSparePartsList
-  CertificatesofCompliance
-  LessonsLearnedPostProjectReport
-  Other
-}
-
-enum IssueType {
-  Defect
-  Failure
-  RequirementWaiver
-  NonConformanceReportNCR
-  ProcessManufacturingIssue
-  SupplyChainProcurementIssue
-  IntegrationInterfaceIssue
-  TestVerificationAnomaly
-  EnvironmentalReliabilityIssue
-  ConfigurationDocumentationControlIssue
-  SafetyRegulatoryIssue
-  ProgrammaticRiskItem
-  ObsolescenceEndOfLifeIssue
-  Other
-}
+// DeliverableType and IssueType are now table-based models to allow dynamic management
+// See DeliverableType and IssueType models below
 
 enum WorkItemType {
   Task
@@ -87,19 +43,27 @@ enum PartState {
   Implementation
 }
 
+enum UserRole {
+  Admin
+  Manager
+  ProgramManager
+  Engineer
+  Viewer
+}
+
 // ===================
 // Core Models
 // ===================
 
 model User {
-  userId            Int     @id @default(autoincrement())
+  userId            Int      @id @default(autoincrement())
   organizationId    Int
-  cognitoId         String  @unique
+  cognitoId         String   @unique
   username          String
   name              String
   email             String
   phoneNumber       String
-  role              String
+  role              UserRole
   profilePictureUrl String?
   disciplineTeamId  Int?
 
@@ -109,9 +73,11 @@ model User {
   authoredWorkItems WorkItem[] @relation("WorkItemAuthor")
   assignedWorkItems WorkItem[] @relation("WorkItemAssignee")
 
-  partNumbers Part[]
-  attachments Attachment[]
-  comments    Comment[]
+  partNumbers         Part[]
+  attachments         Attachment[]
+  comments            Comment[]
+  createdInvitations  Invitation[] @relation("InvitationCreator")
+  acceptedInvitations Invitation[] @relation("InvitationAccepter")
 
   @@unique([organizationId, username])
   @@unique([organizationId, email])
@@ -123,14 +89,17 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users           User[]
-  disciplineTeams DisciplineTeam[]
-  programs        Program[]
-  parts           Part[]
-  milestones      Milestone[]
-  workItems       WorkItem[]
-  attachments     Attachment[]
-  comments        Comment[]
+  users            User[]
+  disciplineTeams  DisciplineTeam[]
+  programs         Program[]
+  parts            Part[]
+  milestones       Milestone[]
+  workItems        WorkItem[]
+  attachments      Attachment[]
+  comments         Comment[]
+  invitations      Invitation[]
+  deliverableTypes DeliverableType[]
+  issueTypes       IssueType[]
 }
 
 model DisciplineTeam {
@@ -247,19 +216,55 @@ model WorkItem {
 }
 
 model IssueDetail {
-  id               Int       @id
-  issueType        IssueType
+  id               Int     @id
+  issueTypeId      Int
   rootCause        String?
   correctiveAction String?
 
-  workItem WorkItem @relation(fields: [id], references: [id])
+  workItem  WorkItem  @relation(fields: [id], references: [id])
+  issueType IssueType @relation(fields: [issueTypeId], references: [id])
 }
 
 model DeliverableDetail {
-  id              Int             @id
-  deliverableType DeliverableType
+  id                Int @id
+  deliverableTypeId Int
 
-  workItem WorkItem @relation(fields: [id], references: [id])
+  workItem        WorkItem        @relation(fields: [id], references: [id])
+  deliverableType DeliverableType @relation(fields: [deliverableTypeId], references: [id])
+}
+
+// ===================
+// Type Management Models
+// ===================
+
+model DeliverableType {
+  id             Int      @id @default(autoincrement())
+  organizationId Int
+  name           String
+  isSystem       Boolean  @default(false) // System types cannot be deleted
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization       Organization        @relation(fields: [organizationId], references: [id])
+  deliverableDetails DeliverableDetail[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model IssueType {
+  id             Int      @id @default(autoincrement())
+  organizationId Int
+  name           String
+  isSystem       Boolean  @default(false) // System types cannot be deleted
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  issueDetails IssueDetail[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
 }
 
 // ===================
@@ -300,4 +305,26 @@ model Comment {
   organization  Organization @relation(fields: [organizationId], references: [id])
   commenterUser User         @relation(fields: [commenterUserId], references: [userId])
   workItem      WorkItem?    @relation(fields: [workItemId], references: [id])
+}
+
+model Invitation {
+  id              Int       @id @default(autoincrement())
+  organizationId  Int
+  token           String    @unique // Cryptographically secure token
+  invitedEmail    String? // Optional: restrict to specific email
+  role            UserRole // Role to assign to the new user
+  expiresAt       DateTime // Expiration date
+  used            Boolean   @default(false)
+  usedAt          DateTime?
+  usedByUserId    Int? // User who accepted the invitation
+  createdByUserId Int // User who created the invitation
+  createdAt       DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  createdBy    User         @relation("InvitationCreator", fields: [createdByUserId], references: [userId])
+  usedBy       User?        @relation("InvitationAccepter", fields: [usedByUserId], references: [userId])
+
+  @@index([token])
+  @@index([organizationId])
+  @@index([invitedEmail])
 }

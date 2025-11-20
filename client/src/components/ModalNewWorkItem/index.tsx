@@ -4,14 +4,16 @@ import {
   Status,
   StatusLabels,
   WorkItemType,
-  DeliverableType,
-  IssueType,
   useCreateWorkItemMutation,
   WorkItemCreateInput,
   useGetPartsQuery,
   useGetUsersQuery,
   useGetProgramsQuery,
-  useGetMilestonesQuery
+  useGetMilestonesQuery,
+  useGetDeliverableTypesQuery,
+  useGetIssueTypesQuery,
+  DeliverableTypeLabels,
+  IssueTypeLabels,
 } from '@/state/api';
 import React, { useState } from 'react';
 import { formatISO } from 'date-fns';
@@ -33,6 +35,8 @@ const ModalNewWorkItem = ({
   const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
   const { data: programs = [], isLoading: programsLoading } = useGetProgramsQuery();
   const { data: milestones = [], isLoading: milestonesLoading } = useGetMilestonesQuery();
+  const { data: deliverableTypes = [] } = useGetDeliverableTypesQuery();
+  const { data: issueTypes = [] } = useGetIssueTypesQuery();
   const [createWorkItem, { isLoading }] = useCreateWorkItemMutation();
   const [workItemType, setWorkItemType] = useState<WorkItemType | "">("");
   const [title, setTitle] = useState("");
@@ -53,10 +57,10 @@ const ModalNewWorkItem = ({
   const [assignedUserId, setAssignedUserId] = useState("");
 
   // Subtype fields
-  const [issueType, setIssueType] = useState<IssueType | "">("");
+  const [issueType, setIssueType] = useState<string>("");
   const [rootCause, setRootCause] = useState("");
   const [correctiveAction, setCorrectiveAction] = useState("");
-  const [deliverableType, setDeliverableType] = useState<DeliverableType | "">("");
+  const [deliverableType, setDeliverableType] = useState<string>("");
 
   const handleSubmit = async () => {
     if (!isFormValid()) return;
@@ -93,15 +97,15 @@ const ModalNewWorkItem = ({
     }
 
     // Add subtype-specific data
-    if (workItemType === WorkItemType.Issue) {
+    if (workItemType === WorkItemType.Issue && issueType) {
       payload.issueDetail = {
-        issueType: issueType as IssueType,
-        rootCause,
-        correctiveAction,
+        issueType: issueType, // Send type name as string
       };
-    } else if (workItemType === WorkItemType.Deliverable) {
+      if (rootCause) payload.issueDetail.rootCause = rootCause;
+      if (correctiveAction) payload.issueDetail.correctiveAction = correctiveAction;
+    } else if (workItemType === WorkItemType.Deliverable && deliverableType) {
       payload.deliverableDetail = {
-        deliverableType: deliverableType as DeliverableType,
+        deliverableType: deliverableType, // Send type name as string
       };
     }
 
@@ -181,12 +185,14 @@ const ModalNewWorkItem = ({
           <select
             className={selectStyles}
             value={issueType}
-            onChange={(e) => setIssueType(e.target.value as IssueType)}
+            onChange={(e) => setIssueType(e.target.value)}
           >
             <option value="">Select Issue Type</option>
-            {Object.values(IssueType).map((type) => (
-              <option key={type} value={type}>{type}</option>
-            ))}
+            {issueTypes.map((type) => (
+                <option key={type.id} value={type.name}>
+                  {IssueTypeLabels[type.name] || type.name}
+                </option>
+              ))}
           </select>
         )}
 
@@ -194,11 +200,13 @@ const ModalNewWorkItem = ({
           <select
             className={selectStyles}
             value={deliverableType}
-            onChange={(e) => setDeliverableType(e.target.value as DeliverableType)}
+            onChange={(e) => setDeliverableType(e.target.value)}
           >
             <option value="">Select Deliverable Type</option>
-            {Object.values(DeliverableType).map((type) => (
-              <option key={type} value={type}>{type}</option>
+            {deliverableTypes.map((type) => (
+              <option key={type.id} value={type.name}>
+                {DeliverableTypeLabels[type.name] || type.name}
+              </option>
             ))}
           </select>
         )}

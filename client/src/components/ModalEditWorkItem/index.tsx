@@ -6,9 +6,7 @@ import {
   Status,
   StatusLabels,
   WorkItemType,
-  DeliverableType,
   DeliverableTypeLabels,
-  IssueType,
   IssueTypeLabels,
   useEditWorkItemMutation,
   useDeleteWorkItemMutation,
@@ -17,7 +15,9 @@ import {
   useGetPartsQuery,
   useGetProgramsQuery,
   useGetMilestonesQuery,
-  useGetUsersQuery
+  useGetUsersQuery,
+  useGetDeliverableTypesQuery,
+  useGetIssueTypesQuery,
 } from '@/state/api';
 import React, { useEffect, useState } from 'react';
 import { formatISO } from 'date-fns';
@@ -35,6 +35,8 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
   const { data: programs = [], isLoading: programsLoading } = useGetProgramsQuery();
   const { data: milestones = [], isLoading: milestonesLoading } = useGetMilestonesQuery();
   const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
+  const { data: deliverableTypes = [] } = useGetDeliverableTypesQuery();
+  const { data: issueTypes = [] } = useGetIssueTypesQuery();
 
   // form state
   const [workItemType, setWorkItemType] = useState<WorkItemType | "">("");
@@ -59,10 +61,10 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
   const [assignedUserId, setAssignedUserId] = useState("");
   const [assignedUserName, setAssignedUserName] = useState("");
 
-  const [issueType, setIssueType] = useState<IssueType | "">("");
+  const [issueType, setIssueType] = useState<string>("");
   const [rootCause, setRootCause] = useState("");
   const [correctiveAction, setCorrectiveAction] = useState("");
-  const [deliverableType, setDeliverableType] = useState<DeliverableType | "">("");
+  const [deliverableType, setDeliverableType] = useState<string>("");
 
   // Prefill all fields when modal opens
   useEffect(() => {
@@ -107,11 +109,15 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
       setAssignedUserName(assignedUser?.name || "");
 
       if (workItem.workItemType === WorkItemType.Issue) {
-        setIssueType(workItem.issueDetail?.issueType || "");
+        const type = workItem.issueDetail?.issueType;
+        const typeName = typeof type === 'string' ? type : (type && typeof type === 'object' && 'name' in type ? (type as { name: string }).name : '');
+        setIssueType(typeName);
         setRootCause(workItem.issueDetail?.rootCause || "");
         setCorrectiveAction(workItem.issueDetail?.correctiveAction || "");
       } else if (workItem.workItemType === WorkItemType.Deliverable) {
-        setDeliverableType(workItem.deliverableDetail?.deliverableType || "");
+        const type = workItem.deliverableDetail?.deliverableType;
+        const typeName = typeof type === 'string' ? type : (type && typeof type === 'object' && 'name' in type ? (type as { name: string }).name : '');
+        setDeliverableType(typeName);
       }
     }
   }, [workItem, programs, milestones, users]);
@@ -157,14 +163,14 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
       assignedUserId: parseInt(assignedUserId),
       issueDetail: workItemType === WorkItemType.Issue && issueType
         ? {
-            issueType: issueType as IssueType,
+            issueType: issueType, // Send type name as string
             rootCause,
             correctiveAction,
           }
         : undefined,
       deliverableDetail: workItemType === WorkItemType.Deliverable && deliverableType
         ? {
-            deliverableType: deliverableType as DeliverableType,
+            deliverableType: deliverableType, // Send type name as string
           }
         : undefined,
     };
@@ -242,12 +248,12 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
             <select
                 className={selectStyles}
                 value={issueType}
-                onChange={(e) => setIssueType(e.target.value as IssueType)}
+                onChange={(e) => setIssueType(e.target.value)}
             >
                 <option value="">Select Issue Type</option>
-                {Object.values(IssueType).map((key) => (
-                <option key={key} value={key}>
-                    {IssueTypeLabels[key]}
+                {issueTypes.map((type) => (
+                <option key={type.id} value={type.name}>
+                    {IssueTypeLabels[type.name] || type.name}
                 </option>
                 ))}
             </select>
@@ -262,12 +268,12 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
             <select
                 className={selectStyles}
                 value={deliverableType}
-                onChange={(e) => setDeliverableType(e.target.value as DeliverableType)}
+                onChange={(e) => setDeliverableType(e.target.value)}
             >
                 <option value="">Select Deliverable Type</option>
-                {Object.values(DeliverableType).map((key) => (
-                <option key={key} value={key}>
-                    {DeliverableTypeLabels[key]}
+                {deliverableTypes.map((type) => (
+                <option key={type.id} value={type.name}>
+                    {DeliverableTypeLabels[type.name] || type.name}
                 </option>
                 ))}
             </select>

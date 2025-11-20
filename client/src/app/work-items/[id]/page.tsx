@@ -58,6 +58,29 @@ const getPriorityColor = (priority: Priority) => {
   }
 };
 
+// Get user initials from name (first letter of first name and first letter of last name)
+const getUserInitials = (user: { name?: string; username?: string } | null | undefined): string => {
+  if (!user) return '?';
+  
+  if (user.name) {
+    const names = user.name.trim().split(' ').filter(Boolean);
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    }
+    // If only one name, take the first letter
+    if (names.length === 1 && names[0].length > 0) {
+      return names[0][0].toUpperCase();
+    }
+  }
+  
+  // Fallback to username if name is not available
+  if (user.username) {
+    return user.username.substring(0, 2).toUpperCase();
+  }
+  
+  return '?';
+};
+
 const WorkItemDetailPage = ({ params }: Props) => {
   const { id } = React.use(params);
   const workItemId = Number(id);
@@ -181,7 +204,17 @@ const WorkItemDetailPage = ({ params }: Props) => {
           <div>
             <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Deliverable Type:</span>
             <p className="text-gray-900 dark:text-gray-100 mt-1">
-              {DeliverableTypeLabels[workItem.deliverableDetail.deliverableType]}
+              {(() => {
+                const type = workItem.deliverableDetail.deliverableType;
+                if (typeof type === 'string') {
+                  return DeliverableTypeLabels[type] || type;
+                }
+                if (type && typeof type === 'object' && 'name' in type) {
+                  const typeName = (type as { name: string }).name;
+                  return DeliverableTypeLabels[typeName] || typeName;
+                }
+                return 'Unknown';
+              })()}
             </p>
           </div>
         </div>
@@ -198,7 +231,17 @@ const WorkItemDetailPage = ({ params }: Props) => {
                 <div>
                     <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Issue Type:</span>
                         <p className="text-gray-900 dark:text-gray-100 mt-1">
-                            {IssueTypeLabels[workItem.issueDetail.issueType]}
+                            {(() => {
+                              const type = workItem.issueDetail.issueType;
+                              if (typeof type === 'string') {
+                                return IssueTypeLabels[type] || type;
+                              }
+                              if (type && typeof type === 'object' && 'name' in type) {
+                                const typeName = (type as { name: string }).name;
+                                return IssueTypeLabels[typeName] || typeName;
+                              }
+                              return 'Unknown';
+                            })()}
                         </p>
                 </div>
             )}
@@ -365,7 +408,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
                 />
               ) : (
                 <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm font-medium dark:bg-gray-700 dark:text-gray-300">
-                  {workItem.authorUser?.username?.substring(0, 2).toUpperCase() || "?"}
+                  {getUserInitials(workItem.authorUser)}
                 </div>
               )}
               <div>
@@ -392,7 +435,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
                 />
               ) : (
                 <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm font-medium dark:bg-gray-700 dark:text-gray-300">
-                  {workItem.assigneeUser?.username?.substring(0, 2).toUpperCase() || "?"}
+                  {getUserInitials(workItem.assigneeUser)}
                 </div>
               )}
               <div>

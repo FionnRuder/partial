@@ -577,7 +577,23 @@ const WorkItem = ({ workItem, setEditingWorkItem, onOpenComments }: WorkItemProp
                                     title={tooltip}  // <-- tooltip on hover
                                     className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gray-300 text-xs font-medium text-gray-600 dark:border-dark-secondary"
                                 >
-                                    {user.username?.substring(0, 2).toUpperCase() || "?"}
+                                    {(() => {
+                                        // Get initials from name (first letter of first name and first letter of last name)
+                                        if (user.name) {
+                                            const names = user.name.trim().split(" ").filter(Boolean);
+                                            if (names.length >= 2) {
+                                                return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+                                            }
+                                            if (names.length === 1 && names[0].length > 0) {
+                                                return names[0][0].toUpperCase();
+                                            }
+                                        }
+                                        // Fallback to username if name is not available
+                                        if (user.username) {
+                                            return user.username.substring(0, 2).toUpperCase();
+                                        }
+                                        return "?";
+                                    })()}
                                 </button>
                             );
                         })}

@@ -2,6 +2,7 @@ import Modal from '@/components/Modal';
 import {
   useCreateTeamMutation,
   useGetUsersQuery,
+  useGetProgramsQuery,
   DisciplineTeam
 } from '@/state/api';
 import React, { useState } from 'react';
@@ -16,27 +17,43 @@ const ModalNewDisciplineTeam = ({
   onClose,
 }: Props) => {
   const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
+  const { data: programs = [], isLoading: programsLoading } = useGetProgramsQuery();
   const [createTeam, { isLoading }] = useCreateTeamMutation();
   
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [teamManagerUserId, setTeamManagerUserId] = useState("");
+  const [selectedProgramIds, setSelectedProgramIds] = useState<number[]>([]);
 
   const handleSubmit = async () => {
     if (!isFormValid()) return;
 
-    const payload: Partial<DisciplineTeam> = {
+    const payload: any = {
       name,
       description,
       teamManagerUserId: teamManagerUserId ? parseInt(teamManagerUserId) : undefined,
+      programIds: selectedProgramIds.length > 0 ? selectedProgramIds : undefined,
     };
 
     try {
       await createTeam(payload).unwrap();
+      // Reset form
+      setName("");
+      setDescription("");
+      setTeamManagerUserId("");
+      setSelectedProgramIds([]);
       onClose(); // close modal on success
     } catch (err) {
       console.error("Failed to create team:", err);
     }
+  };
+
+  const handleProgramToggle = (programId: number) => {
+    setSelectedProgramIds(prev => 
+      prev.includes(programId)
+        ? prev.filter(id => id !== programId)
+        : [...prev, programId]
+    );
   };
 
   const isFormValid = (): boolean => {
@@ -86,6 +103,36 @@ const ModalNewDisciplineTeam = ({
             </option>
           ))}
         </select>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Assign Programs (Optional):
+          </label>
+          {programsLoading ? (
+            <div className="text-sm text-gray-500">Loading programs...</div>
+          ) : programs.length === 0 ? (
+            <div className="text-sm text-gray-500">No programs available</div>
+          ) : (
+            <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 dark:border-dark-tertiary rounded p-3">
+              {programs.map((program) => (
+                <label
+                  key={program.id}
+                  className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedProgramIds.includes(program.id)}
+                    onChange={() => handleProgramToggle(program.id)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {program.name}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
 
         <button
           type="submit"

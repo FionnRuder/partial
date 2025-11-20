@@ -332,7 +332,7 @@ const Teams = () => {
         const programNames: string[] = params.row.programNames ?? [];
         if (!programNames.length) return "—";
         return (
-          <div className="flex h-full w-full flex-wrap items-center justify-center gap-1 text-center">
+          <div className="flex h-full w-full flex-wrap items-center justify-start gap-1">
             {programNames.map((name: string) => (
               <span
                 key={name}

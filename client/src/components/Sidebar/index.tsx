@@ -18,6 +18,7 @@ import {
     Home,
     LockIcon,
     LucideIcon,
+    Mail,
     Search,
     Settings,
     TreePine,
@@ -134,7 +135,7 @@ const Sidebar = () => {
                     <Image src="https://partial-s3-images.s3.us-east-1.amazonaws.com/logo1.png" alt="Logo" width={40} height={40} />
                     <div>
                         <h3 className="text-md font-bold tracking-wide dark:text-gray-200">
-                            Partial Team
+                            {user?.organizationName || "Organization"}
                         </h3>
                         <div className="mt-1 flex items-start gap-2">
                             <LockIcon className="mt-[0.1rem] h-3 w-3 text-gray-500 dark:text-gray-400" />
@@ -151,6 +152,10 @@ const Sidebar = () => {
                     <SidebarLink icon={TreePine} label="Part Hierarchy" href="/part-hierarchy" />
                     <SidebarLink icon={User} label="Users" href="/users" />
                     <SidebarLink icon={Users} label="Teams" href="/teams" />
+                    {/* Show Invitations link only for roles that can create invitations */}
+                    {user?.role && ['Admin', 'Manager', 'Program Manager'].includes(user.role) && (
+                        <SidebarLink icon={Mail} label="Invitations" href="/invitations" />
+                    )}
                     <SidebarLink icon={Settings} label="Settings" href="/settings" />
                 </nav>
 

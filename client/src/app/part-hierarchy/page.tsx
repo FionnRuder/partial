@@ -51,7 +51,9 @@ const useWorkItemData = (parts: Part[]) => {
         headers,
       });
       const workItems = await response.json();
-      setWorkItemData(prev => new Map(prev).set(partId, workItems));
+      // Ensure workItems is always an array before storing
+      const workItemsArray = Array.isArray(workItems) ? workItems : [];
+      setWorkItemData(prev => new Map(prev).set(partId, workItemsArray));
     } catch (error) {
       console.error(`Failed to fetch work items for part ${partId}:`, error);
     } finally {
@@ -103,27 +105,31 @@ const PartWorkItemCounts = ({
   isExpanded: boolean;
   workItemData: Map<number, WorkItem[]>;
 }) => {
-  const workItems = workItemData.get(partId) || [];
+  const workItems = workItemData.get(partId);
+  // Ensure workItems is always an array
+  const workItemsArray = Array.isArray(workItems) ? workItems : [];
 
   // Get direct work item counts for this part
   const directCounts = useMemo((): WorkItemCounts => {
-    const deliverables = workItems.filter(item => item.workItemType === WorkItemType.Deliverable).length;
-    const issues = workItems.filter(item => item.workItemType === WorkItemType.Issue).length;
-    const tasks = workItems.filter(item => item.workItemType === WorkItemType.Task).length;
-    const total = workItems.length;
+    const deliverables = workItemsArray.filter(item => item.workItemType === WorkItemType.Deliverable).length;
+    const issues = workItemsArray.filter(item => item.workItemType === WorkItemType.Issue).length;
+    const tasks = workItemsArray.filter(item => item.workItemType === WorkItemType.Task).length;
+    const total = workItemsArray.length;
 
     return { deliverables, issues, tasks, total };
-  }, [workItems]);
+  }, [workItemsArray]);
 
   // Recursively calculate children's work item counts
   const calculateChildrenCounts = (childNodes: PartHierarchyNode[]): WorkItemCounts => {
     return childNodes.reduce((acc, child) => {
-      const childWorkItems = workItemData.get(child.id) || [];
+      const childWorkItems = workItemData.get(child.id);
+      // Ensure childWorkItems is always an array
+      const childWorkItemsArray = Array.isArray(childWorkItems) ? childWorkItems : [];
       const childDirectCounts = {
-        deliverables: childWorkItems.filter(item => item.workItemType === WorkItemType.Deliverable).length,
-        issues: childWorkItems.filter(item => item.workItemType === WorkItemType.Issue).length,
-        tasks: childWorkItems.filter(item => item.workItemType === WorkItemType.Task).length,
-        total: childWorkItems.length,
+        deliverables: childWorkItemsArray.filter(item => item.workItemType === WorkItemType.Deliverable).length,
+        issues: childWorkItemsArray.filter(item => item.workItemType === WorkItemType.Issue).length,
+        tasks: childWorkItemsArray.filter(item => item.workItemType === WorkItemType.Task).length,
+        total: childWorkItemsArray.length,
       };
 
       // Recursively get children's children counts
