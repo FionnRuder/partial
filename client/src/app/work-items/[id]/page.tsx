@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { useAppSelector } from "../../redux";
-import Header from "@/components/Header";
 import Image from "next/image";
+import Link from "next/link";
 import {
   useGetWorkItemByIdQuery,
   useGetProgramsQuery,
@@ -10,12 +10,22 @@ import {
   useCreateCommentMutation,
   useUpdateCommentMutation,
   useDeleteCommentMutation,
+  useGetStatusLogsByWorkItemQuery,
+  useCreateStatusLogMutation,
+  useUpdateStatusLogMutation,
+  useDeleteStatusLogMutation,
+  useGetAttachmentsByWorkItemQuery,
+  useCreateAttachmentMutation,
+  useUpdateAttachmentMutation,
+  useDeleteAttachmentMutation,
   Status,
   Priority,
   DeliverableTypeLabels,
   IssueTypeLabels,
   Part,
   Comment as CommentType,
+  StatusLog as StatusLogType,
+  Attachment,
 } from "@/state/api";
 import { format } from "date-fns";
 import ModalEditWorkItem from "@/components/ModalEditWorkItem";
@@ -88,13 +98,29 @@ const WorkItemDetailPage = ({ params }: Props) => {
   const [newCommentText, setNewCommentText] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
+  const [newStatusText, setNewStatusText] = useState("");
+  const [editingStatusLogId, setEditingStatusLogId] = useState<number | null>(null);
+  const [editingStatusText, setEditingStatusText] = useState("");
+  const [newAttachmentFileUrl, setNewAttachmentFileUrl] = useState("");
+  const [newAttachmentFileName, setNewAttachmentFileName] = useState("");
+  const [editingAttachmentId, setEditingAttachmentId] = useState<number | null>(null);
+  const [editingAttachmentFileName, setEditingAttachmentFileName] = useState("");
+  const [editingAttachmentFileUrl, setEditingAttachmentFileUrl] = useState("");
 
   const { data: workItem, isLoading, isError, refetch: refetchWorkItem } = useGetWorkItemByIdQuery(workItemId);
   const { data: programs = [] } = useGetProgramsQuery();
   const { data: comments = [], isFetching: isCommentsLoading, refetch: refetchComments } = useGetCommentsByWorkItemQuery(workItemId);
+  const { data: statusLogs = [], isFetching: isStatusLogsLoading, refetch: refetchStatusLogs } = useGetStatusLogsByWorkItemQuery(workItemId);
+  const { data: attachments = [], isFetching: isAttachmentsLoading, refetch: refetchAttachments } = useGetAttachmentsByWorkItemQuery(workItemId);
   const [createComment, { isLoading: isCreatingComment }] = useCreateCommentMutation();
   const [updateComment, { isLoading: isUpdatingComment }] = useUpdateCommentMutation();
   const [deleteComment, { isLoading: isDeletingComment }] = useDeleteCommentMutation();
+  const [createStatusLog, { isLoading: isCreatingStatusLog }] = useCreateStatusLogMutation();
+  const [updateStatusLog, { isLoading: isUpdatingStatusLog }] = useUpdateStatusLogMutation();
+  const [deleteStatusLog, { isLoading: isDeletingStatusLog }] = useDeleteStatusLogMutation();
+  const [createAttachment, { isLoading: isCreatingAttachment }] = useCreateAttachmentMutation();
+  const [updateAttachment, { isLoading: isUpdatingAttachment }] = useUpdateAttachmentMutation();
+  const [deleteAttachment, { isLoading: isDeletingAttachment }] = useDeleteAttachmentMutation();
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
   const { user: authUser } = useAuth();
 
@@ -102,6 +128,12 @@ const WorkItemDetailPage = ({ params }: Props) => {
     setNewCommentText("");
     setEditingCommentId(null);
     setEditingCommentText("");
+  };
+
+  const resetStatusLogState = () => {
+    setNewStatusText("");
+    setEditingStatusLogId(null);
+    setEditingStatusText("");
   };
 
   const handleSubmitComment = async () => {
@@ -163,6 +195,131 @@ const WorkItemDetailPage = ({ params }: Props) => {
     }
   };
 
+  const handleSubmitStatusLog = async () => {
+    if (!authUser || !newStatusText.trim()) return;
+    try {
+      await createStatusLog({
+        workItemId,
+        status: newStatusText.trim(),
+        engineerUserId: authUser.userId,
+      }).unwrap();
+      resetStatusLogState();
+      await refetchStatusLogs();
+      refetchWorkItem();
+    } catch (error) {
+      console.error("Failed to create status log:", error);
+    }
+  };
+
+  const handleStartEditStatusLog = (statusLog: StatusLogType) => {
+    setEditingStatusLogId(statusLog.id);
+    setEditingStatusText(statusLog.status);
+  };
+
+  const handleCancelEditStatusLog = () => {
+    setEditingStatusLogId(null);
+    setEditingStatusText("");
+  };
+
+  const handleSaveEditStatusLog = async () => {
+    if (editingStatusLogId === null || !authUser || !editingStatusText.trim()) return;
+    try {
+      await updateStatusLog({
+        workItemId,
+        statusLogId: editingStatusLogId,
+        status: editingStatusText.trim(),
+        requesterUserId: authUser.userId,
+      }).unwrap();
+      resetStatusLogState();
+      await refetchStatusLogs();
+      refetchWorkItem();
+    } catch (error) {
+      console.error("Failed to update status log:", error);
+    }
+  };
+
+  const handleDeleteStatusLog = async (statusLog: StatusLogType) => {
+    if (!authUser) return;
+    if (!window.confirm("Delete this status update?")) return;
+    try {
+      await deleteStatusLog({
+        workItemId,
+        statusLogId: statusLog.id,
+        requesterUserId: authUser.userId,
+      }).unwrap();
+      await refetchStatusLogs();
+      refetchWorkItem();
+    } catch (error) {
+      console.error("Failed to delete status log:", error);
+    }
+  };
+
+  const handleSubmitAttachment = async () => {
+    if (!authUser || !newAttachmentFileUrl.trim() || !newAttachmentFileName.trim()) return;
+    try {
+      await createAttachment({
+        workItemId,
+        fileUrl: newAttachmentFileUrl.trim(),
+        fileName: newAttachmentFileName.trim(),
+        uploadedByUserId: authUser.userId,
+      }).unwrap();
+      setNewAttachmentFileUrl("");
+      setNewAttachmentFileName("");
+      await refetchAttachments();
+      refetchWorkItem();
+    } catch (error) {
+      console.error("Failed to create attachment:", error);
+    }
+  };
+
+  const handleStartEditAttachment = (attachment: Attachment) => {
+    setEditingAttachmentId(attachment.id);
+    setEditingAttachmentFileName(attachment.fileName);
+    setEditingAttachmentFileUrl(attachment.fileUrl);
+  };
+
+  const handleCancelEditAttachment = () => {
+    setEditingAttachmentId(null);
+    setEditingAttachmentFileName("");
+    setEditingAttachmentFileUrl("");
+  };
+
+  const handleSaveEditAttachment = async () => {
+    if (editingAttachmentId === null || !authUser || !editingAttachmentFileName.trim() || !editingAttachmentFileUrl.trim()) return;
+    try {
+      await updateAttachment({
+        workItemId,
+        attachmentId: editingAttachmentId,
+        fileName: editingAttachmentFileName.trim(),
+        fileUrl: editingAttachmentFileUrl.trim(),
+        requesterUserId: authUser.userId,
+      }).unwrap();
+      setEditingAttachmentId(null);
+      setEditingAttachmentFileName("");
+      setEditingAttachmentFileUrl("");
+      await refetchAttachments();
+      refetchWorkItem();
+    } catch (error) {
+      console.error("Failed to update attachment:", error);
+    }
+  };
+
+  const handleDeleteAttachment = async (attachment: Attachment) => {
+    if (!authUser) return;
+    if (!window.confirm("Delete this attachment?")) return;
+    try {
+      await deleteAttachment({
+        workItemId,
+        attachmentId: attachment.id,
+        requesterUserId: authUser.userId,
+      }).unwrap();
+      await refetchAttachments();
+      refetchWorkItem();
+    } catch (error) {
+      console.error("Failed to delete attachment:", error);
+    }
+  };
+
   if (isLoading) return <div className="p-8">Loading work item...</div>;
   if (isError || !workItem) return <div className="p-8">Error loading work item or work item not found</div>;
 
@@ -178,12 +335,20 @@ const WorkItemDetailPage = ({ params }: Props) => {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <span className="inline-flex rounded-full bg-purple-100 px-3 py-1 text-sm font-semibold leading-5 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+            <h1 className="text-2xl font-semibold dark:text-white">
+              {workItem.title}
+            </h1>            
+            <span className="inline-flex items-center rounded-full bg-purple-100 px-3 py-1 text-sm font-semibold leading-5 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
               {workItem.workItemType}
             </span>
-            <Header name={workItem.title} />
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">ID: {workItem.id}</p>
+          <h2 className="text-lg font-medium text-gray-600 dark:text-gray-400 ml-0 mt-1">
+            ID: {workItem.workItemType === "Deliverable"
+              ? "D"
+              : workItem.workItemType === "Issue"
+              ? "I"
+              : "T"}{workItem.id}
+          </h2>
         </div>
         
         {/* Edit Button */}
@@ -196,60 +361,25 @@ const WorkItemDetailPage = ({ params }: Props) => {
         </button>
       </div>
 
-      {/* Deliverable Details */}
-      {workItem.deliverableDetail && (
-        <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">
-          <h3 className="mb-4 text-lg font-semibold dark:text-white">Deliverable Details</h3>
-          
-          <div>
-            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Deliverable Type:</span>
-            <p className="text-gray-900 dark:text-gray-100 mt-1">
-              {(() => {
-                const type = workItem.deliverableDetail.deliverableType;
-                if (typeof type === 'string') {
-                  return DeliverableTypeLabels[type] || type;
-                }
-                if (type && typeof type === 'object' && 'name' in type) {
-                  const typeName = (type as { name: string }).name;
-                  return DeliverableTypeLabels[typeName] || typeName;
-                }
-                return 'Unknown';
-              })()}
-            </p>
+      {/* Main Information */}
+      <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">
+        <h3 className="mb-4 text-lg font-semibold dark:text-white">Work Item Details</h3>
+        
+        {/* Description */}
+        {workItem.description && (
+          <div className="mb-6">
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Description:</span>
+            <p className="text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-wrap">{workItem.description}</p>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Issue Details */}
-      {workItem.issueDetail && (
-        <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">
-          <h3 className="mb-4 text-lg font-semibold dark:text-white">Issue Details</h3>
-          
-          {/* Issue Type - only show if issue */}
-          <div className="space-y-4">
-          {workItem.issueDetail && (
-                <div>
-                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Issue Type:</span>
-                        <p className="text-gray-900 dark:text-gray-100 mt-1">
-                            {(() => {
-                              const type = workItem.issueDetail.issueType;
-                              if (typeof type === 'string') {
-                                return IssueTypeLabels[type] || type;
-                              }
-                              if (type && typeof type === 'object' && 'name' in type) {
-                                const typeName = (type as { name: string }).name;
-                                return IssueTypeLabels[typeName] || typeName;
-                              }
-                              return 'Unknown';
-                            })()}
-                        </p>
-                </div>
-            )}
-
+        {/* Root Cause and Corrective Action - only show if issue */}
+        {workItem.issueDetail && (workItem.issueDetail.rootCause || workItem.issueDetail.correctiveAction) && (
+          <div className="mb-6 space-y-4">
             {workItem.issueDetail.rootCause && (
               <div>
                 <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Root Cause:</span>
-                <p className="text-gray-900 dark:text-gray-100 mt-1 whitespace-pre-wrap">
+                <p className="text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-wrap">
                   {workItem.issueDetail.rootCause}
                 </p>
               </div>
@@ -258,28 +388,54 @@ const WorkItemDetailPage = ({ params }: Props) => {
             {workItem.issueDetail.correctiveAction && (
               <div>
                 <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Corrective Action:</span>
-                <p className="text-gray-900 dark:text-gray-100 mt-1 whitespace-pre-wrap">
+                <p className="text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-wrap">
                   {workItem.issueDetail.correctiveAction}
                 </p>
               </div>
             )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Description */}
-      {workItem.description && (
-        <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">
-          <h3 className="mb-3 text-lg font-semibold dark:text-white">Description</h3>
-          <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{workItem.description}</p>
-        </div>
-      )}
-
-      {/* Main Information */}
-      <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">
-        <h3 className="mb-4 text-lg font-semibold dark:text-white">Work Item Details</h3>
-        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Deliverable Type - only show if deliverable */}
+          {workItem.deliverableDetail && (
+            <div>
+              <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Deliverable Type:</span>
+              <p className="text-gray-900 dark:text-gray-100 mt-1">
+                {(() => {
+                  const type = workItem.deliverableDetail.deliverableType;
+                  if (typeof type === 'string') {
+                    return DeliverableTypeLabels[type] || type;
+                  }
+                  if (type && typeof type === 'object' && 'name' in type) {
+                    const typeName = (type as { name: string }).name;
+                    return DeliverableTypeLabels[typeName] || typeName;
+                  }
+                  return 'Unknown';
+                })()}
+              </p>
+            </div>
+          )}
+
+          {/* Issue Type - only show if issue */}
+          {workItem.issueDetail && (
+            <div>
+              <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Issue Type:</span>
+              <p className="text-gray-900 dark:text-gray-100 mt-1">
+                {(() => {
+                  const type = workItem.issueDetail.issueType;
+                  if (typeof type === 'string') {
+                    return IssueTypeLabels[type] || type;
+                  }
+                  if (type && typeof type === 'object' && 'name' in type) {
+                    const typeName = (type as { name: string }).name;
+                    return IssueTypeLabels[typeName] || typeName;
+                  }
+                  return 'Unknown';
+                })()}
+              </p>
+            </div>
+          )}
           {/* Status */}
           <div>
             <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Status:</span>
@@ -356,19 +512,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
             </div>
           </div>
 
-          {/* Input Status */}
-          <div>
-            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Input Status:</span>
-            <p className="text-gray-900 dark:text-gray-100 mt-1">{workItem.inputStatus}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Program and Milestone */}
-      <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">
-        <h3 className="mb-4 text-lg font-semibold dark:text-white">Program & Milestone</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Program */}
           <div>
             <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Program:</span>
             <p className="text-gray-900 dark:text-gray-100 mt-1">
@@ -376,6 +520,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
             </p>
           </div>
 
+          {/* Due By Milestone */}
           <div>
             <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Due By Milestone:</span>
             <p className="text-gray-900 dark:text-gray-100 mt-1">
@@ -387,67 +532,202 @@ const WorkItemDetailPage = ({ params }: Props) => {
               </p>
             )}
           </div>
+
+          {/* Author */}
+          <div>
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Author:</span>
+            {workItem.authorUser ? (
+              <Link 
+                href={`/users/${workItem.authorUser.userId}`}
+                className="flex items-center gap-3 mt-2 hover:opacity-80 transition-opacity cursor-pointer"
+              >
+                {workItem.authorUser.profilePictureUrl ? (
+                  <Image
+                    src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${workItem.authorUser.profilePictureUrl}`}
+                    alt={workItem.authorUser.username}
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm font-medium dark:bg-gray-700 dark:text-gray-300">
+                    {getUserInitials(workItem.authorUser)}
+                  </div>
+                )}
+                <div>
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {workItem.authorUser.name || workItem.authorUser.username || "Unknown"}
+                  </p>
+                  {workItem.authorUser.email && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{workItem.authorUser.email}</p>
+                  )}
+                </div>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-3 mt-2">
+                <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm font-medium dark:bg-gray-700 dark:text-gray-300">
+                  ?
+                </div>
+                <div>
+                  <p className="text-gray-900 dark:text-gray-100">Unknown</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Assignee */}
+          <div>
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Assignee:</span>
+            {workItem.assigneeUser ? (
+              <Link 
+                href={`/users/${workItem.assigneeUser.userId}`}
+                className="flex items-center gap-3 mt-2 hover:opacity-80 transition-opacity cursor-pointer"
+              >
+                {workItem.assigneeUser.profilePictureUrl ? (
+                  <Image
+                    src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${workItem.assigneeUser.profilePictureUrl}`}
+                    alt={workItem.assigneeUser.username}
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm font-medium dark:bg-gray-700 dark:text-gray-300">
+                    {getUserInitials(workItem.assigneeUser)}
+                  </div>
+                )}
+                <div>
+                  <p className="text-gray-900 dark:text-gray-100">
+                    {workItem.assigneeUser.name || workItem.assigneeUser.username || "Unassigned"}
+                  </p>
+                  {workItem.assigneeUser.email && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{workItem.assigneeUser.email}</p>
+                  )}
+                </div>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-3 mt-2">
+                <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm font-medium dark:bg-gray-700 dark:text-gray-300">
+                  ?
+                </div>
+                <div>
+                  <p className="text-gray-900 dark:text-gray-100">Unassigned</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Author and Assignee */}
+      {/* Status Log */}
       <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">
-        <h3 className="mb-4 text-lg font-semibold dark:text-white">People</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Author:</span>
-            <div className="flex items-center gap-3 mt-2">
-              {workItem.authorUser?.profilePictureUrl ? (
-                <Image
-                  src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${workItem.authorUser.profilePictureUrl}`}
-                  alt={workItem.authorUser.username}
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm font-medium dark:bg-gray-700 dark:text-gray-300">
-                  {getUserInitials(workItem.authorUser)}
-                </div>
-              )}
-              <div>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {workItem.authorUser?.name || workItem.authorUser?.username || "Unknown"}
-                </p>
-                {workItem.authorUser?.email && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{workItem.authorUser.email}</p>
-                )}
-              </div>
-            </div>
-          </div>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-lg font-semibold dark:text-white">Status Log</h3>
+          <span className="text-sm text-gray-500 dark:text-neutral-400">
+            {statusLogs.length} {statusLogs.length === 1 ? "entry" : "entries"}
+          </span>
+        </div>
 
-          <div>
-            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Assignee:</span>
-            <div className="flex items-center gap-3 mt-2">
-              {workItem.assigneeUser?.profilePictureUrl ? (
-                <Image
-                  src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${workItem.assigneeUser.profilePictureUrl}`}
-                  alt={workItem.assigneeUser.username}
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm font-medium dark:bg-gray-700 dark:text-gray-300">
-                  {getUserInitials(workItem.assigneeUser)}
+        {isStatusLogsLoading ? (
+          <p className="text-sm text-gray-500 dark:text-neutral-400">Loading status logs...</p>
+        ) : statusLogs.length === 0 ? (
+          <p className="text-sm text-gray-500 dark:text-neutral-400">No status logs yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {statusLogs.map((statusLog) => {
+              const isOwnStatusLog = authUser?.userId === statusLog.engineerUserId;
+              const engineerName =
+                statusLog.engineerUser?.name ||
+                statusLog.engineerUser?.username ||
+                `User ${statusLog.engineerUserId}`;
+              const formattedDate = format(new Date(statusLog.dateLogged), "PPpp");
+
+              return (
+                <div key={statusLog.id} className="rounded-md border border-gray-200 p-4 dark:border-gray-700">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{engineerName}</p>
+                      <p className="text-xs text-gray-500 dark:text-neutral-400">{formattedDate}</p>
+                    </div>
+                    {isOwnStatusLog && (
+                      <div className="flex gap-2 text-xs">
+                        <button
+                          className="rounded-md border border-gray-300 px-2 py-1 text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                          onClick={() => handleStartEditStatusLog(statusLog)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="rounded-md border border-red-300 px-2 py-1 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+                          onClick={() => handleDeleteStatusLog(statusLog)}
+                          disabled={isDeletingStatusLog}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {editingStatusLogId === statusLog.id ? (
+                    <div className="mt-3 space-y-2">
+                      <textarea
+                        className="w-full rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-dark-secondary dark:text-white"
+                        rows={3}
+                        value={editingStatusText}
+                        onChange={(e) => setEditingStatusText(e.target.value)}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          className="rounded-md bg-blue-600 px-3 py-1 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                          onClick={handleSaveEditStatusLog}
+                          disabled={isUpdatingStatusLog}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                          onClick={handleCancelEditStatusLog}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="mt-3 whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">
+                      {statusLog.status}
+                    </p>
+                  )}
                 </div>
-              )}
-              <div>
-                <p className="text-gray-900 dark:text-gray-100">
-                  {workItem.assigneeUser?.name || workItem.assigneeUser?.username || "Unassigned"}
-                </p>
-                {workItem.assigneeUser?.email && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{workItem.assigneeUser.email}</p>
-                )}
+              );
+            })}
+          </div>
+        )}
+
+        <div className="mt-6 border-t border-gray-200 pt-4 dark:border-gray-700">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Add a status update</h4>
+          {!authUser ? (
+            <p className="mt-2 text-sm text-gray-500 dark:text-neutral-400">
+              Sign in to add status updates.
+            </p>
+          ) : (
+            <div className="mt-2 space-y-3">
+              <textarea
+                className="w-full rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-dark-secondary dark:text-white"
+                rows={3}
+                placeholder="Provide a status update..."
+                value={newStatusText}
+                onChange={(e) => setNewStatusText(e.target.value)}
+              />
+              <div className="flex justify-end">
+                <button
+                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                  onClick={handleSubmitStatusLog}
+                  disabled={isCreatingStatusLog || !newStatusText.trim()}
+                >
+                  {isCreatingStatusLog ? "Posting..." : "Post Status Update"}
+                </button>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -501,6 +781,189 @@ const WorkItemDetailPage = ({ params }: Props) => {
           </div>
         </div>
       )}
+
+      {/* Attachments */}
+      <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-lg font-semibold dark:text-white">Attachments</h3>
+          <span className="text-sm text-gray-500 dark:text-neutral-400">
+            {attachments.length}{" "}
+            {attachments.length === 1 ? "attachment" : "attachments"}
+          </span>
+        </div>
+
+        {isAttachmentsLoading ? (
+          <p className="text-sm text-gray-500 dark:text-neutral-400">Loading attachments...</p>
+        ) : attachments.length === 0 ? (
+          <p className="text-sm text-gray-500 dark:text-neutral-400">No attachments yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {attachments.map((attachment: Attachment) => {
+              const isOwnAttachment = authUser?.userId === attachment.uploadedByUserId;
+              const uploaderName =
+                attachment.uploadedByUser?.name ||
+                attachment.uploadedByUser?.username ||
+                `User ${attachment.uploadedByUserId}`;
+              const formattedDate = format(new Date(attachment.dateAttached), "PPpp");
+              const fileUrl = attachment.fileUrl.startsWith('http') 
+                ? attachment.fileUrl 
+                : `https://partial-s3-images.s3.us-east-1.amazonaws.com/${attachment.fileUrl}`;
+
+              return (
+                <div
+                  key={attachment.id}
+                  className="flex items-center justify-between rounded-md border border-gray-200 p-4 dark:border-gray-700"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="flex-shrink-0">
+                      <svg
+                        className="h-8 w-8 text-gray-400 dark:text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      {editingAttachmentId === attachment.id ? (
+                        <div className="space-y-2">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              File Name
+                            </label>
+                            <input
+                              type="text"
+                              className="w-full rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-dark-secondary dark:text-white"
+                              value={editingAttachmentFileName}
+                              onChange={(e) => setEditingAttachmentFileName(e.target.value)}
+                              placeholder="File name"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              File URL
+                            </label>
+                            <input
+                              type="text"
+                              className="w-full rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-dark-secondary dark:text-white"
+                              value={editingAttachmentFileUrl}
+                              onChange={(e) => setEditingAttachmentFileUrl(e.target.value)}
+                              placeholder="File URL"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              className="rounded-md bg-blue-600 px-3 py-1 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                              onClick={handleSaveEditAttachment}
+                              disabled={isUpdatingAttachment || !editingAttachmentFileName.trim() || !editingAttachmentFileUrl.trim()}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                              onClick={handleCancelEditAttachment}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <a
+                            href={fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 truncate block"
+                          >
+                            {attachment.fileName}
+                          </a>
+                          <div className="mt-1 flex items-center gap-2 text-xs text-gray-500 dark:text-neutral-400">
+                            <span>Uploaded by {uploaderName}</span>
+                            <span>•</span>
+                            <span>{formattedDate}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  {editingAttachmentId !== attachment.id && (
+                    <div className="ml-4 flex items-center gap-2 flex-shrink-0">
+                      {isOwnAttachment && (
+                        <>
+                          <button
+                            className="rounded-md border border-gray-300 px-2 py-1.5 text-xs text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                            onClick={() => handleStartEditAttachment(attachment)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="rounded-md border border-red-300 px-2 py-1.5 text-xs text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+                            onClick={() => handleDeleteAttachment(attachment)}
+                            disabled={isDeletingAttachment}
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="mt-6 border-t border-gray-200 pt-4 dark:border-gray-700">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Add an attachment</h4>
+          {!authUser ? (
+            <p className="mt-2 text-sm text-gray-500 dark:text-neutral-400">
+              Sign in to add attachments.
+            </p>
+          ) : (
+            <div className="mt-2 space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  File URL
+                </label>
+                <input
+                  type="text"
+                  className="w-full rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-dark-secondary dark:text-white"
+                  placeholder="https://example.com/file.pdf or S3 path"
+                  value={newAttachmentFileUrl}
+                  onChange={(e) => setNewAttachmentFileUrl(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  File Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-dark-secondary dark:text-white"
+                  placeholder="document.pdf"
+                  value={newAttachmentFileName}
+                  onChange={(e) => setNewAttachmentFileName(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                  onClick={handleSubmitAttachment}
+                  disabled={isCreatingAttachment || !newAttachmentFileUrl.trim() || !newAttachmentFileName.trim()}
+                >
+                  {isCreatingAttachment ? "Adding..." : "Add Attachment"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Comments */}
       <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">
