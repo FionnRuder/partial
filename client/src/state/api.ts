@@ -242,6 +242,7 @@ export interface Attachment {
   dateAttached: string;
   uploadedByUserId: number;
   workItemId?: number;
+  uploadedByUser?: User;
 }
 
 export interface Comment {
@@ -252,6 +253,16 @@ export interface Comment {
   commenterUserId: number;
   workItemId?: number;
   commenterUser?: User;
+}
+
+export interface StatusLog {
+  id: number;
+  organizationId: number;
+  status: string;
+  dateLogged: string;
+  engineerUserId: number;
+  workItemId: number;
+  engineerUser?: User;
 }
 
 export interface DisciplineTeam {
@@ -469,7 +480,7 @@ export const api = createApi({
     return result;
   },
       reducerPath: "api",
-      tagTypes: ["WorkItems", "Milestones", "Parts", "Programs", "Teams", "Users", "Comments", "Invitations", "DeliverableTypes", "IssueTypes"],
+      tagTypes: ["WorkItems", "Milestones", "Parts", "Programs", "Teams", "Users", "Comments", "StatusLogs", "Attachments", "Invitations", "DeliverableTypes", "IssueTypes"],
   endpoints: (build) => ({
     /* ---------- WORK ITEMS ---------- */
     getWorkItems: build.query<WorkItem[], void>({
@@ -629,6 +640,122 @@ export const api = createApi({
         invalidatesTags: (result, error, { workItemId, commentId }) => [
             { type: "Comments", id: commentId },
             { type: "Comments", id: `LIST-${workItemId}` },
+            { type: "WorkItems", id: workItemId },
+        ],
+    }),
+
+    getStatusLogsByWorkItem: build.query<StatusLog[], number>({
+        query: (workItemId) => `workItems/${workItemId}/statusLogs`,
+        providesTags: (result, error, workItemId) =>
+            result
+                ? [
+                        ...result.map(({ id }) => ({ type: "StatusLogs" as const, id })),
+                        { type: "StatusLogs", id: `LIST-${workItemId}` },
+                    ]
+                : [{ type: "StatusLogs", id: `LIST-${workItemId}` }],
+    }),
+
+    createStatusLog: build.mutation<
+        StatusLog,
+        { workItemId: number; status: string; engineerUserId: number }
+    >({
+        query: ({ workItemId, status, engineerUserId }) => ({
+            url: `workItems/${workItemId}/statusLogs`,
+            method: "POST",
+            body: { status, engineerUserId },
+        }),
+        invalidatesTags: (result, error, { workItemId }) => [
+            { type: "StatusLogs", id: `LIST-${workItemId}` },
+            { type: "WorkItems", id: workItemId },
+        ],
+    }),
+
+    updateStatusLog: build.mutation<
+        StatusLog,
+        { workItemId: number; statusLogId: number; status: string; requesterUserId: number }
+    >({
+        query: ({ workItemId, statusLogId, status, requesterUserId }) => ({
+            url: `workItems/${workItemId}/statusLogs/${statusLogId}`,
+            method: "PATCH",
+            body: { status, requesterUserId },
+        }),
+        invalidatesTags: (result, error, { workItemId, statusLogId }) => [
+            { type: "StatusLogs", id: statusLogId },
+            { type: "StatusLogs", id: `LIST-${workItemId}` },
+            { type: "WorkItems", id: workItemId },
+        ],
+    }),
+
+    deleteStatusLog: build.mutation<
+        void,
+        { workItemId: number; statusLogId: number; requesterUserId: number }
+    >({
+        query: ({ workItemId, statusLogId, requesterUserId }) => ({
+            url: `workItems/${workItemId}/statusLogs/${statusLogId}`,
+            method: "DELETE",
+            body: { requesterUserId },
+        }),
+        invalidatesTags: (result, error, { workItemId, statusLogId }) => [
+            { type: "StatusLogs", id: statusLogId },
+            { type: "StatusLogs", id: `LIST-${workItemId}` },
+            { type: "WorkItems", id: workItemId },
+        ],
+    }),
+
+    getAttachmentsByWorkItem: build.query<Attachment[], number>({
+        query: (workItemId) => `workItems/${workItemId}/attachments`,
+        providesTags: (result, error, workItemId) =>
+            result
+                ? [
+                        ...result.map(({ id }) => ({ type: "Attachments" as const, id })),
+                        { type: "Attachments", id: `LIST-${workItemId}` },
+                    ]
+                : [{ type: "Attachments", id: `LIST-${workItemId}` }],
+    }),
+
+    createAttachment: build.mutation<
+        Attachment,
+        { workItemId: number; fileUrl: string; fileName: string; uploadedByUserId: number }
+    >({
+        query: ({ workItemId, fileUrl, fileName, uploadedByUserId }) => ({
+            url: `workItems/${workItemId}/attachments`,
+            method: "POST",
+            body: { fileUrl, fileName, uploadedByUserId },
+        }),
+        invalidatesTags: (result, error, { workItemId }) => [
+            { type: "Attachments", id: `LIST-${workItemId}` },
+            { type: "WorkItems", id: workItemId },
+        ],
+    }),
+
+    updateAttachment: build.mutation<
+        Attachment,
+        { workItemId: number; attachmentId: number; fileName: string; fileUrl: string; requesterUserId: number }
+    >({
+        query: ({ workItemId, attachmentId, fileName, fileUrl, requesterUserId }) => ({
+            url: `workItems/${workItemId}/attachments/${attachmentId}`,
+            method: "PATCH",
+            body: { fileName, fileUrl, requesterUserId },
+        }),
+        invalidatesTags: (result, error, { workItemId, attachmentId }) => [
+            { type: "Attachments", id: attachmentId },
+            { type: "Attachments", id: `LIST-${workItemId}` },
+            { type: "WorkItems", id: workItemId },
+        ],
+    }),
+
+    deleteAttachment: build.mutation<
+        void,
+        { workItemId: number; attachmentId: number; requesterUserId: number }
+    >({
+        query: ({ workItemId, attachmentId, requesterUserId }) => ({
+            url: `workItems/${workItemId}/attachments/${attachmentId}`,
+            method: "DELETE",
+            body: { requesterUserId },
+        }),
+        invalidatesTags: (result, error, { workItemId, attachmentId }) => [
+            { type: "Attachments", id: attachmentId },
+            { type: "Attachments", id: `LIST-${workItemId}` },
             { type: "WorkItems", id: workItemId },
         ],
     }),
@@ -897,6 +1024,14 @@ export const {
   useCreateCommentMutation,
   useUpdateCommentMutation,
   useDeleteCommentMutation,
+  useGetStatusLogsByWorkItemQuery,
+  useCreateStatusLogMutation,
+  useUpdateStatusLogMutation,
+  useDeleteStatusLogMutation,
+  useGetAttachmentsByWorkItemQuery,
+  useCreateAttachmentMutation,
+  useUpdateAttachmentMutation,
+  useDeleteAttachmentMutation,
 
   useGetMilestonesQuery,
   useGetMilestonesByProgramQuery,

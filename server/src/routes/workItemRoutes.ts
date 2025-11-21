@@ -11,6 +11,14 @@ import {
   createCommentForWorkItem,
   updateCommentForWorkItem,
   deleteCommentForWorkItem,
+  getStatusLogsForWorkItem,
+  createStatusLogForWorkItem,
+  updateStatusLogForWorkItem,
+  deleteStatusLogForWorkItem,
+  getAttachmentsForWorkItem,
+  createAttachmentForWorkItem,
+  updateAttachmentForWorkItem,
+  deleteAttachmentForWorkItem,
 } from "../controllers/workItemController";
 
 const router = express.Router();
@@ -26,6 +34,18 @@ router.get("/:workItemId/comments", getCommentsForWorkItem);
 router.post("/:workItemId/comments", createCommentForWorkItem);
 router.patch("/:workItemId/comments/:commentId", updateCommentForWorkItem);
 router.delete("/:workItemId/comments/:commentId", deleteCommentForWorkItem);
+
+// ✅ Status Logs
+router.get("/:workItemId/statusLogs", getStatusLogsForWorkItem);
+router.post("/:workItemId/statusLogs", createStatusLogForWorkItem);
+router.patch("/:workItemId/statusLogs/:statusLogId", updateStatusLogForWorkItem);
+router.delete("/:workItemId/statusLogs/:statusLogId", deleteStatusLogForWorkItem);
+
+// ✅ Attachments
+router.get("/:workItemId/attachments", getAttachmentsForWorkItem);
+router.post("/:workItemId/attachments", createAttachmentForWorkItem);
+router.patch("/:workItemId/attachments/:attachmentId", updateAttachmentForWorkItem);
+router.delete("/:workItemId/attachments/:attachmentId", deleteAttachmentForWorkItem);
 
 // ✅ GET single work item by ID (must be last to avoid conflicts)
 router.get("/:workItemId", getWorkItemById);

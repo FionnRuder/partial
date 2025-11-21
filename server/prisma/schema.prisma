@@ -76,6 +76,7 @@ model User {
   partNumbers         Part[]
   attachments         Attachment[]
   comments            Comment[]
+  statusLogs          StatusLog[]
   createdInvitations  Invitation[] @relation("InvitationCreator")
   acceptedInvitations Invitation[] @relation("InvitationAccepter")
 
@@ -97,6 +98,7 @@ model Organization {
   workItems        WorkItem[]
   attachments      Attachment[]
   comments         Comment[]
+  statusLogs       StatusLog[]
   invitations      Invitation[]
   deliverableTypes DeliverableType[]
   issueTypes       IssueType[]
@@ -209,6 +211,7 @@ model WorkItem {
   partNumbers WorkItemToPart[]
   attachments Attachment[]
   comments    Comment[]
+  statusLogs  StatusLog[]
 
   // Subtype details
   issueDetail       IssueDetail?
@@ -305,6 +308,19 @@ model Comment {
   organization  Organization @relation(fields: [organizationId], references: [id])
   commenterUser User         @relation(fields: [commenterUserId], references: [userId])
   workItem      WorkItem?    @relation(fields: [workItemId], references: [id])
+}
+
+model StatusLog {
+  id             Int      @id @default(autoincrement())
+  organizationId Int
+  status         String
+  dateLogged     DateTime @default(now())
+  engineerUserId Int
+  workItemId     Int
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  engineerUser User         @relation(fields: [engineerUserId], references: [userId])
+  workItem     WorkItem     @relation(fields: [workItemId], references: [id])
 }
 
 model Invitation {

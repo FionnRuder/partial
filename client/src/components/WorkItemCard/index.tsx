@@ -28,7 +28,13 @@ const WorkItemCard = ({ workItem }: Props) => {
             {workItem.workItemType}
           </span>
         </div>
-        <p className="mt-1 text-sm text-gray-600">ID: {workItem.id}</p>
+        <p className="mt-1 text-sm text-gray-600">
+          ID: {workItem.workItemType === "Deliverable"
+            ? "D"
+            : workItem.workItemType === "Issue"
+            ? "I"
+            : "T"}{workItem.id}
+        </p>
       </div>
 
       {/* Description */}

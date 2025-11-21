@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useGetPartsQuery, useGetProgramsQuery, useGetWorkItemsByPartQuery, WorkItemType } from '@/state/api';
+import { useGetPartsQuery, useGetProgramsQuery, WorkItemType } from '@/state/api';
 import { Part, Program, WorkItem } from '@/state/api';
 import { ChevronDown, ChevronRight, Bolt, User, Layers, FileText, AlertTriangle, CheckSquare, Edit, PlusSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -22,15 +22,18 @@ interface WorkItemCounts {
 }
 
 // Custom hook to manage work item data for all parts
-const useWorkItemData = (parts: Part[]) => {
+const useWorkItemData = (partsOrTree: Part[] | PartHierarchyNode[]) => {
   const [workItemData, setWorkItemData] = useState<Map<number, WorkItem[]>>(new Map());
   const [loadingParts, setLoadingParts] = useState<Set<number>>(new Set());
+  const fetchedPartsRef = React.useRef<Set<number>>(new Set());
 
   // Fetch work items for a specific part
-  const fetchWorkItemsForPart = async (partId: number) => {
-    if (workItemData.has(partId) || loadingParts.has(partId)) return;
+  const fetchWorkItemsForPart = useCallback(async (partId: number) => {
+    setLoadingParts(prev => {
+      if (prev.has(partId)) return prev;
+      return new Set(prev).add(partId);
+    });
     
-    setLoadingParts(prev => new Set(prev).add(partId));
     try {
       const headers: HeadersInit = {};
       if (typeof window !== 'undefined') {
@@ -49,13 +52,28 @@ const useWorkItemData = (parts: Part[]) => {
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/workItems?partId=${partId}`, {
         headers,
+        credentials: 'include', // Include cookies for authentication
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const workItems = await response.json();
       // Ensure workItems is always an array before storing
       const workItemsArray = Array.isArray(workItems) ? workItems : [];
-      setWorkItemData(prev => new Map(prev).set(partId, workItemsArray));
+      console.log(`Fetched ${workItemsArray.length} work items for part ${partId}:`, workItemsArray);
+      setWorkItemData(prev => {
+        const newMap = new Map(prev);
+        newMap.set(partId, workItemsArray);
+        return newMap;
+      });
     } catch (error) {
       console.error(`Failed to fetch work items for part ${partId}:`, error);
+      // Set empty array on error to prevent retrying indefinitely
+      setWorkItemData(prev => {
+        const newMap = new Map(prev);
+        newMap.set(partId, []);
+        return newMap;
+      });
     } finally {
       setLoadingParts(prev => {
         const newSet = new Set(prev);
@@ -63,32 +81,59 @@ const useWorkItemData = (parts: Part[]) => {
         return newSet;
       });
     }
-  };
+  }, []);
 
-  // Fetch work items for all parts in the hierarchy
-  const fetchAllWorkItems = useCallback(async () => {
-    const allPartIds = new Set<number>();
-    
-    const collectPartIds = (partList: Part[]) => {
+  // Collect all part IDs from the hierarchy
+  const allPartIds = useMemo(() => {
+    const ids = new Set<number>();
+    const collectPartIds = (partList: (Part | PartHierarchyNode)[]) => {
       partList.forEach(part => {
-        allPartIds.add(part.id);
-        if (part.children) {
+        ids.add(part.id);
+        if ('children' in part && part.children) {
           collectPartIds(part.children);
         }
       });
     };
-    
-    collectPartIds(parts);
-    
-    // Fetch work items for all parts
-    await Promise.all(Array.from(allPartIds).map(partId => fetchWorkItemsForPart(partId)));
-  }, [parts]);
+    collectPartIds(partsOrTree);
+    return Array.from(ids).sort().join(',');
+  }, [partsOrTree]);
 
+  // Fetch work items for all parts in the hierarchy
   useEffect(() => {
-    if (parts.length > 0) {
-      fetchAllWorkItems();
+    if (!allPartIds || allPartIds.length === 0) {
+      fetchedPartsRef.current.clear();
+      return;
     }
-  }, [fetchAllWorkItems]);
+    
+    const partIdArray = allPartIds.split(',').map(id => Number(id));
+    console.log('Checking work items for parts:', partIdArray);
+    
+    // Clear ref for parts that are no longer in the current set
+    const currentPartIds = new Set(partIdArray);
+    fetchedPartsRef.current.forEach(partId => {
+      if (!currentPartIds.has(partId)) {
+        fetchedPartsRef.current.delete(partId);
+      }
+    });
+    
+    // Filter parts that haven't been fetched yet
+    const partIdsToFetch = partIdArray.filter(partId => {
+      const alreadyFetched = fetchedPartsRef.current.has(partId);
+      if (!alreadyFetched) {
+        fetchedPartsRef.current.add(partId);
+        console.log(`Will fetch work items for part ${partId}`);
+        return true;
+      }
+      return false;
+    });
+    
+    if (partIdsToFetch.length > 0) {
+      console.log(`Fetching work items for ${partIdsToFetch.length} parts:`, partIdsToFetch);
+      partIdsToFetch.forEach(partId => fetchWorkItemsForPart(partId));
+    } else {
+      console.log('All parts already fetched or in progress');
+    }
+  }, [allPartIds, fetchWorkItemsForPart]);
 
   return { workItemData, loadingParts };
 };
@@ -208,9 +253,6 @@ const PartHierarchyPage = () => {
     }
   }, [programs, selectedProgramId]);
 
-  // Use the work item data hook
-  const { workItemData } = useWorkItemData(allParts);
-
   // Filter parts by selected program
   const filteredParts = useMemo(() => {
     if (!selectedProgramId) return [];
@@ -252,6 +294,9 @@ const PartHierarchyPage = () => {
     sortChildren(rootNodes);
     return rootNodes;
   }, [filteredParts]);
+
+  // Use the work item data hook with the hierarchy tree
+  const { workItemData } = useWorkItemData(hierarchyTree);
 
   const toggleNode = (nodeId: number) => {
     setExpandedNodes(prev => {

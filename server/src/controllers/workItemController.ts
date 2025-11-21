@@ -100,7 +100,14 @@ export const getWorkItemById = async (req: Request, res: Response): Promise<void
             part: true,
           },
         },
-        attachments: true,
+        attachments: {
+          include: {
+            uploadedByUser: true,
+          },
+          orderBy: {
+            dateAttached: "desc",
+          },
+        },
         comments: {
           include: {
             commenterUser: true,
@@ -185,7 +192,14 @@ export const getWorkItems = async (req: Request, res: Response): Promise<void> =
           part: true,
         },
       },
-      attachments: true,
+      attachments: {
+        include: {
+          uploadedByUser: true,
+        },
+        orderBy: {
+          dateAttached: "desc" as const,
+        },
+      },
       comments: {
         include: {
           commenterUser: true,
@@ -476,7 +490,7 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
             : undefined,
       };
 
-      return tx.workItem.create({
+      const createdWorkItem = await tx.workItem.create({
         data: workItemData,
         include: {
           program: true,
@@ -504,6 +518,20 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
           partNumbers: { include: { part: true } },
         },
       });
+
+      // If inputStatus is provided, create the first status log entry
+      if (body.inputStatus && body.inputStatus.trim()) {
+        await tx.statusLog.create({
+          data: {
+            status: body.inputStatus.trim(),
+            engineerUserId: Number(body.authorUserId),
+            workItemId: createdWorkItem.id,
+            organizationId: organizationId,
+          },
+        });
+      }
+
+      return createdWorkItem;
     });
 
     res.status(201).json({
@@ -698,6 +726,11 @@ export const editWorkItem = async (req: Request, res: Response) => {
         updateData.actualCompletionDate = new Date(updates.actualCompletionDate);
       if (typeof updates.percentComplete === "number")
         updateData.percentComplete = updates.percentComplete;
+      
+      // Check if inputStatus is being updated and if it's different from the current value
+      const inputStatusChanged = updates.inputStatus !== undefined && 
+                                 updates.inputStatus !== existingWorkItem.inputStatus;
+      
       if (updates.inputStatus) updateData.inputStatus = updates.inputStatus;
       if (updates.programId !== undefined) updateData.programId = Number(updates.programId);
       if (updates.dueByMilestoneId !== undefined)
@@ -725,6 +758,14 @@ export const editWorkItem = async (req: Request, res: Response) => {
           },
           authorUser: true,
           assigneeUser: true,
+          attachments: {
+            include: {
+              uploadedByUser: true,
+            },
+            orderBy: {
+              dateAttached: "desc",
+            },
+          },
           comments: {
             include: {
               commenterUser: true,
@@ -736,6 +777,18 @@ export const editWorkItem = async (req: Request, res: Response) => {
           partNumbers: { include: { part: true } },
         },
       });
+
+      // If inputStatus was changed, create a status log entry
+      if (inputStatusChanged && updates.inputStatus) {
+        await tx.statusLog.create({
+          data: {
+            status: updates.inputStatus,
+            engineerUserId: req.auth.userId,
+            workItemId: workItemIdNumber,
+            organizationId: organizationId,
+          },
+        });
+      }
 
       // Handle issue detail updates
       if (updates.issueDetail) {
@@ -865,6 +918,14 @@ export const editWorkItem = async (req: Request, res: Response) => {
           },
           authorUser: true,
           assigneeUser: true,
+          attachments: {
+            include: {
+              uploadedByUser: true,
+            },
+            orderBy: {
+              dateAttached: "desc",
+            },
+          },
           comments: {
             include: {
               commenterUser: true,
@@ -1174,6 +1235,10 @@ export const deleteWorkItem = async (req: Request, res: Response): Promise<void>
         where: { workItemId: workItemIdNumber, organizationId: req.auth.organizationId },
       });
 
+      await tx.statusLog.deleteMany({
+        where: { workItemId: workItemIdNumber, organizationId: req.auth.organizationId },
+      });
+
       await tx.attachment.deleteMany({
         where: { workItemId: workItemIdNumber, organizationId: req.auth.organizationId },
       });
@@ -1203,6 +1268,550 @@ export const deleteWorkItem = async (req: Request, res: Response): Promise<void>
       return;
     }
     res.status(500).json({ message: `Error deleting work item: ${error.message}` });
+  }
+};
+
+/**
+ * Get Status Logs for WorkItem
+ */
+export const getStatusLogsForWorkItem = async (req: Request, res: Response): Promise<void> => {
+  const { workItemId } = req.params;
+
+  const workItemIdNumber = Number(workItemId);
+  if (!Number.isInteger(workItemIdNumber)) {
+    res.status(400).json({ message: "workItemId must be a valid integer" });
+    return;
+  }
+
+  try {
+    const workItem = await prisma.workItem.findFirst({
+      where: { id: workItemIdNumber, organizationId: req.auth.organizationId },
+    });
+
+    if (!workItem) {
+      res.status(404).json({ message: "Work item not found" });
+      return;
+    }
+
+    const statusLogs = await prisma.statusLog.findMany({
+      where: {
+        workItemId: workItemIdNumber,
+        organizationId: req.auth.organizationId,
+      },
+      include: {
+        engineerUser: true,
+      },
+      orderBy: {
+        dateLogged: "desc",
+      },
+    });
+
+    res.json(statusLogs);
+  } catch (error: any) {
+    console.error("Error fetching status logs:", error);
+    res.status(500).json({ message: `Error retrieving status logs: ${error.message}` });
+  }
+};
+
+/**
+ * Create Status Log for WorkItem
+ * Also updates the work item's inputStatus with the new status
+ */
+export const createStatusLogForWorkItem = async (req: Request, res: Response): Promise<void> => {
+  const { workItemId } = req.params;
+  const { status, engineerUserId } = req.body;
+
+  if (!status || typeof status !== "string") {
+    res.status(400).json({ message: "Status is required." });
+    return;
+  }
+  if (engineerUserId === undefined) {
+    res.status(400).json({ message: "engineerUserId is required." });
+    return;
+  }
+
+  try {
+    const workItemIdNumber = Number(workItemId);
+    const engineerIdNumber = Number(engineerUserId);
+
+    if (!Number.isInteger(workItemIdNumber) || !Number.isInteger(engineerIdNumber)) {
+      res.status(400).json({ message: "workItemId and engineerUserId must be valid integers." });
+      return;
+    }
+
+    if (engineerIdNumber !== req.auth.userId) {
+      res.status(403).json({ message: "You can only create status logs as yourself." });
+      return;
+    }
+
+    const [workItem, engineer] = await Promise.all([
+      prisma.workItem.findFirst({
+        where: { id: workItemIdNumber, organizationId: req.auth.organizationId },
+      }),
+      prisma.user.findFirst({
+        where: { userId: engineerIdNumber, organizationId: req.auth.organizationId },
+      }),
+    ]);
+
+    if (!workItem) {
+      res.status(404).json({ message: "Work item not found" });
+      return;
+    }
+
+    if (!engineer) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const newStatusLog = await tx.statusLog.create({
+        data: {
+          status,
+          engineerUserId: engineerIdNumber,
+          workItemId: workItemIdNumber,
+          organizationId: req.auth.organizationId,
+        },
+        include: {
+          engineerUser: true,
+        },
+      });
+
+      // Update the work item's inputStatus with the new status
+      await tx.workItem.update({
+        where: { id: workItemIdNumber },
+        data: {
+          inputStatus: status,
+        },
+      });
+
+      return newStatusLog;
+    });
+
+    res.status(201).json(result);
+  } catch (error: any) {
+    console.error("Error creating status log:", error);
+    res.status(500).json({ message: `Error creating status log: ${error.message}` });
+  }
+};
+
+/**
+ * Update Status Log for WorkItem
+ * Also updates the work item's inputStatus if this is the most recent status log
+ */
+export const updateStatusLogForWorkItem = async (req: Request, res: Response): Promise<void> => {
+  const { workItemId, statusLogId } = req.params;
+  const { status, requesterUserId } = req.body;
+
+  if (!status || typeof status !== "string") {
+    res.status(400).json({ message: "Status is required." });
+    return;
+  }
+  if (requesterUserId === undefined) {
+    res.status(400).json({ message: "requesterUserId is required." });
+    return;
+  }
+
+  try {
+    const workItemIdNumber = Number(workItemId);
+    const statusLogIdNumber = Number(statusLogId);
+    const requesterIdNumber = Number(requesterUserId);
+
+    if (
+      !Number.isInteger(workItemIdNumber) ||
+      !Number.isInteger(statusLogIdNumber) ||
+      !Number.isInteger(requesterIdNumber)
+    ) {
+      res.status(400).json({ message: "Identifiers must be valid integers." });
+      return;
+    }
+
+    if (requesterIdNumber !== req.auth.userId) {
+      res.status(403).json({ message: "You can only edit your own status logs." });
+      return;
+    }
+
+    const existingStatusLog = await prisma.statusLog.findFirst({
+      where: { id: statusLogIdNumber, organizationId: req.auth.organizationId },
+    });
+
+    if (!existingStatusLog || existingStatusLog.workItemId !== workItemIdNumber) {
+      res.status(404).json({ message: "Status log not found for this work item." });
+      return;
+    }
+
+    if (existingStatusLog.engineerUserId !== requesterIdNumber) {
+      res.status(403).json({ message: "You can only edit your own status logs." });
+      return;
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const updatedStatusLog = await tx.statusLog.update({
+        where: { id: statusLogIdNumber },
+        data: { status },
+        include: {
+          engineerUser: true,
+        },
+      });
+
+      // Check if this is the most recent status log
+      const mostRecentStatusLog = await tx.statusLog.findFirst({
+        where: {
+          workItemId: workItemIdNumber,
+          organizationId: req.auth.organizationId,
+        },
+        orderBy: {
+          dateLogged: "desc",
+        },
+      });
+
+      // If this is the most recent status log, update the work item's inputStatus
+      if (mostRecentStatusLog && mostRecentStatusLog.id === statusLogIdNumber) {
+        await tx.workItem.update({
+          where: { id: workItemIdNumber },
+          data: {
+            inputStatus: status,
+          },
+        });
+      }
+
+      return updatedStatusLog;
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error("Error updating status log:", error);
+    res.status(500).json({ message: `Error updating status log: ${error.message}` });
+  }
+};
+
+/**
+ * Delete Status Log for WorkItem
+ * Also updates the work item's inputStatus if this was the most recent status log
+ */
+export const deleteStatusLogForWorkItem = async (req: Request, res: Response): Promise<void> => {
+  const { workItemId, statusLogId } = req.params;
+  const { requesterUserId } = req.body;
+
+  if (requesterUserId === undefined) {
+    res.status(400).json({ message: "requesterUserId is required." });
+    return;
+  }
+
+  try {
+    const workItemIdNumber = Number(workItemId);
+    const statusLogIdNumber = Number(statusLogId);
+    const requesterIdNumber = Number(requesterUserId);
+
+    if (
+      !Number.isInteger(workItemIdNumber) ||
+      !Number.isInteger(statusLogIdNumber) ||
+      !Number.isInteger(requesterIdNumber)
+    ) {
+      res.status(400).json({ message: "Identifiers must be valid integers." });
+      return;
+    }
+
+    if (requesterIdNumber !== req.auth.userId) {
+      res.status(403).json({ message: "You can only delete your own status logs." });
+      return;
+    }
+
+    const existingStatusLog = await prisma.statusLog.findFirst({
+      where: { id: statusLogIdNumber, organizationId: req.auth.organizationId },
+    });
+
+    if (!existingStatusLog || existingStatusLog.workItemId !== workItemIdNumber) {
+      res.status(404).json({ message: "Status log not found for this work item." });
+      return;
+    }
+
+    if (existingStatusLog.engineerUserId !== requesterIdNumber) {
+      res.status(403).json({ message: "You can only delete your own status logs." });
+      return;
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Check if this is the most recent status log before deleting
+      const mostRecentStatusLog = await tx.statusLog.findFirst({
+        where: {
+          workItemId: workItemIdNumber,
+          organizationId: req.auth.organizationId,
+        },
+        orderBy: {
+          dateLogged: "desc",
+        },
+      });
+
+      // Delete the status log
+      await tx.statusLog.delete({
+        where: { id: statusLogIdNumber },
+      });
+
+      // If this was the most recent status log, update the work item's inputStatus
+      // with the next most recent status log, or empty string if none exist
+      if (mostRecentStatusLog && mostRecentStatusLog.id === statusLogIdNumber) {
+        const nextMostRecentStatusLog = await tx.statusLog.findFirst({
+          where: {
+            workItemId: workItemIdNumber,
+            organizationId: req.auth.organizationId,
+          },
+          orderBy: {
+            dateLogged: "desc",
+          },
+        });
+
+        await tx.workItem.update({
+          where: { id: workItemIdNumber },
+          data: {
+            inputStatus: nextMostRecentStatusLog?.status || "",
+          },
+        });
+      }
+    });
+
+    res.status(204).send();
+  } catch (error: any) {
+    console.error("Error deleting status log:", error);
+    res.status(500).json({ message: `Error deleting status log: ${error.message}` });
+  }
+};
+
+/**
+ * Get Attachments for WorkItem
+ */
+export const getAttachmentsForWorkItem = async (req: Request, res: Response): Promise<void> => {
+  const { workItemId } = req.params;
+
+  const workItemIdNumber = Number(workItemId);
+  if (!Number.isInteger(workItemIdNumber)) {
+    res.status(400).json({ message: "workItemId must be a valid integer" });
+    return;
+  }
+
+  try {
+    const workItem = await prisma.workItem.findFirst({
+      where: { id: workItemIdNumber, organizationId: req.auth.organizationId },
+    });
+
+    if (!workItem) {
+      res.status(404).json({ message: "Work item not found" });
+      return;
+    }
+
+    const attachments = await prisma.attachment.findMany({
+      where: {
+        workItemId: workItemIdNumber,
+        organizationId: req.auth.organizationId,
+      },
+      include: {
+        uploadedByUser: true,
+      },
+      orderBy: {
+        dateAttached: "desc",
+      },
+    });
+
+    res.json(attachments);
+  } catch (error: any) {
+    console.error("Error fetching attachments:", error);
+    res.status(500).json({ message: `Error retrieving attachments: ${error.message}` });
+  }
+};
+
+/**
+ * Create Attachment for WorkItem
+ */
+export const createAttachmentForWorkItem = async (req: Request, res: Response): Promise<void> => {
+  const { workItemId } = req.params;
+  const { fileUrl, fileName, uploadedByUserId } = req.body;
+
+  if (!fileUrl || typeof fileUrl !== "string") {
+    res.status(400).json({ message: "fileUrl is required." });
+    return;
+  }
+  if (!fileName || typeof fileName !== "string") {
+    res.status(400).json({ message: "fileName is required." });
+    return;
+  }
+  if (uploadedByUserId === undefined) {
+    res.status(400).json({ message: "uploadedByUserId is required." });
+    return;
+  }
+
+  try {
+    const workItemIdNumber = Number(workItemId);
+    const uploaderIdNumber = Number(uploadedByUserId);
+
+    if (!Number.isInteger(workItemIdNumber) || !Number.isInteger(uploaderIdNumber)) {
+      res.status(400).json({ message: "workItemId and uploadedByUserId must be valid integers." });
+      return;
+    }
+
+    if (uploaderIdNumber !== req.auth.userId) {
+      res.status(403).json({ message: "You can only create attachments as yourself." });
+      return;
+    }
+
+    const [workItem, uploader] = await Promise.all([
+      prisma.workItem.findFirst({
+        where: { id: workItemIdNumber, organizationId: req.auth.organizationId },
+      }),
+      prisma.user.findFirst({
+        where: { userId: uploaderIdNumber, organizationId: req.auth.organizationId },
+      }),
+    ]);
+
+    if (!workItem) {
+      res.status(404).json({ message: "Work item not found" });
+      return;
+    }
+
+    if (!uploader) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const newAttachment = await prisma.attachment.create({
+      data: {
+        fileUrl,
+        fileName,
+        uploadedByUserId: uploaderIdNumber,
+        workItemId: workItemIdNumber,
+        organizationId: req.auth.organizationId,
+      },
+      include: {
+        uploadedByUser: true,
+      },
+    });
+
+    res.status(201).json(newAttachment);
+  } catch (error: any) {
+    console.error("Error creating attachment:", error);
+    res.status(500).json({ message: `Error creating attachment: ${error.message}` });
+  }
+};
+
+/**
+ * Update Attachment for WorkItem (can update fileName and fileUrl)
+ */
+export const updateAttachmentForWorkItem = async (req: Request, res: Response): Promise<void> => {
+  const { workItemId, attachmentId } = req.params;
+  const { fileName, fileUrl, requesterUserId } = req.body;
+
+  if (!fileName || typeof fileName !== "string") {
+    res.status(400).json({ message: "fileName is required." });
+    return;
+  }
+  if (!fileUrl || typeof fileUrl !== "string") {
+    res.status(400).json({ message: "fileUrl is required." });
+    return;
+  }
+  if (requesterUserId === undefined) {
+    res.status(400).json({ message: "requesterUserId is required." });
+    return;
+  }
+
+  try {
+    const workItemIdNumber = Number(workItemId);
+    const attachmentIdNumber = Number(attachmentId);
+    const requesterIdNumber = Number(requesterUserId);
+
+    if (
+      !Number.isInteger(workItemIdNumber) ||
+      !Number.isInteger(attachmentIdNumber) ||
+      !Number.isInteger(requesterIdNumber)
+    ) {
+      res.status(400).json({ message: "Identifiers must be valid integers." });
+      return;
+    }
+
+    if (requesterIdNumber !== req.auth.userId) {
+      res.status(403).json({ message: "You can only edit your own attachments." });
+      return;
+    }
+
+    const existingAttachment = await prisma.attachment.findFirst({
+      where: { id: attachmentIdNumber, organizationId: req.auth.organizationId },
+    });
+
+    if (!existingAttachment || existingAttachment.workItemId !== workItemIdNumber) {
+      res.status(404).json({ message: "Attachment not found for this work item." });
+      return;
+    }
+
+    if (existingAttachment.uploadedByUserId !== requesterIdNumber) {
+      res.status(403).json({ message: "You can only edit your own attachments." });
+      return;
+    }
+
+    const updatedAttachment = await prisma.attachment.update({
+      where: { id: attachmentIdNumber },
+      data: { fileName, fileUrl },
+      include: {
+        uploadedByUser: true,
+      },
+    });
+
+    res.json(updatedAttachment);
+  } catch (error: any) {
+    console.error("Error updating attachment:", error);
+    res.status(500).json({ message: `Error updating attachment: ${error.message}` });
+  }
+};
+
+/**
+ * Delete Attachment for WorkItem
+ */
+export const deleteAttachmentForWorkItem = async (req: Request, res: Response): Promise<void> => {
+  const { workItemId, attachmentId } = req.params;
+  const { requesterUserId } = req.body;
+
+  if (requesterUserId === undefined) {
+    res.status(400).json({ message: "requesterUserId is required." });
+    return;
+  }
+
+  try {
+    const workItemIdNumber = Number(workItemId);
+    const attachmentIdNumber = Number(attachmentId);
+    const requesterIdNumber = Number(requesterUserId);
+
+    if (
+      !Number.isInteger(workItemIdNumber) ||
+      !Number.isInteger(attachmentIdNumber) ||
+      !Number.isInteger(requesterIdNumber)
+    ) {
+      res.status(400).json({ message: "Identifiers must be valid integers." });
+      return;
+    }
+
+    if (requesterIdNumber !== req.auth.userId) {
+      res.status(403).json({ message: "You can only delete your own attachments." });
+      return;
+    }
+
+    const existingAttachment = await prisma.attachment.findFirst({
+      where: { id: attachmentIdNumber, organizationId: req.auth.organizationId },
+    });
+
+    if (!existingAttachment || existingAttachment.workItemId !== workItemIdNumber) {
+      res.status(404).json({ message: "Attachment not found for this work item." });
+      return;
+    }
+
+    if (existingAttachment.uploadedByUserId !== requesterIdNumber) {
+      res.status(403).json({ message: "You can only delete your own attachments." });
+      return;
+    }
+
+    await prisma.attachment.delete({
+      where: { id: attachmentIdNumber },
+    });
+
+    res.status(204).send();
+  } catch (error: any) {
+    console.error("Error deleting attachment:", error);
+    res.status(500).json({ message: `Error deleting attachment: ${error.message}` });
   }
 };
 
