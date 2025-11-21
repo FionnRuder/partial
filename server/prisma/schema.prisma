@@ -79,6 +79,8 @@ model User {
   statusLogs          StatusLog[]
   createdInvitations  Invitation[] @relation("InvitationCreator")
   acceptedInvitations Invitation[] @relation("InvitationAccepter")
+  submittedFeedback  Feedback[]   @relation("FeedbackSubmitter")
+  resolvedFeedback   Feedback[]   @relation("FeedbackResolver")
 
   @@unique([organizationId, username])
   @@unique([organizationId, email])
@@ -102,6 +104,7 @@ model Organization {
   invitations      Invitation[]
   deliverableTypes DeliverableType[]
   issueTypes       IssueType[]
+  feedback         Feedback[]
 }
 
 model DisciplineTeam {
@@ -343,4 +346,30 @@ model Invitation {
   @@index([token])
   @@index([organizationId])
   @@index([invitedEmail])
+}
+
+model Feedback {
+  id             Int       @id @default(autoincrement())
+  organizationId Int
+  type           String    // "bug", "feature", "improvement"
+  title          String
+  description    String
+  status         String    @default("open") // "open", "in_progress", "resolved", "closed"
+  priority       Priority  @default(Medium)
+  submittedByUserId Int
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  resolvedAt     DateTime?
+  resolvedByUserId Int?
+  adminNotes     String?   // Internal notes for admins
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  submittedBy  User         @relation("FeedbackSubmitter", fields: [submittedByUserId], references: [userId])
+  resolvedBy   User?        @relation("FeedbackResolver", fields: [resolvedByUserId], references: [userId])
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([type])
+  @@index([priority])
+  @@index([submittedByUserId])
 }
