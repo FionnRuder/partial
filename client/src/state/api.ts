@@ -346,6 +346,49 @@ export interface IssueTypeCreateInput {
   name: string;
 }
 
+export interface Feedback {
+  id: number;
+  organizationId: number;
+  type: "bug" | "feature" | "improvement";
+  title: string;
+  description: string;
+  status: "open" | "in_progress" | "resolved" | "closed";
+  priority: Priority;
+  submittedByUserId: number;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt: string | null;
+  resolvedByUserId: number | null;
+  adminNotes: string | null;
+  submittedBy: {
+    userId: number;
+    name: string;
+    email: string;
+  };
+  resolvedBy: {
+    userId: number;
+    name: string;
+    email: string;
+  } | null;
+}
+
+export interface FeedbackCreateInput {
+  type: "bug" | "feature" | "improvement";
+  title: string;
+  description: string;
+  priority?: Priority;
+}
+
+export interface FeedbackUpdateInput {
+  status?: "open" | "in_progress" | "resolved" | "closed";
+  priority?: Priority;
+  adminNotes?: string;
+}
+
+export interface UnreadFeedbackCount {
+  count: number;
+}
+
 export interface InvitationValidationResponse {
   invitation: {
     id: number;
@@ -480,7 +523,7 @@ export const api = createApi({
     return result;
   },
       reducerPath: "api",
-      tagTypes: ["WorkItems", "Milestones", "Parts", "Programs", "Teams", "Users", "Comments", "StatusLogs", "Attachments", "Invitations", "DeliverableTypes", "IssueTypes"],
+      tagTypes: ["WorkItems", "Milestones", "Parts", "Programs", "Teams", "Users", "Comments", "StatusLogs", "Attachments", "Invitations", "DeliverableTypes", "IssueTypes", "Feedback"],
   endpoints: (build) => ({
     /* ---------- WORK ITEMS ---------- */
     getWorkItems: build.query<WorkItem[], void>({
@@ -1004,6 +1047,50 @@ export const api = createApi({
       }),
       invalidatesTags: ["IssueTypes"],
     }),
+
+    /* ---------- FEEDBACK ---------- */
+    getUnreadFeedbackCount: build.query<UnreadFeedbackCount, void>({
+      query: () => "feedback/unread-count",
+      providesTags: ["Feedback"],
+    }),
+    getFeedback: build.query<Feedback[], { status?: string; type?: string; priority?: string } | void>({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        if (params?.status) searchParams.append("status", params.status);
+        if (params?.type) searchParams.append("type", params.type);
+        if (params?.priority) searchParams.append("priority", params.priority);
+        const queryString = searchParams.toString();
+        return `feedback${queryString ? `?${queryString}` : ""}`;
+      },
+      providesTags: ["Feedback"],
+    }),
+    getFeedbackById: build.query<Feedback, number>({
+      query: (id) => `feedback/${id}`,
+      providesTags: (result, error, id) => [{ type: "Feedback", id }],
+    }),
+    getMyFeedback: build.query<Feedback[], void>({
+      query: () => "feedback/my",
+      providesTags: ["Feedback"],
+    }),
+    createFeedback: build.mutation<Feedback, FeedbackCreateInput>({
+      query: (body) => ({
+        url: "feedback",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Feedback"],
+    }),
+    updateFeedback: build.mutation<Feedback, { id: number; data: FeedbackUpdateInput }>({
+      query: ({ id, data }) => ({
+        url: `feedback/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Feedback", id },
+        "Feedback",
+      ],
+    }),
   }),
 });
 
@@ -1072,4 +1159,11 @@ export const {
   useGetIssueTypesQuery,
   useCreateIssueTypeMutation,
   useDeleteIssueTypeMutation,
+
+  useGetUnreadFeedbackCountQuery,
+  useGetFeedbackQuery,
+  useGetFeedbackByIdQuery,
+  useGetMyFeedbackQuery,
+  useCreateFeedbackMutation,
+  useUpdateFeedbackMutation,
 } = api;

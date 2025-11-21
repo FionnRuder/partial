@@ -1,11 +1,12 @@
-import React from "react";
-import { Menu, Moon, Search, Settings, Sun, LogOut } from "lucide-react";
+import React, { useState } from "react";
+import { Menu, Moon, Search, Settings, Sun, LogOut, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsDarkMode, setIsSidebarCollapsed } from "@/state";
 import { useAuth } from "@/contexts/AuthContext";
+import ModalFeedback from "@/components/ModalFeedback";
 
 
 const Navbar = () => {
@@ -16,6 +17,7 @@ const Navbar = () => {
         (state) => state.global.isSidebarCollapsed,
     );
     const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
     // Get user initials from username or name
     const getUserInitials = () => {
@@ -81,6 +83,17 @@ const Navbar = () => {
 
             {/* Icons */}
             <div className="flex items-center">
+                <button
+                    onClick={() => setIsFeedbackModalOpen(true)}
+                    className={
+                        isDarkMode
+                            ? `h-min w-min rounded p-2 dark:hover:bg-gray-700`
+                            : `h-min w-min rounded p-2 hover:bg-gray-100`
+                    }
+                    title="Submit Feedback"
+                >
+                    <MessageSquare className="h-6 w-6 cursor-pointer dark:text-white" />
+                </button>
                 <button
                     onClick={() => dispatch(setIsDarkMode(!isDarkMode))}
                     className={
@@ -151,6 +164,12 @@ const Navbar = () => {
                     <LogOut className="h-6 w-6 cursor-pointer dark:text-white" />
                 </button>
             </div>
+            
+            {/* Feedback Modal */}
+            <ModalFeedback 
+                isOpen={isFeedbackModalOpen} 
+                onClose={() => setIsFeedbackModalOpen(false)} 
+            />
         </div>
     );
 };

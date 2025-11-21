@@ -4,7 +4,8 @@ import { useAppDispatch, useAppSelector } from '@/app/redux';
 import { setIsSidebarCollapsed } from '@/state';
 import {
     useGetProgramsQuery,
-    useGetPartsByUserQuery
+    useGetPartsByUserQuery,
+    useGetUnreadFeedbackCountQuery
 } from '@/state/api';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -19,6 +20,7 @@ import {
     LockIcon,
     LucideIcon,
     Mail,
+    MessageSquare,
     Search,
     Settings,
     TreePine,
@@ -156,6 +158,10 @@ const Sidebar = () => {
                     {user?.role && ['Admin', 'Manager', 'Program Manager'].includes(user.role) && (
                         <SidebarLink icon={Mail} label="Invitations" href="/invitations" />
                     )}
+                    {/* Show Feedback link only for admins */}
+                    {user?.role === 'Admin' && (
+                        <FeedbackLinkWithBadge />
+                    )}
                     <SidebarLink icon={Settings} label="Settings" href="/settings" />
                 </nav>
 
@@ -274,6 +280,38 @@ const SidebarLink = ({ href, icon: Icon, label }: SidebarLinkProps) => {
                 <span className={`font-medium text-gray-800 dark:text-gray-100`}>
                     {label}
                 </span>
+            </div>
+        </Link>
+    );
+};
+
+const FeedbackLinkWithBadge = () => {
+    const pathname = usePathname();
+    const isActive = pathname === "/feedback";
+    const { data: countData } = useGetUnreadFeedbackCountQuery(undefined, {
+        pollingInterval: 30000, // Poll every 30 seconds for updates
+    });
+    const unreadCount = countData?.count || 0;
+
+    return (
+        <Link href="/feedback" className="w-full">
+            <div
+                className={`relative flex cursor-pointer items-center gap-3 transition-colors hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-700 ${
+                    isActive ? "bg-gray-100 text-white dark:bg-gray-600" : ""
+                } justify-start px-8 py-3`}
+            >
+                {isActive && (
+                    <div className="absolute left-0 top-0 h-[100%] w-[5px] bg-blue-200" />
+                )}
+                <MessageSquare className="h-6 w-6 text-gray-800 dark:text-gray-100" />
+                <span className={`font-medium text-gray-800 dark:text-gray-100 flex-1`}>
+                    Feedback
+                </span>
+                {unreadCount > 0 && (
+                    <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold bg-red-500 text-white">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                )}
             </div>
         </Link>
     );
