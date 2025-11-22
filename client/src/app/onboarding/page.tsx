@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { validatePassword } from "@/lib/cognito";
 import type { Program, Milestone } from "@/state/api";
 import type { AuthUser } from "@/lib/auth";
+import { showApiError } from "@/lib/toast";
 import {
   useGetTeamsQuery,
   useCreateTeamMutation,
@@ -2049,8 +2050,8 @@ const OnboardingPage = () => {
             console.error('Response status:', signupResponse.status);
             console.error('Response headers:', Object.fromEntries(signupResponse.headers.entries()));
             
-            // Show error to user - use alert for now since we don't have error state in this component
-            alert(errorData.message || `Failed to create user: ${signupResponse.status}`);
+            // Show error to user
+            showApiError({ data: { message: errorData.message }, message: errorData.message }, `Failed to create user: ${signupResponse.status}`);
             // Don't continue - show error instead
             throw new Error(errorData.message || 'Failed to create user');
           }

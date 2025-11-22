@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import { Line } from "react-chartjs-2";
-import { WorkItem } from "@/state/api";
+import { WorkItem, Status } from "@/state/api";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,7 +14,7 @@ import {
   Legend,
   ChartOptions,
 } from "chart.js";
-import { format, eachDayOfInterval, isAfter } from "date-fns";
+import { format, eachDayOfInterval, isAfter, isBefore, isEqual, parseISO } from "date-fns";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -48,31 +48,90 @@ const BurndownChart: React.FC<Props> = ({ workItems, startDate, endDate, isDarkM
 
   const dates = eachDayOfInterval({ start: minDate, end: maxDate }).map((d) => format(d, "yyyy-MM-dd"));
 
-  // Helper function to count remaining items for a given date and property
-  const getRemaining = (
-    dateStr: string,
-    prop: "dueDate" | "estimatedCompletionDate" | "actualCompletionDate"
-  ) => {
-    const currentDate = new Date(dateStr);
+  // Get total number of work items
+  const totalItems = workItems.length;
+
+  // Get the latest due date for baseline calculation
+  const latestDueDate = useMemo(() => {
+    const dueDates = workItems
+      .map((w) => new Date(w.dueDate))
+      .filter((d) => !isNaN(d.getTime()));
+    return dueDates.length > 0 ? new Date(Math.max(...dueDates.map((d) => d.getTime()))) : maxDate;
+  }, [workItems, maxDate]);
+
+  // Helper function to count remaining items for actuals (based on actual completion date or status)
+  const getActualsRemaining = (dateStr: string): number => {
+    const currentDate = parseISO(dateStr);
     return workItems.filter((w) => {
-      const targetValue = w[prop] || w.dueDate;
-      const targetDate = new Date(targetValue);
-      return isAfter(targetDate, currentDate);
+      // If item has an actualCompletionDate, use it for precise timing
+      if (w.actualCompletionDate) {
+        const completionDate = parseISO(w.actualCompletionDate);
+        // Item is remaining if completion date is after current date
+        return isAfter(completionDate, currentDate);
+      }
+      
+      // If no actualCompletionDate, check status
+      // If status is Completed, we don't know when it was completed, so we can't accurately track it
+      // For items without completion date but marked as completed, we'll assume they're completed
+      // This is a limitation - ideally all completed items should have actualCompletionDate
+      if (w.status === Status.Completed) {
+        // Without a date, we can't know when it was completed, so we'll treat it as completed
+        // This means it won't be counted as remaining
+        return false;
+      }
+      
+      // Item is still remaining if not completed
+      return true;
     }).length;
   };
 
-  // Lines
-  const baselineLine = dates.map((d) => getRemaining(d, "dueDate"));
-  const forecastLine = dates.map((d) => getRemaining(d, "estimatedCompletionDate"));
-  const actualsLine = dates.map((d) =>
-    isAfter(new Date(d), today) ? null : getRemaining(d, "actualCompletionDate")
-  );
+  // Helper function to count remaining items for forecast (based on estimated completion date)
+  const getForecastRemaining = (dateStr: string): number => {
+    const currentDate = parseISO(dateStr);
+    return workItems.filter((w) => {
+      const estimatedDate = w.estimatedCompletionDate 
+        ? parseISO(w.estimatedCompletionDate)
+        : w.dueDate 
+        ? parseISO(w.dueDate)
+        : null;
+      
+      if (!estimatedDate) return true; // No date means still remaining
+      
+      // Item is remaining if estimated completion date is after current date
+      return isAfter(estimatedDate, currentDate);
+    }).length;
+  };
+
+  // Calculate baseline: count items with due dates after current date
+  // This represents the planned burndown - items remaining based on their due dates
+  const baselineLine = dates.map((d) => {
+    const currentDate = parseISO(d);
+    return workItems.filter((w) => {
+      const dueDate = w.dueDate ? parseISO(w.dueDate) : null;
+      if (!dueDate) return true; // Items without due dates are always remaining
+      // Item is remaining if due date is after current date
+      return isAfter(dueDate, currentDate);
+    }).length;
+  });
+
+  // Calculate forecast line: items remaining based on estimated completion dates
+  const forecastLine = dates.map((d) => getForecastRemaining(d));
+
+  // Calculate actuals line: items remaining based on actual completion dates (only up to today)
+  const actualsLine = dates.map((d) => {
+    const currentDate = parseISO(d);
+    // Only show actuals up to today
+    if (isAfter(currentDate, today)) {
+      return null;
+    }
+    return getActualsRemaining(d);
+  });
 
   const data = {
     labels: dates,
     datasets: [
       {
-        label: "Actuals (Completed)",
+        label: "Actuals (Remaining)",
         data: actualsLine,
         borderColor: "#66CDAA",
         backgroundColor: "rgba(102,205,170,0.2)",

@@ -5,6 +5,7 @@ import { useGetInvitationsQuery, useCreateInvitationMutation, useRevokeInvitatio
 import Header from "@/components/Header";
 import { format } from "date-fns";
 import { Copy, Trash2, Mail, UserPlus, CheckCircle, XCircle, Clock } from "lucide-react";
+import { showApiError, showApiSuccess } from "@/lib/toast";
 
 const InvitationsPage = () => {
   const { data: invitations, isLoading, error, refetch } = useGetInvitationsQuery();
@@ -48,8 +49,11 @@ const InvitationsPage = () => {
         expiresInDays: 7,
       });
       refetch();
+      showApiSuccess("Invitation created successfully");
     } catch (error: any) {
-      setFormError(error?.data?.message || "Failed to create invitation");
+      const errorMessage = error?.data?.message || "Failed to create invitation";
+      setFormError(errorMessage);
+      showApiError(error, "Failed to create invitation");
     }
   };
 
@@ -61,8 +65,9 @@ const InvitationsPage = () => {
     try {
       await revokeInvitation(invitationId).unwrap();
       refetch();
+      showApiSuccess("Invitation revoked successfully");
     } catch (error: any) {
-      alert(error?.data?.message || "Failed to revoke invitation");
+      showApiError(error, "Failed to revoke invitation");
     }
   };
 

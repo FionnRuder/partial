@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { Bug, Sparkles, Lightbulb, CheckCircle, XCircle, Clock, AlertCircle, Edit2, Save, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import { showApiError, showApiSuccess } from "@/lib/toast";
 
 const FeedbackPage = () => {
   const { user } = useAuth();
@@ -65,8 +66,9 @@ const FeedbackPage = () => {
       setEditingId(null);
       setEditData({ status: "", adminNotes: "" });
       refetch();
+      showApiSuccess("Feedback updated successfully");
     } catch (error: any) {
-      alert(error?.data?.message || "Failed to update feedback");
+      showApiError(error, "Failed to update feedback");
     }
   };
 

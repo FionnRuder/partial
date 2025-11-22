@@ -71,3 +71,14 @@ body,
   width: 0px;
   height: 0px;
 }
+
+/* Toast Notification Dark Mode Support */
+.dark .react-hot-toast {
+  background: #1f2937 !important;
+  color: #f9fafb !important;
+  border: 1px solid #374151 !important;
+}
+
+.dark .react-hot-toast > div {
+  color: #f9fafb !important;
+}

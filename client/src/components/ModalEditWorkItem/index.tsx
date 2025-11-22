@@ -21,6 +21,7 @@ import {
 } from '@/state/api';
 import React, { useEffect, useState } from 'react';
 import { formatISO } from 'date-fns';
+import { showApiError, showApiSuccess } from '@/lib/toast';
 
 type Props = {
   isOpen: boolean;
@@ -180,10 +181,11 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
             workItemId: workItem.id,
             updates: updatedWorkItem,
         }).unwrap();
+        showApiSuccess("Work item updated successfully");
         onClose(); // close modal on success
     } catch (err: any) {
         console.error("Failed to save work item:", err);
-        alert(`Failed to save work item: ${err?.data?.message || err?.message || 'Unknown error'}`);
+        showApiError(err, "Failed to save work item");
     }
   };
 
@@ -197,9 +199,11 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
 
     try {
         await deleteWorkItem(workItem.id).unwrap();
+        showApiSuccess("Work item deleted successfully");
         onClose(); // close modal on success
-    } catch (err) {
+    } catch (err: any) {
         console.error("Failed to delete work item:", err);
+        showApiError(err, "Failed to delete work item");
     }
   };
 

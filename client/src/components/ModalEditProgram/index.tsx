@@ -6,6 +6,7 @@ import {
 } from '@/state/api';
 import React, { useEffect, useState } from 'react';
 import { formatISO } from 'date-fns';
+import { showApiError, showApiSuccess } from '@/lib/toast';
 
 type Props = {
   isOpen: boolean;
@@ -55,10 +56,11 @@ const ModalEditProgram = ({ isOpen, onClose, program }: Props) => {
         programId: program.id,
         updates: updatedProgram,
       }).unwrap();
+      showApiSuccess("Program updated successfully");
       onClose(); // close modal on success
     } catch (err: any) {
       console.error("Failed to save program:", err);
-      alert(`Failed to save program: ${err?.data?.message || err?.message || 'Unknown error'}`);
+      showApiError(err, "Failed to save program");
     }
   };
 
