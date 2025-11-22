@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useGetDeliverableTypesQuery, useCreateDeliverableTypeMutation, useDeleteDeliverableTypeMutation } from "@/state/api";
 import Header from "@/components/Header";
 import { Trash2, Plus, Lock, AlertCircle } from "lucide-react";
+import { showToast, showApiError, showApiSuccess } from "@/lib/toast";
 
 const DeliverableTypesPage = () => {
   const { data: types, isLoading, error, refetch } = useGetDeliverableTypesQuery();
@@ -29,14 +30,17 @@ const DeliverableTypesPage = () => {
       setShowCreateModal(false);
       setNewTypeName("");
       refetch();
+      showApiSuccess("Deliverable type created successfully");
     } catch (error: any) {
-      setFormError(error?.data?.message || "Failed to create deliverable type");
+      const errorMessage = error?.data?.message || "Failed to create deliverable type";
+      setFormError(errorMessage);
+      showApiError(error, "Failed to create deliverable type");
     }
   };
 
   const handleDeleteType = async (typeId: number, typeName: string, isSystem: boolean) => {
     if (isSystem) {
-      alert("System types cannot be deleted");
+      showToast.warning("System types cannot be deleted");
       return;
     }
 
@@ -48,12 +52,11 @@ const DeliverableTypesPage = () => {
     try {
       await deleteType(typeId).unwrap();
       refetch();
+      showApiSuccess(`Deliverable type "${typeName}" deleted successfully`);
     } catch (error: any) {
       const errorMessage = error?.data?.message || "Failed to delete deliverable type";
       setDeleteError(errorMessage);
-      if (errorMessage.includes("in use")) {
-        alert(errorMessage);
-      }
+      showApiError(error, "Failed to delete deliverable type");
     }
   };
 

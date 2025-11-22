@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useGetIssueTypesQuery, useCreateIssueTypeMutation, useDeleteIssueTypeMutation } from "@/state/api";
 import Header from "@/components/Header";
 import { Trash2, Plus, Lock, AlertCircle } from "lucide-react";
+import { showToast, showApiError, showApiSuccess } from "@/lib/toast";
 
 const IssueTypesPage = () => {
   const { data: types, isLoading, error, refetch } = useGetIssueTypesQuery();
@@ -29,14 +30,17 @@ const IssueTypesPage = () => {
       setShowCreateModal(false);
       setNewTypeName("");
       refetch();
+      showApiSuccess("Issue type created successfully");
     } catch (error: any) {
-      setFormError(error?.data?.message || "Failed to create issue type");
+      const errorMessage = error?.data?.message || "Failed to create issue type";
+      setFormError(errorMessage);
+      showApiError(error, "Failed to create issue type");
     }
   };
 
   const handleDeleteType = async (typeId: number, typeName: string, isSystem: boolean) => {
     if (isSystem) {
-      alert("System types cannot be deleted");
+      showToast.warning("System types cannot be deleted");
       return;
     }
 
@@ -48,12 +52,11 @@ const IssueTypesPage = () => {
     try {
       await deleteType(typeId).unwrap();
       refetch();
+      showApiSuccess(`Issue type "${typeName}" deleted successfully`);
     } catch (error: any) {
       const errorMessage = error?.data?.message || "Failed to delete issue type";
       setDeleteError(errorMessage);
-      if (errorMessage.includes("in use")) {
-        alert(errorMessage);
-      }
+      showApiError(error, "Failed to delete issue type");
     }
   };
 

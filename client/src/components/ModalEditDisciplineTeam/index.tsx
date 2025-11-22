@@ -6,6 +6,7 @@ import {
   DisciplineTeam
 } from '@/state/api';
 import React, { useEffect, useState } from 'react';
+import { showApiError, showApiSuccess } from '@/lib/toast';
 
 type Props = {
   isOpen: boolean;
@@ -60,10 +61,11 @@ const ModalEditDisciplineTeam = ({ isOpen, onClose, team }: Props) => {
         teamId: team.id,
         updates: updatedTeam,
       }).unwrap();
+      showApiSuccess("Team updated successfully");
       onClose(); // close modal on success
     } catch (err: any) {
       console.error("Failed to save team:", err);
-      alert(`Failed to save team: ${err?.data?.message || err?.message || 'Unknown error'}`);
+      showApiError(err, "Failed to save team");
     }
   };
 

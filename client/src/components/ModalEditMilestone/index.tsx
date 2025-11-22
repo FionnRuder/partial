@@ -6,6 +6,7 @@ import {
 } from '@/state/api';
 import React, { useEffect, useState } from 'react';
 import { formatISO } from 'date-fns';
+import { showApiError, showApiSuccess } from '@/lib/toast';
 
 type Props = {
   isOpen: boolean;
@@ -52,10 +53,11 @@ const ModalEditMilestone = ({ isOpen, onClose, milestone }: Props) => {
         milestoneId: milestone.id,
         updates: updatedMilestone,
       }).unwrap();
+      showApiSuccess("Milestone updated successfully");
       onClose(); // close modal on success
     } catch (err: any) {
       console.error("Failed to save milestone:", err);
-      alert(`Failed to save milestone: ${err?.data?.message || err?.message || 'Unknown error'}`);
+      showApiError(err, "Failed to save milestone");
     }
   };
 

@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import StoreProvider, { useAppSelector } from "./redux";
 import { useAuth } from "@/contexts/AuthContext";
+import { RouteErrorBoundary } from "@/components/ErrorBoundary/RouteErrorBoundary";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const isSidebarCollapsed = useAppSelector(
@@ -79,22 +80,24 @@ const DashboardWrapper = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <StoreProvider>
-      {isOnboarding || isPublicRoute ? (
-        // For onboarding and auth routes, render without dashboard layout
-        <div className="min-h-screen">
-          {children}
-        </div>
-      ) : (
-        // For all other pages, use dashboard layout (only if authenticated)
-        isAuthenticated ? (
-          <DashboardLayout>{children}</DashboardLayout>
-        ) : (
-          // Fallback: show loading while redirecting
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <RouteErrorBoundary>
+        {isOnboarding || isPublicRoute ? (
+          // For onboarding and auth routes, render without dashboard layout
+          <div className="min-h-screen">
+            {children}
           </div>
-        )
-      )}
+        ) : (
+          // For all other pages, use dashboard layout (only if authenticated)
+          isAuthenticated ? (
+            <DashboardLayout>{children}</DashboardLayout>
+          ) : (
+            // Fallback: show loading while redirecting
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+            </div>
+          )
+        )}
+      </RouteErrorBoundary>
     </StoreProvider>
   );
 };
