@@ -25,24 +25,65 @@ type Props = {
   isDarkMode?: boolean;
 };
 
+// Helper function to parse date string without timezone conversion
+// Extracts the date portion (YYYY-MM-DD) and parses it as a local date
+const parseDateOnly = (dateString: string | undefined): Date | null => {
+  if (!dateString) return null;
+  try {
+    // Extract just the date portion (YYYY-MM-DD) from ISO string
+    const dateOnly = dateString.split('T')[0];
+    // Parse as local date to avoid timezone conversion
+    const [year, month, day] = dateOnly.split('-').map(Number);
+    if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+    return new Date(year, month - 1, day);
+  } catch {
+    return null;
+  }
+};
+
 const BurndownChart: React.FC<Props> = ({ workItems, startDate, endDate, isDarkMode = false }) => {
   const today = new Date();
+  // Set today to midnight to avoid timezone issues when comparing
+  today.setHours(0, 0, 0, 0);
 
   // Determine chart start/end date
   const minDate = useMemo(() => {
+    if (startDate) {
+      const parsed = parseDateOnly(startDate);
+      return parsed || today;
+    }
+
     const dates = workItems
-      .map((w) => new Date(w.dueDate))
-      .concat(workItems.map((w) => new Date(w.estimatedCompletionDate || w.dueDate)))
-      .concat(workItems.map((w) => new Date(w.actualCompletionDate || w.dueDate)));
-    return startDate ? new Date(startDate) : new Date(Math.min(...dates.map((d) => d.getTime())));
-  }, [workItems, startDate]);
+      .map((w) => parseDateOnly(w.dueDate))
+      .concat(workItems.map((w) => parseDateOnly(w.estimatedCompletionDate || w.dueDate)))
+      .concat(workItems.map((w) => parseDateOnly(w.actualCompletionDate || w.dueDate)))
+      .filter((d): d is Date => d !== null);
+    
+    return dates.length > 0 
+      ? new Date(Math.min(...dates.map((d) => d.getTime())))
+      : today;
+  }, [workItems, startDate, today]);
 
   const maxDate = useMemo(() => {
+    // If endDate is explicitly provided, use it
+    if (endDate) {
+      const parsed = parseDateOnly(endDate);
+      return parsed || today;
+    }
+
+    // Collect all dates from work items (dueDate, estimatedCompletionDate, actualCompletionDate)
     const dates = workItems
-      .map((w) => new Date(w.dueDate))
-      .concat(workItems.map((w) => new Date(w.estimatedCompletionDate || w.dueDate)))
-      .concat(workItems.map((w) => new Date(w.actualCompletionDate || w.dueDate)));
-    const max = endDate ? new Date(endDate) : new Date(Math.max(...dates.map((d) => d.getTime())));
+      .map((w) => parseDateOnly(w.dueDate))
+      .concat(workItems.map((w) => parseDateOnly(w.estimatedCompletionDate || w.dueDate)))
+      .concat(workItems.map((w) => parseDateOnly(w.actualCompletionDate || w.dueDate)))
+      .filter((d): d is Date => d !== null);
+    
+    // Get the maximum of all dates
+    const max = dates.length > 0 
+      ? new Date(Math.max(...dates.map((d) => d.getTime())))
+      : today;
+    
+    // Ensure the max is at least today
     return isAfter(max, today) ? max : today;
   }, [workItems, endDate, today]);
 
@@ -54,18 +95,21 @@ const BurndownChart: React.FC<Props> = ({ workItems, startDate, endDate, isDarkM
   // Get the latest due date for baseline calculation
   const latestDueDate = useMemo(() => {
     const dueDates = workItems
-      .map((w) => new Date(w.dueDate))
-      .filter((d) => !isNaN(d.getTime()));
+      .map((w) => parseDateOnly(w.dueDate))
+      .filter((d): d is Date => d !== null);
     return dueDates.length > 0 ? new Date(Math.max(...dueDates.map((d) => d.getTime()))) : maxDate;
   }, [workItems, maxDate]);
 
   // Helper function to count remaining items for actuals (based on actual completion date or status)
   const getActualsRemaining = (dateStr: string): number => {
-    const currentDate = parseISO(dateStr);
+    const currentDate = parseDateOnly(dateStr);
+    if (!currentDate) return workItems.length;
+    
     return workItems.filter((w) => {
       // If item has an actualCompletionDate, use it for precise timing
       if (w.actualCompletionDate) {
-        const completionDate = parseISO(w.actualCompletionDate);
+        const completionDate = parseDateOnly(w.actualCompletionDate);
+        if (!completionDate) return true; // No valid date means still remaining
         // Item is remaining if completion date is after current date
         return isAfter(completionDate, currentDate);
       }
@@ -87,12 +131,14 @@ const BurndownChart: React.FC<Props> = ({ workItems, startDate, endDate, isDarkM
 
   // Helper function to count remaining items for forecast (based on estimated completion date)
   const getForecastRemaining = (dateStr: string): number => {
-    const currentDate = parseISO(dateStr);
+    const currentDate = parseDateOnly(dateStr);
+    if (!currentDate) return workItems.length;
+    
     return workItems.filter((w) => {
       const estimatedDate = w.estimatedCompletionDate 
-        ? parseISO(w.estimatedCompletionDate)
+        ? parseDateOnly(w.estimatedCompletionDate)
         : w.dueDate 
-        ? parseISO(w.dueDate)
+        ? parseDateOnly(w.dueDate)
         : null;
       
       if (!estimatedDate) return true; // No date means still remaining
@@ -105,9 +151,11 @@ const BurndownChart: React.FC<Props> = ({ workItems, startDate, endDate, isDarkM
   // Calculate baseline: count items with due dates after current date
   // This represents the planned burndown - items remaining based on their due dates
   const baselineLine = dates.map((d) => {
-    const currentDate = parseISO(d);
+    const currentDate = parseDateOnly(d);
+    if (!currentDate) return workItems.length;
+    
     return workItems.filter((w) => {
-      const dueDate = w.dueDate ? parseISO(w.dueDate) : null;
+      const dueDate = w.dueDate ? parseDateOnly(w.dueDate) : null;
       if (!dueDate) return true; // Items without due dates are always remaining
       // Item is remaining if due date is after current date
       return isAfter(dueDate, currentDate);
@@ -119,7 +167,8 @@ const BurndownChart: React.FC<Props> = ({ workItems, startDate, endDate, isDarkM
 
   // Calculate actuals line: items remaining based on actual completion dates (only up to today)
   const actualsLine = dates.map((d) => {
-    const currentDate = parseISO(d);
+    const currentDate = parseDateOnly(d);
+    if (!currentDate) return null;
     // Only show actuals up to today
     if (isAfter(currentDate, today)) {
       return null;

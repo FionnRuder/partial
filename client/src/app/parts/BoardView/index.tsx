@@ -12,7 +12,7 @@ import ModalEditWorkItem from '@/components/ModalEditWorkItem';
 import React, { useState } from 'react';
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { EllipsisVertical, MessageSquareMore, Plus } from 'lucide-react';
+import { EllipsisVertical, MessageSquareMore, Plus, Calendar, Clock, Target, User, CheckCircle2, FileText, Tag } from 'lucide-react';
 import { format } from "date-fns";
 import Image from 'next/image';
 import Link from 'next/link';
@@ -52,6 +52,18 @@ const statusLabels: Record<string, string> = {
   WorkInProgress: "Work In Progress",
   UnderReview: "Under Review",
   Completed: "Completed"
+};
+
+// Helper function to format date without timezone conversion
+// Extracts the date portion (YYYY-MM-DD) and parses it as a local date
+const formatDateOnly = (dateString: string): string => {
+  if (!dateString) return "";
+  // Extract just the date portion (YYYY-MM-DD) from ISO string
+  const dateOnly = dateString.split('T')[0];
+  // Parse as local date to avoid timezone conversion
+  const [year, month, day] = dateOnly.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  return format(date, "P");
 };
 
 const BoardView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren }: BoardProps) => {
@@ -396,189 +408,212 @@ const WorkItem = ({ workItem, setEditingWorkItem, onOpenComments }: WorkItemProp
         }),
     }));
 
-    const workItemTagsSplit = workItem.tags ? workItem.tags.split(",") : [];
+    const workItemTagsSplit = workItem.tags ? workItem.tags.split(",").map(t => t.trim()).filter(Boolean) : [];
 
-    const formattedDateOpened = workItem.dateOpened
-        ? format(new Date(workItem.dateOpened), "P")
-        : "";
-    const formattedDueDate = workItem.dueDate
-        ? format(new Date(workItem.dueDate), "P")
-        : "";
-    const formattedEstimatedCompletionDate = workItem.estimatedCompletionDate
-        ? format(new Date(workItem.estimatedCompletionDate), "P")
-        : "";
-    const formattedActualCompletionDate = workItem.actualCompletionDate
-        ? format(new Date(workItem.actualCompletionDate), "P")
-        : "";
+    const formattedDateOpened = formatDateOnly(workItem.dateOpened);
+    const formattedDueDate = formatDateOnly(workItem.dueDate);
+    const formattedEstimatedCompletionDate = formatDateOnly(workItem.estimatedCompletionDate);
+    const formattedActualCompletionDate = formatDateOnly(workItem.actualCompletionDate);
 
     const numberOfComments = workItem.comments?.length ?? 0;
+    const numberOfAttachments = workItem.attachments?.length ?? 0;
 
     const PriorityTag = ({ priority }: { priority: WorkItemType["priority"]}) => (
         <div
-            className={`rounded-full px-2 py-1 text-xs font-semibold ${
+            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
                 priority === "Urgent"
-                ? "bg-red-200 text-red-700"
+                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
                 : priority === "High"
-                    ? "bg-yellow-200 text-yellow-700"
+                    ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
                     : priority === "Medium"
-                    ? "bg-green-200 text-green-700"
+                    ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
                     : priority === "Low"
-                        ? "bg-blue-200 text-blue-700"
-                        : "bg-gray-200 text-gray-700"
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                        : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
             }`}
         >
             {priority}
         </div>
     );
 
+    const WorkItemTypeBadge = () => {
+        const typeColors = {
+            "Deliverable": "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+            "Issue": "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+            "Task": "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+        };
+        const typePrefix = workItem.workItemType === "Deliverable" ? "D" : workItem.workItemType === "Issue" ? "I" : "T";
+        return (
+            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${typeColors[workItem.workItemType as keyof typeof typeColors] || typeColors.Task}`}>
+                {typePrefix}{workItem.id}
+            </span>
+        );
+    };
+
+    // Truncate description
+    const truncateText = (text: string, maxLength: number = 100) => {
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + "...";
+    };
+
     return (
         <div
             ref={(instance) => {
                 drag(instance);
             }}
-            className={`mb-4 rounded-md bg-white shadow dark:bg-dark-secondary ${
+            className={`mb-3 rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-dark-secondary ${
                 isDragging ? "opacity-50" : "opacity-100"
             }`}
         >
-            
-            <div className="p-4 md:p-6">
-                <div className="flex items-start justify-between">
+            <div className="p-4">
+                {/* Header: Priority, Type Badge, and Menu */}
+                <div className="mb-3 flex items-start justify-between gap-2">
                     <div className="flex flex-1 flex-wrap items-center gap-2">
                         {workItem.priority && <PriorityTag priority={workItem.priority} />}
-                        <div className="flex gap-2">
-                            {workItemTagsSplit.map((tag) => (
-                                <div
-                                    key={tag}
-                                    className="rounded-full bg-blue-100 px-2 py-1 text-xs"
-                                >
-                                    {" "}
-                                    {tag}
-                                </div>
-                            ))}
-                        </div>
+                        <WorkItemTypeBadge />
                     </div>
                     <button 
-                        className="flex h-6 w-4 flex-shrink-0 items-center justify-center dark:text-neutral-500"
-                        onClick={() => setEditingWorkItem(workItem)}
-                        >
-                        <EllipsisVertical size={26} />
+                        className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-gray-700"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingWorkItem(workItem);
+                        }}
+                        title="More options"
+                    >
+                        <EllipsisVertical size={18} />
                     </button>
                 </div>
 
-                <div className="mt-3 mb-1 flex justify-between">
-                    <h4 className="text-md font-bold dark:text-white">
-                        <Link
-                            href={`/work-items/${workItem.id}`}
-                            className="text-blue-600 hover:underline dark:text-blue-400"
-                        >
-                            {workItem.title}
-                        </Link>
-                    </h4>
-                    {typeof workItem.percentComplete === "number" && (
-                        <div className="whitespace-nowrap text-xs font-semibold dark:text-white">
-                            {workItem.percentComplete}%
+                {/* Title */}
+                <h4 className="mb-2 line-clamp-2 text-sm font-semibold leading-tight dark:text-white">
+                    <Link
+                        href={`/work-items/${workItem.id}`}
+                        className="text-gray-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {workItem.title}
+                    </Link>
+                </h4>
+
+                {/* Progress Bar */}
+                {typeof workItem.percentComplete === "number" && (
+                    <div className="mb-3">
+                        <div className="mb-1 flex items-center justify-between">
+                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Progress</span>
+                            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{workItem.percentComplete}%</span>
+                        </div>
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                            <div 
+                                className="h-full bg-blue-600 transition-all dark:bg-blue-500"
+                                style={{ width: `${workItem.percentComplete}%` }}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* Key Dates */}
+                <div className="mb-3 space-y-1.5 text-xs">
+                    {formattedEstimatedCompletionDate && (
+                        <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                            <Target size={14} className="flex-shrink-0 text-gray-400 dark:text-gray-500" />
+                            <span className="font-medium">Est. Completion:</span>
+                            <span className="text-gray-700 dark:text-gray-300">{formattedEstimatedCompletionDate}</span>
+                        </div>
+                    )}
+                    {formattedDueDate && (
+                        <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                            <Calendar size={14} className="flex-shrink-0 text-gray-400 dark:text-gray-500" />
+                            <span className="font-medium">Due:</span>
+                            <span className="text-gray-700 dark:text-gray-300">{formattedDueDate}</span>
+                        </div>
+                    )}
+                    {workItem.status === "Completed" && formattedActualCompletionDate && (
+                        <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                            <CheckCircle2 size={14} className="flex-shrink-0" />
+                            <span className="font-medium">Completed:</span>
+                            <span>{formattedActualCompletionDate}</span>
                         </div>
                     )}
                 </div>
-                <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-neutral-500">
-                    <span>{workItem.workItemType}</span>
-                    <span>
-                        {workItem.workItemType === "Deliverable"
-                            ? "D"
-                            : workItem.workItemType === "Issue"
-                                ? "I"
-                                : "T"}{workItem.id}
-                    </span>
-                </div>
-                <div className="text-xs text-gray-500 dark:text-neutral-500">
-                    {formattedDateOpened && <span>{formattedDateOpened} (opened) - </span>}
-                    {formattedDueDate && <span>{formattedDueDate} (due)</span>}
-                </div>
-                <p className="text-xs text-gray-500 dark:text-neutral-500">
-                    Description: {workItem.description}
-                </p>
-                {workItem.workItemType === "Issue" && workItem.issueDetail && (
-                    <div className="text-xs text-gray-500 dark:text-neutral-500">
-                        {workItem.issueDetail.rootCause && (
-                            <p>
-                                <span>Root Cause:</span>{" "}
-                                {workItem.issueDetail.rootCause}
-                            </p>
-                        )}
-                        {workItem.issueDetail.correctiveAction && (
-                            <p>
-                                <span>Corrective Action:</span>{" "}
-                                {workItem.issueDetail.correctiveAction}
-                            </p>
-                        )}
-                    </div>
-                )}
-                <div className="text-xs text-gray-500 dark:text-neutral-500">
-                    {formattedEstimatedCompletionDate && <span>Estimated Completion Date: {formattedEstimatedCompletionDate}</span>}
-                </div>
-                {workItem.status === "Completed" && (
-                    <div className="text-xs text-gray-500 dark:text-neutral-500">
-                        <p>
-                            <span>Actual Completion Date:</span>{" "}
-                            {formattedActualCompletionDate}
-                        </p>
-                    </div>
-                )}
-                {workItem.status !== "Completed" && (
-                    <p className="text-xs text-gray-500 dark:text-neutral-500">
-                        Current Status: {workItem.inputStatus}
-                    </p>
-                )}
-                {workItem.attachments && workItem.attachments.length > 0 && (
-                // <Image
-                //     src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${workItem.attachments[0].fileUrl}`}
-                //     alt={workItem.attachments[0].fileName}
-                //     width={400}
-                //     height={200}
-                //     className="h-auto w-full rounded-t-md"
-                // />
-                    <div className="mt-2 space-y-1 text-xs text-gray-500 dark:text-neutral-500">
-                        <Link href={`/${workItem.attachments[0].fileUrl}`}>
-                            {workItem.attachments[0].fileName}
-                        </Link>
-                    </div>
-                )}
-                <div className="mt-4 border-t border-gray-200 dark-border-stroke-dark" />
 
-                {/* USERS */}
-                <div className="mt-3 flex items-center justify-between">
-                    <div className="flex -space-x-[6px] overflow-hidden">
+                {/* Description (truncated) */}
+                {workItem.description && (
+                    <div className="mb-3">
+                        <div className="flex items-start gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                            <FileText size={14} className="mt-0.5 flex-shrink-0 text-gray-400 dark:text-gray-500" />
+                            <p className="line-clamp-2 leading-relaxed">{truncateText(workItem.description, 120)}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Tags */}
+                {workItemTagsSplit.length > 0 && (
+                    <div className="mb-3 flex flex-wrap items-center gap-1.5">
+                        <Tag size={12} className="text-gray-400 dark:text-gray-500" />
+                        {workItemTagsSplit.slice(0, 3).map((tag) => (
+                            <span
+                                key={tag}
+                                className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                            >
+                                {tag}
+                            </span>
+                        ))}
+                        {workItemTagsSplit.length > 3 && (
+                            <span className="text-xs text-gray-500 dark:text-gray-500">+{workItemTagsSplit.length - 3}</span>
+                        )}
+                    </div>
+                )}
+
+                {/* Status (if not completed) */}
+                {workItem.status !== "Completed" && workItem.inputStatus && (
+                    <div className="mb-3 text-xs">
+                        <span className="text-gray-500 dark:text-gray-400">Status: </span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{workItem.inputStatus}</span>
+                    </div>
+                )}
+
+                {/* Divider */}
+                <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
+
+                {/* Footer: Users, Comments, Attachments */}
+                <div className="flex items-center justify-between">
+                    <div className="flex -space-x-2">
                         {[workItem.assigneeUser, workItem.authorUser].map((user, index) => {
                             if (!user) return null;
 
                             const uniqueKey = `${user.userId}-${index}`;
-                            const role = index === 0 ? "Assignee" : "Author"; // Determine role
-                            const tooltip = `${role}: ${user.name}`;
+                            const role = index === 0 ? "Assignee" : "Author";
+                            const tooltip = `${role}: ${user.name || user.username}`;
 
                             return user.profilePictureUrl ? (
                                 <button
                                     key={uniqueKey}
-                                    onClick={() => router.push(`/users/${user.userId}`)}
-                                    className="cursor-pointer"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        router.push(`/users/${user.userId}`);
+                                    }}
+                                    className="relative h-7 w-7 cursor-pointer overflow-hidden rounded-full border-2 border-white ring-1 ring-gray-200 transition-all hover:z-10 hover:ring-2 hover:ring-blue-500 dark:border-dark-secondary dark:ring-gray-700"
+                                    title={tooltip}
                                 >
                                     <Image
                                         src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${user.profilePictureUrl}`}
                                         alt={user.username}
-                                        title={tooltip}  // <-- tooltip on hover
-                                        width={30}
-                                        height={30}
-                                        className="h-8 w-8 rounded-full border-2 border-white object-cover dark:border-dark-secondary"
+                                        width={28}
+                                        height={28}
+                                        className="h-full w-full object-cover"
                                     />
                                 </button>
                             ) : (
                                 <button
                                     key={uniqueKey}
-                                    onClick={() => router.push(`/users/${user.userId}`)}
-                                    title={tooltip}  // <-- tooltip on hover
-                                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gray-300 text-xs font-medium text-gray-600 dark:border-dark-secondary"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        router.push(`/users/${user.userId}`);
+                                    }}
+                                    title={tooltip}
+                                    className="relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-gray-300 to-gray-400 text-xs font-semibold text-white ring-1 ring-gray-200 transition-all hover:z-10 hover:ring-2 hover:ring-blue-500 dark:border-dark-secondary dark:from-gray-600 dark:to-gray-700 dark:ring-gray-700"
                                 >
                                     {(() => {
-                                        // Get initials from name (first letter of first name and first letter of last name)
                                         if (user.name) {
                                             const names = user.name.trim().split(" ").filter(Boolean);
                                             if (names.length >= 2) {
@@ -588,7 +623,6 @@ const WorkItem = ({ workItem, setEditingWorkItem, onOpenComments }: WorkItemProp
                                                 return names[0][0].toUpperCase();
                                             }
                                         }
-                                        // Fallback to username if name is not available
                                         if (user.username) {
                                             return user.username.substring(0, 2).toUpperCase();
                                         }
@@ -599,17 +633,25 @@ const WorkItem = ({ workItem, setEditingWorkItem, onOpenComments }: WorkItemProp
                         })}
                     </div>
 
-                    {/* Comments */}
-                    <button
-                        type="button"
-                        className="flex items-center text-gray-500 hover:text-blue-600 dark:text-neutral-500 dark:hover:text-blue-400"
-                        onClick={() => onOpenComments(workItem)}
-                    >
-                        <MessageSquareMore size={20} />
-                        <span className="ml-1 text-sm dark:text-neutral-400">
-                            {numberOfComments}
-                        </span>
-                    </button>
+                    <div className="flex items-center gap-3">
+                        {numberOfAttachments > 0 && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                <FileText size={14} />
+                                <span>{numberOfAttachments}</span>
+                            </div>
+                        )}
+                        <button
+                            type="button"
+                            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-blue-400"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenComments(workItem);
+                            }}
+                        >
+                            <MessageSquareMore size={16} />
+                            <span className="font-medium">{numberOfComments}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

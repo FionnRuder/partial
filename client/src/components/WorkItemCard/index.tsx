@@ -8,6 +8,18 @@ type Props = {
   workItem: WorkItem;
 };
 
+// Helper function to format date without timezone conversion
+// Extracts the date portion (YYYY-MM-DD) and parses it as a local date
+const formatDateOnly = (dateString: string): string => {
+  if (!dateString) return "N/A";
+  // Extract just the date portion (YYYY-MM-DD) from ISO string
+  const dateOnly = dateString.split('T')[0];
+  // Parse as local date to avoid timezone conversion
+  const [year, month, day] = dateOnly.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  return format(date, "P");
+};
+
 const WorkItemCard = ({ workItem }: Props) => {
   const router = useRouter();
 
@@ -57,20 +69,20 @@ const WorkItemCard = ({ workItem }: Props) => {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className="font-medium">Date Opened:</span> {format(new Date(workItem.dateOpened), "P")}
+            <span className="font-medium">Date Opened:</span> {formatDateOnly(workItem.dateOpened)}
           </div>
           <div>
-            <span className="font-medium">Due Date:</span> {format(new Date(workItem.dueDate), "P")}
+            <span className="font-medium">Due Date:</span> {formatDateOnly(workItem.dueDate)}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className="font-medium">Est. Completion:</span> {format(new Date(workItem.estimatedCompletionDate), "P")}
+            <span className="font-medium">Est. Completion:</span> {formatDateOnly(workItem.estimatedCompletionDate)}
           </div>
           {workItem.actualCompletionDate && (
             <div>
-              <span className="font-medium">Actual Completion:</span> {format(new Date(workItem.actualCompletionDate), "P")}
+              <span className="font-medium">Actual Completion:</span> {formatDateOnly(workItem.actualCompletionDate)}
             </div>
           )}
         </div>
