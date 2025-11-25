@@ -170,7 +170,19 @@ export const updateUser = async (
 ): Promise<void> => {
   try {
     const { userId } = req.params;
-    const { name, phoneNumber, role, profilePictureUrl, disciplineTeamId } = req.body;
+    const { 
+      name, 
+      phoneNumber, 
+      role, 
+      profilePictureUrl, 
+      disciplineTeamId,
+      emailNotificationsEnabled,
+      emailWorkItemAssignment,
+      emailWorkItemStatusChange,
+      emailWorkItemComment,
+      emailInvitation,
+      emailApproachingDeadline,
+    } = req.body;
 
     const userIdNumber = Number(userId);
     if (!Number.isInteger(userIdNumber)) {
@@ -200,6 +212,13 @@ export const updateUser = async (
       ...(disciplineTeamId !== undefined && {
         disciplineTeamId: disciplineTeamId ? Number(disciplineTeamId) : null,
       }),
+      // Email notification preferences
+      ...(emailNotificationsEnabled !== undefined && { emailNotificationsEnabled: Boolean(emailNotificationsEnabled) }),
+      ...(emailWorkItemAssignment !== undefined && { emailWorkItemAssignment: Boolean(emailWorkItemAssignment) }),
+      ...(emailWorkItemStatusChange !== undefined && { emailWorkItemStatusChange: Boolean(emailWorkItemStatusChange) }),
+      ...(emailWorkItemComment !== undefined && { emailWorkItemComment: Boolean(emailWorkItemComment) }),
+      ...(emailInvitation !== undefined && { emailInvitation: Boolean(emailInvitation) }),
+      ...(emailApproachingDeadline !== undefined && { emailApproachingDeadline: Boolean(emailApproachingDeadline) }),
     };
     
     if (role) {
@@ -239,5 +258,142 @@ export const updateUser = async (
     res
       .status(500)
       .json({ message: `Error updating user: ${error.message}` });
+  }
+};
+
+export const getEmailPreferences = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { userId } = req.params;
+    const userIdNumber = Number(userId);
+    
+    if (!Number.isInteger(userIdNumber)) {
+      res.status(400).json({ message: "userId must be a valid integer" });
+      return;
+    }
+
+    // Users can only view their own preferences, or admins can view any
+    const requestingUserId = req.auth.userId;
+    const requestingUser = await prisma.user.findUnique({
+      where: { userId: requestingUserId },
+      select: { role: true },
+    });
+
+    if (userIdNumber !== requestingUserId && requestingUser?.role !== 'Admin') {
+      res.status(403).json({ message: "You can only view your own email preferences" });
+      return;
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
+      select: {
+        userId: true,
+        emailNotificationsEnabled: true,
+        emailWorkItemAssignment: true,
+        emailWorkItemStatusChange: true,
+        emailWorkItemComment: true,
+        emailInvitation: true,
+        emailApproachingDeadline: true,
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.json(user);
+  } catch (error: any) {
+    res
+      .status(500)
+      .json({ message: `Error retrieving email preferences: ${error.message}` });
+  }
+};
+
+export const updateEmailPreferences = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { userId } = req.params;
+    const {
+      emailNotificationsEnabled,
+      emailWorkItemAssignment,
+      emailWorkItemStatusChange,
+      emailWorkItemComment,
+      emailInvitation,
+      emailApproachingDeadline,
+    } = req.body;
+
+    const userIdNumber = Number(userId);
+    
+    if (!Number.isInteger(userIdNumber)) {
+      res.status(400).json({ message: "userId must be a valid integer" });
+      return;
+    }
+
+    // Users can only update their own preferences, or admins can update any
+    const requestingUserId = req.auth.userId;
+    const requestingUser = await prisma.user.findUnique({
+      where: { userId: requestingUserId },
+      select: { role: true },
+    });
+
+    if (userIdNumber !== requestingUserId && requestingUser?.role !== 'Admin') {
+      res.status(403).json({ message: "You can only update your own email preferences" });
+      return;
+    }
+
+    const updateData: any = {};
+    
+    if (emailNotificationsEnabled !== undefined) {
+      updateData.emailNotificationsEnabled = Boolean(emailNotificationsEnabled);
+    }
+    if (emailWorkItemAssignment !== undefined) {
+      updateData.emailWorkItemAssignment = Boolean(emailWorkItemAssignment);
+    }
+    if (emailWorkItemStatusChange !== undefined) {
+      updateData.emailWorkItemStatusChange = Boolean(emailWorkItemStatusChange);
+    }
+    if (emailWorkItemComment !== undefined) {
+      updateData.emailWorkItemComment = Boolean(emailWorkItemComment);
+    }
+    if (emailInvitation !== undefined) {
+      updateData.emailInvitation = Boolean(emailInvitation);
+    }
+    if (emailApproachingDeadline !== undefined) {
+      updateData.emailApproachingDeadline = Boolean(emailApproachingDeadline);
+    }
+
+    const updateResult = await prisma.user.updateMany({
+      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
+      data: updateData,
+    });
+
+    if (updateResult.count === 0) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
+      select: {
+        userId: true,
+        emailNotificationsEnabled: true,
+        emailWorkItemAssignment: true,
+        emailWorkItemStatusChange: true,
+        emailWorkItemComment: true,
+        emailInvitation: true,
+        emailApproachingDeadline: true,
+      },
+    });
+
+    res.json(user);
+  } catch (error: any) {
+    res
+      .status(500)
+      .json({ message: `Error updating email preferences: ${error.message}` });
   }
 };

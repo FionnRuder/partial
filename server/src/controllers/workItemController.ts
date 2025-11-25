@@ -1,5 +1,10 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import {
+  sendWorkItemAssignmentEmail,
+  sendWorkItemCommentEmail,
+  sendWorkItemStatusChangeEmail,
+} from "../lib/emailService";
 
 // Define a type for creates
 type WorkItemCreate = {
@@ -534,6 +539,27 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
       return createdWorkItem;
     });
 
+    // Send assignment email to assignee (if different from author)
+    if (newWorkItem.assigneeUser && newWorkItem.authorUser) {
+      if (newWorkItem.assigneeUser.userId !== newWorkItem.authorUser.userId) {
+        try {
+          await sendWorkItemAssignmentEmail(
+            newWorkItem.assigneeUser.email,
+            newWorkItem.assigneeUser.name,
+            newWorkItem.title,
+            newWorkItem.id,
+            newWorkItem.authorUser.name,
+            newWorkItem.priority,
+            newWorkItem.dueDate.toISOString(),
+            newWorkItem.assigneeUser.userId
+          );
+        } catch (emailError) {
+          console.error("Failed to send assignment email:", emailError);
+          // Don't fail the request if email fails
+        }
+      }
+    }
+
     res.status(201).json({
       ...newWorkItem,
       partIds: newWorkItem.partNumbers.map((p) => p.partId),
@@ -623,13 +649,30 @@ export const editWorkItem = async (req: Request, res: Response) => {
   }
 
   try {
+    // Fetch existing work item before transaction to get old values for email notifications
+    const existingWorkItem = await prisma.workItem.findFirst({
+      where: { id: workItemIdNumber, organizationId },
+      select: {
+        assignedUserId: true,
+        status: true,
+      },
+    });
+
+    if (!existingWorkItem) {
+      res.status(404).json({ message: "Work item not found" });
+      return;
+    }
+
+    const oldAssigneeId = existingWorkItem.assignedUserId;
+    const oldStatus = existingWorkItem.status;
+
     const finalWorkItem = await prisma.$transaction(async (tx) => {
-      const existingWorkItem = await tx.workItem.findFirst({
+      const existingWorkItemInTx = await tx.workItem.findFirst({
         where: { id: workItemIdNumber, organizationId },
         include: { partNumbers: true },
       });
 
-      if (!existingWorkItem) {
+      if (!existingWorkItemInTx) {
         throw new Error("WORK_ITEM_NOT_FOUND");
       }
 
@@ -729,7 +772,7 @@ export const editWorkItem = async (req: Request, res: Response) => {
       
       // Check if inputStatus is being updated and if it's different from the current value
       const inputStatusChanged = updates.inputStatus !== undefined && 
-                                 updates.inputStatus !== existingWorkItem.inputStatus;
+                                 updates.inputStatus !== existingWorkItemInTx.inputStatus;
       
       if (updates.inputStatus) updateData.inputStatus = updates.inputStatus;
       if (updates.programId !== undefined) updateData.programId = Number(updates.programId);
@@ -945,6 +988,76 @@ export const editWorkItem = async (req: Request, res: Response) => {
       return finalWorkItem;
     });
 
+    // Send email notifications for updates (after transaction completes)
+    try {
+      const newAssigneeId = finalWorkItem.assignedUserId;
+      const newStatus = finalWorkItem.status;
+
+      // Send assignment email if assignee changed
+      if (oldAssigneeId !== newAssigneeId && finalWorkItem.assigneeUser && finalWorkItem.authorUser) {
+        // Only send if new assignee is different from the person making the change
+        if (finalWorkItem.assigneeUser.userId !== req.auth.userId) {
+          await sendWorkItemAssignmentEmail(
+            finalWorkItem.assigneeUser.email,
+            finalWorkItem.assigneeUser.name,
+            finalWorkItem.title,
+            finalWorkItem.id,
+            finalWorkItem.authorUser.name,
+            finalWorkItem.priority,
+            finalWorkItem.dueDate.toISOString(),
+            finalWorkItem.assigneeUser.userId
+          );
+        }
+      }
+
+      // Send status change email if status changed
+      if (oldStatus !== newStatus && finalWorkItem.assigneeUser) {
+        // Get the user who made the change
+        const changedByUser = await prisma.user.findUnique({
+          where: { userId: req.auth.userId },
+          select: { name: true },
+        });
+        const changedByName = changedByUser?.name || "System";
+
+        // Notify assignee and author (if different)
+        const recipients: Array<{ email: string; name: string; userId: number }> = [];
+        
+        if (finalWorkItem.assigneeUser && finalWorkItem.assigneeUser.userId !== req.auth.userId) {
+          recipients.push({
+            email: finalWorkItem.assigneeUser.email,
+            name: finalWorkItem.assigneeUser.name,
+            userId: finalWorkItem.assigneeUser.userId,
+          });
+        }
+        
+        if (finalWorkItem.authorUser && 
+            finalWorkItem.authorUser.userId !== req.auth.userId &&
+            finalWorkItem.authorUser.userId !== finalWorkItem.assigneeUser?.userId) {
+          recipients.push({
+            email: finalWorkItem.authorUser.email,
+            name: finalWorkItem.authorUser.name,
+            userId: finalWorkItem.authorUser.userId,
+          });
+        }
+
+        for (const recipient of recipients) {
+          await sendWorkItemStatusChangeEmail(
+            recipient.email,
+            recipient.name,
+            finalWorkItem.title,
+            finalWorkItem.id,
+            oldStatus,
+            newStatus,
+            changedByName,
+            recipient.userId
+          );
+        }
+      }
+    } catch (emailError) {
+      console.error("Failed to send work item update emails:", emailError);
+      // Don't fail the request if email fails
+    }
+
     res.json({
       ...finalWorkItem,
       partIds: finalWorkItem.partNumbers.map((p) => p.partId),
@@ -1056,6 +1169,10 @@ export const createCommentForWorkItem = async (req: Request, res: Response): Pro
     const [workItem, commenter] = await Promise.all([
       prisma.workItem.findFirst({
         where: { id: workItemIdNumber, organizationId: req.auth.organizationId },
+        include: {
+          assigneeUser: true,
+          authorUser: true,
+        },
       }),
       prisma.user.findFirst({
         where: { userId: commenterIdNumber, organizationId: req.auth.organizationId },
@@ -1074,7 +1191,7 @@ export const createCommentForWorkItem = async (req: Request, res: Response): Pro
 
     const newComment = await prisma.comment.create({
       data: {
-        text,
+        text: text.trim(),
         commenterUserId: commenterIdNumber,
         workItemId: workItemIdNumber,
         organizationId: req.auth.organizationId,
@@ -1083,6 +1200,46 @@ export const createCommentForWorkItem = async (req: Request, res: Response): Pro
         commenterUser: true,
       },
     });
+
+    // Send email notifications for new comment
+    try {
+      // Notify assignee and author (if different from commenter)
+      const recipients: Array<{ email: string; name: string; userId: number }> = [];
+      
+      if (workItem.assigneeUser && workItem.assigneeUser.userId !== commenterIdNumber) {
+        recipients.push({
+          email: workItem.assigneeUser.email,
+          name: workItem.assigneeUser.name,
+          userId: workItem.assigneeUser.userId,
+        });
+      }
+      
+      if (workItem.authorUser && 
+          workItem.authorUser.userId !== commenterIdNumber &&
+          workItem.authorUser.userId !== workItem.assigneeUser?.userId) {
+        recipients.push({
+          email: workItem.authorUser.email,
+          name: workItem.authorUser.name,
+          userId: workItem.authorUser.userId,
+        });
+      }
+
+      // Send email to each recipient
+      for (const recipient of recipients) {
+        await sendWorkItemCommentEmail(
+          recipient.email,
+          recipient.name,
+          workItem.title,
+          workItem.id,
+          newComment.commenterUser.name,
+          newComment.text,
+          recipient.userId
+        );
+      }
+    } catch (emailError) {
+      console.error("Failed to send comment email:", emailError);
+      // Don't fail the request if email fails
+    }
 
     res.status(201).json(newComment);
   } catch (error: any) {

@@ -86,6 +86,24 @@ NEXT_PUBLIC_REDIRECT_SIGN_OUT=http://localhost:3000/onboarding
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 
 # ============================================
+# AWS SES CONFIGURATION (Email Notifications)
+# ============================================
+
+# AWS Region (where your SES is configured)
+AWS_REGION=us-east-1
+
+# AWS Access Credentials
+# Option 1: Use access keys (for local development or non-AWS deployments)
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+
+# Option 2: If running on AWS (EC2, ECS, Lambda), you can use IAM roles instead
+# In that case, leave AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY empty
+# and ensure your IAM role has SES permissions
+
+# Note: Email sender is hardcoded to: notifications@partialsystems.com
+
+# ============================================
 # DEVELOPMENT SETTINGS
 # ============================================
 NODE_ENV=development

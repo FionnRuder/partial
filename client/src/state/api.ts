@@ -121,6 +121,12 @@ export interface User {
   cognitoId: string;
   username: string;
   name: string;
+  emailNotificationsEnabled?: boolean;
+  emailWorkItemAssignment?: boolean;
+  emailWorkItemStatusChange?: boolean;
+  emailWorkItemComment?: boolean;
+  emailInvitation?: boolean;
+  emailApproachingDeadline?: boolean;
   email: string;
   phoneNumber: string;
   role: string;
@@ -976,6 +982,49 @@ export const api = createApi({
       ],
     }),
 
+    getEmailPreferences: build.query<{
+      userId: number;
+      emailNotificationsEnabled: boolean;
+      emailWorkItemAssignment: boolean;
+      emailWorkItemStatusChange: boolean;
+      emailWorkItemComment: boolean;
+      emailInvitation: boolean;
+      emailApproachingDeadline: boolean;
+    }, number>({
+      query: (userId) => `users/${userId}/email-preferences`,
+      providesTags: (result, error, userId) => [{ type: "Users", id: userId }],
+    }),
+
+    updateEmailPreferences: build.mutation<{
+      userId: number;
+      emailNotificationsEnabled: boolean;
+      emailWorkItemAssignment: boolean;
+      emailWorkItemStatusChange: boolean;
+      emailWorkItemComment: boolean;
+      emailInvitation: boolean;
+      emailApproachingDeadline: boolean;
+    }, {
+      userId: number;
+      preferences: {
+        emailNotificationsEnabled?: boolean;
+        emailWorkItemAssignment?: boolean;
+        emailWorkItemStatusChange?: boolean;
+        emailWorkItemComment?: boolean;
+        emailInvitation?: boolean;
+        emailApproachingDeadline?: boolean;
+      };
+    }>({
+      query: ({ userId, preferences }) => ({
+        url: `users/${userId}/email-preferences`,
+        method: "PUT",
+        body: preferences,
+      }),
+      invalidatesTags: (result, error, { userId }) => [
+        { type: "Users", id: userId },
+        "Users",
+      ],
+    }),
+
     /* ---------- SEARCH ---------- */
     search: build.query<SearchResults, string>({
       query: (query) => `search?query=${query}`,
@@ -1144,6 +1193,8 @@ export const {
   useGetUserByIdQuery,
   useCreateUserMutation,
   useUpdateUserMutation,
+  useGetEmailPreferencesQuery,
+  useUpdateEmailPreferencesMutation,
 
   useSearchQuery,
 

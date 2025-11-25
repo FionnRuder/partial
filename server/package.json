@@ -26,6 +26,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.939.0",
     "@prisma/client": "^5.18.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",

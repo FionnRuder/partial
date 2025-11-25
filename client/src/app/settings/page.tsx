@@ -3,13 +3,16 @@
 import Header from '@/components/Header';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useGetUserByIdQuery, useGetTeamsQuery, useUpdateUserMutation } from '@/state/api';
+import { useGetUserByIdQuery, useGetTeamsQuery, useUpdateUserMutation, useGetEmailPreferencesQuery, useUpdateEmailPreferencesMutation } from '@/state/api';
+import { showApiSuccess, showApiError } from '@/lib/toast';
 
 const Settings = () => {
     const { user: authUser, updateProfile } = useAuth();
     const { data: user, isLoading: isUserLoading } = useGetUserByIdQuery(authUser?.userId || 0, { skip: !authUser?.userId });
     const { data: teams, isLoading: isTeamsLoading } = useGetTeamsQuery();
     const [updateUser] = useUpdateUserMutation();
+    const { data: emailPreferences, isLoading: isEmailPreferencesLoading } = useGetEmailPreferencesQuery(authUser?.userId || 0, { skip: !authUser?.userId });
+    const [updateEmailPreferences] = useUpdateEmailPreferencesMutation();
 
     const sanitizeProfilePictureUrl = (value?: string | null) => {
         if (!value) return '';
@@ -28,8 +31,18 @@ const Settings = () => {
         profilePictureUrl: '',
         disciplineTeamId: null as number | null,
     });
+    const [emailPrefs, setEmailPrefs] = useState({
+        emailNotificationsEnabled: true,
+        emailWorkItemAssignment: true,
+        emailWorkItemStatusChange: true,
+        emailWorkItemComment: true,
+        emailInvitation: true,
+        emailApproachingDeadline: true,
+    });
     const [isSaving, setIsSaving] = useState(false);
+    const [isSavingEmailPrefs, setIsSavingEmailPrefs] = useState(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [emailPrefsSaveStatus, setEmailPrefsSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
     // Initialize form data when user data loads
     useEffect(() => {
@@ -42,6 +55,20 @@ const Settings = () => {
             });
         }
     }, [user]);
+
+    // Initialize email preferences when they load
+    useEffect(() => {
+        if (emailPreferences) {
+            setEmailPrefs({
+                emailNotificationsEnabled: emailPreferences.emailNotificationsEnabled ?? true,
+                emailWorkItemAssignment: emailPreferences.emailWorkItemAssignment ?? true,
+                emailWorkItemStatusChange: emailPreferences.emailWorkItemStatusChange ?? true,
+                emailWorkItemComment: emailPreferences.emailWorkItemComment ?? true,
+                emailInvitation: emailPreferences.emailInvitation ?? true,
+                emailApproachingDeadline: emailPreferences.emailApproachingDeadline ?? true,
+            });
+        }
+    }, [emailPreferences]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -71,13 +98,41 @@ const Settings = () => {
             });
 
             setSaveStatus('success');
+            showApiSuccess('Profile settings saved successfully');
             setTimeout(() => setSaveStatus('idle'), 3000);
         } catch (error) {
             console.error('Failed to update user:', error);
             setSaveStatus('error');
+            showApiError(error, 'Failed to save profile settings');
             setTimeout(() => setSaveStatus('idle'), 3000);
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleEmailPrefsSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!authUser?.userId) return;
+
+        setIsSavingEmailPrefs(true);
+        setEmailPrefsSaveStatus('idle');
+
+        try {
+            await updateEmailPreferences({
+                userId: authUser.userId,
+                preferences: emailPrefs,
+            }).unwrap();
+
+            setEmailPrefsSaveStatus('success');
+            showApiSuccess('Email preferences saved successfully');
+            setTimeout(() => setEmailPrefsSaveStatus('idle'), 3000);
+        } catch (error) {
+            console.error('Failed to update email preferences:', error);
+            setEmailPrefsSaveStatus('error');
+            showApiError(error, 'Failed to save email preferences');
+            setTimeout(() => setEmailPrefsSaveStatus('idle'), 3000);
+        } finally {
+            setIsSavingEmailPrefs(false);
         }
     };
 
@@ -235,6 +290,156 @@ const Settings = () => {
                     </button>
                 </div>
             </form>
+
+            {/* Email Notification Preferences Section */}
+            <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Email Notification Preferences</h2>
+                <form onSubmit={handleEmailPrefsSubmit} className="space-y-6">
+                    {/* Master Toggle */}
+                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                        <label className="flex items-center justify-between cursor-pointer">
+                            <div>
+                                <span className="text-base font-medium text-gray-900 dark:text-white">Enable Email Notifications</span>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Master switch for all email notifications</p>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={emailPrefs.emailNotificationsEnabled}
+                                onChange={(e) => {
+                                    const enabled = e.target.checked;
+                                    setEmailPrefs({
+                                        ...emailPrefs,
+                                        emailNotificationsEnabled: enabled,
+                                        // If enabling master, enable all; if disabling master, disable all
+                                        ...(enabled ? {
+                                            emailWorkItemAssignment: true,
+                                            emailWorkItemStatusChange: true,
+                                            emailWorkItemComment: true,
+                                            emailInvitation: true,
+                                            emailApproachingDeadline: true,
+                                        } : {
+                                            emailWorkItemAssignment: false,
+                                            emailWorkItemStatusChange: false,
+                                            emailWorkItemComment: false,
+                                            emailInvitation: false,
+                                            emailApproachingDeadline: false,
+                                        }),
+                                    });
+                                }}
+                                className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                            />
+                        </label>
+                    </div>
+
+                    {/* Individual Notification Types */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <div>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">Work Item Assignments</span>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">When you're assigned to a work item</p>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={emailPrefs.emailWorkItemAssignment && emailPrefs.emailNotificationsEnabled}
+                                onChange={(e) => setEmailPrefs({ ...emailPrefs, emailWorkItemAssignment: e.target.checked })}
+                                disabled={!emailPrefs.emailNotificationsEnabled}
+                                className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <div>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">Status Changes</span>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">When a work item's status is updated</p>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={emailPrefs.emailWorkItemStatusChange && emailPrefs.emailNotificationsEnabled}
+                                onChange={(e) => setEmailPrefs({ ...emailPrefs, emailWorkItemStatusChange: e.target.checked })}
+                                disabled={!emailPrefs.emailNotificationsEnabled}
+                                className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <div>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">Comments</span>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">When someone comments on a work item</p>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={emailPrefs.emailWorkItemComment && emailPrefs.emailNotificationsEnabled}
+                                onChange={(e) => setEmailPrefs({ ...emailPrefs, emailWorkItemComment: e.target.checked })}
+                                disabled={!emailPrefs.emailNotificationsEnabled}
+                                className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <div>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">Invitations</span>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">When you receive an invitation to join</p>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={emailPrefs.emailInvitation && emailPrefs.emailNotificationsEnabled}
+                                onChange={(e) => setEmailPrefs({ ...emailPrefs, emailInvitation: e.target.checked })}
+                                disabled={!emailPrefs.emailNotificationsEnabled}
+                                className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <div>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">Approaching Deadlines</span>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Reminders for upcoming work item deadlines</p>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={emailPrefs.emailApproachingDeadline && emailPrefs.emailNotificationsEnabled}
+                                onChange={(e) => setEmailPrefs({ ...emailPrefs, emailApproachingDeadline: e.target.checked })}
+                                disabled={!emailPrefs.emailNotificationsEnabled}
+                                className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Email Preferences Save Status */}
+                    {emailPrefsSaveStatus === 'success' && (
+                        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4">
+                            <div className="text-sm text-green-600 dark:text-green-400">
+                                Email preferences saved successfully!
+                            </div>
+                        </div>
+                    )}
+
+                    {emailPrefsSaveStatus === 'error' && (
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+                            <div className="text-sm text-red-600 dark:text-red-400">
+                                Failed to save email preferences. Please try again.
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Save Button */}
+                    <div className="flex justify-end pt-4">
+                        <button
+                            type="submit"
+                            disabled={isSavingEmailPrefs || isEmailPreferencesLoading}
+                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isSavingEmailPrefs ? (
+                                <div className="flex items-center">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    Saving...
+                                </div>
+                            ) : (
+                                'Save Email Preferences'
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
