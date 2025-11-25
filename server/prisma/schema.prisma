@@ -67,6 +67,14 @@ model User {
   profilePictureUrl String?
   disciplineTeamId  Int?
 
+  // Email notification preferences (default to true for all)
+  emailNotificationsEnabled        Boolean @default(true)
+  emailWorkItemAssignment           Boolean @default(true)
+  emailWorkItemStatusChange         Boolean @default(true)
+  emailWorkItemComment              Boolean @default(true)
+  emailInvitation                   Boolean @default(true)
+  emailApproachingDeadline          Boolean @default(true)
+
   organization   Organization    @relation(fields: [organizationId], references: [id])
   disciplineTeam DisciplineTeam? @relation(fields: [disciplineTeamId], references: [id])
 

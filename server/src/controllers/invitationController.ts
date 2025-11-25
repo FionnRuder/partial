@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import { isValidRole, canCreateInvitations as canCreateInvitationsCheck, VALID_ROLES, roleToPrismaEnum, prismaEnumToRole } from "../lib/roles";
+import { sendInvitationEmail } from "../lib/emailService";
 
 const prisma = new PrismaClient();
 
@@ -117,6 +118,35 @@ export const createInvitation = async (
         },
       },
     });
+
+    // Send invitation email if email is provided
+    if (invitation.invitedEmail) {
+      try {
+        // Try to find user by email to check preferences (if they exist)
+        const existingUser = invitation.invitedEmail
+          ? await prisma.user.findFirst({
+              where: {
+                email: invitation.invitedEmail,
+                organizationId: invitation.organizationId,
+              },
+              select: { userId: true },
+            })
+          : null;
+
+        await sendInvitationEmail(
+          invitation.invitedEmail,
+          token,
+          invitation.organization.name,
+          role, // Use display role name
+          invitation.createdBy.name,
+          days,
+          existingUser?.userId || null
+        );
+      } catch (emailError) {
+        // Log error but don't fail the invitation creation
+        console.error("Failed to send invitation email:", emailError);
+      }
+    }
 
     res.status(201).json({
       invitation: {
