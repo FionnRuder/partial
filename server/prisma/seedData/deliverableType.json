@@ -1,0 +1,138 @@
+[
+  {
+    "organizationId": 1,
+    "name": "System/Subsystem Requirements Specification (SRS)",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Interface Control Document (ICD)",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Preliminary Design Review (PDR) Package",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Risk/Failure Mode & Effects Analysis (FMEA/DFMEA) Report",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Development & Verification Plan / V&V Matrix",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Engineering Drawing & CAD Model",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Bill of Materials (BOM)",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Stress/Structural Analysis Report",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Thermal Analysis Report",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Electrical Schematics / PCB Layouts",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Design for Manufacturability (DFM) & Design for Test (DFT) Review Report",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Critical Design Review (CDR) Package",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Work Instructions / Assembly Procedures",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "First Article Inspection (FAI) Report",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Supplier Quality Records / Certificates of Conformance (CoC)",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Test Plans and Procedures",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Qualification Test Report",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Acceptance Test Procedure (ATP) & Report",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Calibration Certificates",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Non-Conformance / Corrective Action Report (NCR/CAR)",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Requirements Verification Report",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "As-Built Configuration / End-Item Data Package",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "User / Operations Manual",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Maintenance & Repair Manual / Spare Parts List",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Certificates of Compliance",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Lessons-Learned & Post-Project Report",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Other",
+    "isSystem": true
+  }
+]
+

@@ -35,6 +35,8 @@ async function resetSequences() {
     '"Program_id_seq"',
     '"User_userId_seq"',
     '"DisciplineTeam_id_seq"',
+    '"DeliverableType_id_seq"',
+    '"IssueType_id_seq"',
   ];
 
   for (const sequence of sequenceNames) {
@@ -52,6 +54,8 @@ async function main() {
 
   const orderedFileNames = [
     "organization.json",
+    "deliverableType.json",
+    "issueType.json",
     "disciplineTeam.json",
     "user.json",
     "program.json",
@@ -65,6 +69,26 @@ async function main() {
     "comment.json",
     "attachment.json",
   ];
+
+  // Delete dependent tables first (StatusLog, Invitation, Feedback)
+  try {
+    await prisma.statusLog.deleteMany({});
+    console.log("Cleared data from StatusLog");
+  } catch (error) {
+    console.error("Error clearing data from StatusLog:", error);
+  }
+  try {
+    await prisma.invitation.deleteMany({});
+    console.log("Cleared data from Invitation");
+  } catch (error) {
+    console.error("Error clearing data from Invitation:", error);
+  }
+  try {
+    await prisma.feedback.deleteMany({});
+    console.log("Cleared data from Feedback");
+  } catch (error) {
+    console.error("Error clearing data from Feedback:", error);
+  }
 
   await deleteAllData(orderedFileNames);
   await resetSequences();

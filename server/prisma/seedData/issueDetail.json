@@ -1,109 +1,109 @@
 [
   {
     "id": 27,
-    "issueType": "Defect",
+    "issueTypeId": 1,
     "rootCause": "Connector misalignment causing partial shading",
     "correctiveAction": "Realign connectors and retest panel output"
   },
   {
     "id": 28,
-    "issueType": "ProcessManufacturingIssue",
+    "issueTypeId": 5,
     "rootCause": "Limited operator availability",
     "correctiveAction": "Add additional operators and optimize assembly workflow"
   },
   {
     "id": 29,
-    "issueType": "IntegrationInterfaceIssue",
+    "issueTypeId": 7,
     "rootCause": "Firmware version mismatch between devices",
     "correctiveAction": "Update firmware and validate communication protocol"
   },
   {
     "id": 30,
-    "issueType": "NonConformanceReportNCR",
+    "issueTypeId": 4,
     "rootCause": "Incorrect application parameters",
     "correctiveAction": "Reapply coating using updated process parameters"
   },
   {
     "id": 31,
-    "issueType": "RequirementWaiver",
+    "issueTypeId": 3,
     "rootCause": "Component tolerance limitations",
     "correctiveAction": "Submit waiver for review"
   },
   {
     "id": 32,
-    "issueType": "TestVerificationAnomaly",
+    "issueTypeId": 8,
     "rootCause": "Mounting bracket stiffness incorrect",
     "correctiveAction": "Redesign bracket and repeat vibration test"
   },
   {
     "id": 33,
-    "issueType": "SupplyChainProcurementIssue",
+    "issueTypeId": 6,
     "rootCause": "Supplier production backlog",
     "correctiveAction": "Identify alternative suppliers and expedite shipping"
   },
   {
     "id": 34,
-    "issueType": "EnvironmentalReliabilityIssue",
+    "issueTypeId": 9,
     "rootCause": "Inadequate insulation on battery cells",
     "correctiveAction": "Redesign insulation and retest under TVAC"
   },
   {
     "id": 35,
-    "issueType": "ConfigurationDocumentationControlIssue",
+    "issueTypeId": 10,
     "rootCause": "CAD update not reflected in BOM",
     "correctiveAction": "Update BOM to reflect latest CAD revisions"
   },
   {
     "id": 36,
-    "issueType": "SafetyRegulatoryIssue",
+    "issueTypeId": 11,
     "rootCause": "Incomplete test coverage",
     "correctiveAction": "Perform additional certification tests"
   },
   {
     "id": 37,
-    "issueType": "Defect",
+    "issueTypeId": 1,
     "rootCause": "Improper assembly during integration",
     "correctiveAction": "Re-align optics and re-test calibration"
   },
   {
     "id": 38,
-    "issueType": "TestVerificationAnomaly",
+    "issueTypeId": 8,
     "rootCause": "Loose connector detected",
     "correctiveAction": "Secure connector and re-run functional tests"
   },
   {
     "id": 39,
-    "issueType": "NonConformanceReportNCR",
+    "issueTypeId": 4,
     "rootCause": "Potential sensor degradation at elevated temperatures",
     "correctiveAction": "Replace sensor and update calibration procedure"
   },
   {
     "id": 40,
-    "issueType": "ProcessManufacturingIssue",
+    "issueTypeId": 5,
     "rootCause": "Assembly jig tolerance exceeded",
     "correctiveAction": "Reposition sensor and tighten assembly jig tolerance"
   },
   {
     "id": 41,
-    "issueType": "IntegrationInterfaceIssue",
+    "issueTypeId": 7,
     "rootCause": "Incorrect part from supplier",
     "correctiveAction": "Replace connector and verify compatibility"
   },
   {
     "id": 42,
-    "issueType": "EnvironmentalReliabilityIssue",
+    "issueTypeId": 9,
     "rootCause": "Component sensitivity outside expected range",
     "correctiveAction": "Investigate shielding and update thermal design"
   },
   {
     "id": 65,
-    "issueType": "ProcessManufacturingIssue",
+    "issueTypeId": 5,
     "rootCause": "Supplier weld parameters drifted outside qualified range.",
     "correctiveAction": "Rework weld with controlled parameters and add in-process inspection."
   },
   {
     "id": 66,
-    "issueType": "IntegrationInterfaceIssue",
+    "issueTypeId": 7,
     "rootCause": "Telemetry router firmware mismatch with network protocol stack.",
     "correctiveAction": "Deploy updated firmware and repeat integrated network testing."
   }
