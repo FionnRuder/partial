@@ -21,6 +21,12 @@ import issueTypeRoutes from "./routes/issueTypeRoutes";
 import feedbackRoutes from "./routes/feedbackRoutes";
 import { authenticate } from "./middleware/authenticate";
 import { initializeCognitoClient } from "./lib/cognitoClient";
+import {
+  ipRateLimiter,
+  userRateLimiter,
+  authRateLimiter,
+  publicEndpointRateLimiter,
+} from "./middleware/rateLimiter";
 
 
 /* CONFIGURATIONS */
@@ -57,22 +63,31 @@ app.use(cors({
   credentials: true, // Allow cookies to be sent with requests
 }));
 
+// Trust proxy for accurate IP addresses (important for rate limiting behind proxies/load balancers)
+app.set('trust proxy', 1);
+
+// Apply global IP rate limiting to all routes
+app.use(ipRateLimiter);
+
 /* ROUTES */
 app.get("/", (req, res) => {
   res.send("This is home route");
 });
 
-// Authentication routes (no authentication required)
-app.use("/auth", authRoutes);
+// Authentication routes with stricter rate limiting
+app.use("/auth", authRateLimiter, authRoutes);
 
 // Onboarding routes (require Cognito session but user may not exist in DB yet)
-app.use("/onboarding", onboardingRoutes);
+// Apply public endpoint rate limiting (similar to invitations)
+app.use("/onboarding", publicEndpointRateLimiter, onboardingRoutes);
 
 // Invitation routes - some public (validate), some require auth (handled in route file)
-app.use("/invitations", invitationRoutes);
+// Public endpoint rate limiting applied to all invitation routes (validates endpoint handles it)
+app.use("/invitations", publicEndpointRateLimiter, invitationRoutes);
 
-// All other routes require authentication
+// All other routes require authentication and user-based rate limiting
 app.use(authenticate);
+app.use(userRateLimiter);
 
 app.use("/milestones", milestoneRoutes);
 app.use("/parts", partRoutes);

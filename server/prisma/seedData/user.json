@@ -5,7 +5,7 @@
     "name": "John Doe",
     "email": "john.doe@example.com",
     "phoneNumber": "15551234567",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 1,
     "organizationId": 1
@@ -16,7 +16,7 @@
     "name": "Alice Smith",
     "email": "alice.smith@example.com",
     "phoneNumber": "15551234568",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 1,
     "organizationId": 1
@@ -27,7 +27,7 @@
     "name": "Ben Wong",
     "email": "ben.wong@example.com",
     "phoneNumber": "15551234569",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 2,
     "organizationId": 1
@@ -38,7 +38,7 @@
     "name": "Cindy Chen",
     "email": "cindy.chen@example.com",
     "phoneNumber": "15551234570",
-    "role": "program-manager",
+    "role": "ProgramManager",
     "profilePictureUrl": null,
     "disciplineTeamId": 3,
     "organizationId": 1
@@ -49,7 +49,7 @@
     "name": "David Miller",
     "email": "david.miller@example.com",
     "phoneNumber": "15551234571",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 2,
     "organizationId": 1
@@ -60,7 +60,7 @@
     "name": "Elena Sanchez",
     "email": "elena.sanchez@example.com",
     "phoneNumber": "15551234572",
-    "role": "program-manager",
+    "role": "ProgramManager",
     "profilePictureUrl": null,
     "disciplineTeamId": 3,
     "organizationId": 1
@@ -71,7 +71,7 @@
     "name": "Frank Lee",
     "email": "frank.lee@example.com",
     "phoneNumber": "15551234573",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 4,
     "organizationId": 1
@@ -82,7 +82,7 @@
     "name": "Grace Patel",
     "email": "grace.patel@example.com",
     "phoneNumber": "15551234574",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 4,
     "organizationId": 1
@@ -93,7 +93,7 @@
     "name": "Hannah Murphy",
     "email": "hannah.murphy@example.com",
     "phoneNumber": "15551234575",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 3,
     "organizationId": 1
@@ -104,7 +104,7 @@
     "name": "Ivan Rios",
     "email": "ivan.rios@example.com",
     "phoneNumber": "15551234576",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 2,
     "organizationId": 1
@@ -115,7 +115,7 @@
     "name": "Jenny Nguyen",
     "email": "jenny.nguyen@example.com",
     "phoneNumber": "15551234577",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 2,
     "organizationId": 1
@@ -126,7 +126,7 @@
     "name": "Kevin Roberts",
     "email": "kevin.roberts@example.com",
     "phoneNumber": "15551234578",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 2,
     "organizationId": 1
@@ -137,7 +137,7 @@
     "name": "Laura Martinez",
     "email": "laura.martinez@example.com",
     "phoneNumber": "15551234579",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 2,
     "organizationId": 1
@@ -148,7 +148,7 @@
     "name": "Mark Johnson",
     "email": "mark.johnson@example.com",
     "phoneNumber": "15551234580",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 4,
     "organizationId": 1
@@ -159,7 +159,7 @@
     "name": "Naomi Lee",
     "email": "naomi.lee@example.com",
     "phoneNumber": "15551234581",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 3,
     "organizationId": 1
@@ -170,7 +170,7 @@
     "name": "Omar Patel",
     "email": "omar.patel@example.com",
     "phoneNumber": "15551234582",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 1,
     "organizationId": 1
@@ -181,7 +181,7 @@
     "name": "Paul Kim",
     "email": "paul.kim@example.com",
     "phoneNumber": "15551234583",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 2,
     "organizationId": 1
@@ -192,7 +192,7 @@
     "name": "Quinn Gomez",
     "email": "quinn.gomez@example.com",
     "phoneNumber": "15551234584",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 4,
     "organizationId": 1
@@ -203,7 +203,7 @@
     "name": "Rachel White",
     "email": "rachel.white@example.com",
     "phoneNumber": "15551234585",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 3,
     "organizationId": 1
@@ -214,7 +214,7 @@
     "name": "Sam Jackson",
     "email": "sam.jackson@example.com",
     "phoneNumber": "15551234586",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 4,
     "organizationId": 1
@@ -225,7 +225,7 @@
     "name": "Taylor Chang",
     "email": "taylor.chang@example.com",
     "phoneNumber": "15551234587",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 5,
     "organizationId": 1
@@ -236,7 +236,7 @@
     "name": "Valentina Ramirez",
     "email": "valentina.ramirez@example.com",
     "phoneNumber": "15551234588",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 6,
     "organizationId": 1
@@ -247,7 +247,7 @@
     "name": "Wes Young",
     "email": "wes.young@example.com",
     "phoneNumber": "15551234589",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 7,
     "organizationId": 1
@@ -258,7 +258,7 @@
     "name": "Zara Kaur",
     "email": "zara.kaur@example.com",
     "phoneNumber": "15551234590",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 5,
     "organizationId": 1
@@ -269,7 +269,7 @@
     "name": "Luis Fernandez",
     "email": "luis.fernandez@example.com",
     "phoneNumber": "15551234591",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 6,
     "organizationId": 1
@@ -280,7 +280,7 @@
     "name": "Mia Bishop",
     "email": "mia.bishop@example.com",
     "phoneNumber": "15551234592",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 7,
     "organizationId": 1
@@ -291,7 +291,7 @@
     "name": "Quinn Dawson",
     "email": "quinn.dawson@example.com",
     "phoneNumber": "15551234593",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 5,
     "organizationId": 1
@@ -302,7 +302,7 @@
     "name": "Rosa Garcia",
     "email": "rosa.garcia@example.com",
     "phoneNumber": "15551234594",
-    "role": "engineer",
+    "role": "Engineer",
     "profilePictureUrl": null,
     "disciplineTeamId": 6,
     "organizationId": 1

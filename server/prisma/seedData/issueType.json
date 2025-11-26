@@ -1,0 +1,73 @@
+[
+  {
+    "organizationId": 1,
+    "name": "Defect",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Failure",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Requirement Waiver",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Non-Conformance Report (NCR)",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Process / Manufacturing Issue",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Supply-Chain / Procurement Issue",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Integration / Interface Issue",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Test / Verification Anomaly",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Environmental / Reliability Issue",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Configuration / Documentation Control Issue",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Safety / Regulatory Issue",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Programmatic / Risk Item",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Obsolescence / End-of-Life Issue",
+    "isSystem": true
+  },
+  {
+    "organizationId": 1,
+    "name": "Other",
+    "isSystem": true
+  }
+]
+

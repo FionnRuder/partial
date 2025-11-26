@@ -1,118 +1,118 @@
 [
   {
     "id": 1,
-    "deliverableType": "SystemSubsystemRequirementsSpecificationSRS"
+    "deliverableTypeId": 1
   },
   {
     "id": 2,
-    "deliverableType": "InterfaceControlDocumentICD"
+    "deliverableTypeId": 2
   },
   {
     "id": 3,
-    "deliverableType": "PreliminaryDesignReviewPDRPackage"
+    "deliverableTypeId": 3
   },
   {
     "id": 4,
-    "deliverableType": "RiskFailureModeEffectsAnalysisFMEADFMEAReport"
+    "deliverableTypeId": 4
   },
   {
     "id": 5,
-    "deliverableType": "DevelopmentVerificationPlanVVMatrix"
+    "deliverableTypeId": 5
   },
   {
     "id": 6,
-    "deliverableType": "EngineeringDrawingCADModel"
+    "deliverableTypeId": 6
   },
   {
     "id": 7,
-    "deliverableType": "BillofMaterialsBOM"
+    "deliverableTypeId": 7
   },
   {
     "id": 8,
-    "deliverableType": "StressStructuralAnalysisReport"
+    "deliverableTypeId": 8
   },
   {
     "id": 9,
-    "deliverableType": "ThermalAnalysisReport"
+    "deliverableTypeId": 9
   },
   {
     "id": 10,
-    "deliverableType": "ElectricalSchematicsPCBLayouts"
+    "deliverableTypeId": 10
   },
   {
     "id": 11,
-    "deliverableType": "DesignforManufacturabilityDFMDesignforTestDFTReviewReport"
+    "deliverableTypeId": 11
   },
   {
     "id": 12,
-    "deliverableType": "CriticalDesignReviewCDRPackage"
+    "deliverableTypeId": 12
   },
   {
     "id": 13,
-    "deliverableType": "WorkInstructionsAssemblyProcedures"
+    "deliverableTypeId": 13
   },
   {
     "id": 14,
-    "deliverableType": "FirstArticleInspectionFAIReport"
+    "deliverableTypeId": 14
   },
   {
     "id": 15,
-    "deliverableType": "SupplierQualityRecordsCertificatesofConformanceCoC"
+    "deliverableTypeId": 15
   },
   {
     "id": 16,
-    "deliverableType": "TestPlansandProcedures"
+    "deliverableTypeId": 16
   },
   {
     "id": 17,
-    "deliverableType": "QualificationTestReport"
+    "deliverableTypeId": 17
   },
   {
     "id": 18,
-    "deliverableType": "AcceptanceTestProcedureATPReport"
+    "deliverableTypeId": 18
   },
   {
     "id": 19,
-    "deliverableType": "CalibrationCertificates"
+    "deliverableTypeId": 19
   },
   {
     "id": 20,
-    "deliverableType": "NonConformanceCorrectiveActionReportNCRCAR"
+    "deliverableTypeId": 20
   },
   {
     "id": 21,
-    "deliverableType": "RequirementsVerificationReport"
+    "deliverableTypeId": 21
   },
   {
     "id": 22,
-    "deliverableType": "AsBuiltConfigurationEndItemDataPackage"
+    "deliverableTypeId": 22
   },
   {
     "id": 23,
-    "deliverableType": "UserOperationsManual"
+    "deliverableTypeId": 23
   },
   {
     "id": 24,
-    "deliverableType": "MaintenanceRepairManualSparePartsList"
+    "deliverableTypeId": 24
   },
   {
     "id": 25,
-    "deliverableType": "CertificatesofCompliance"
+    "deliverableTypeId": 25
   },
   {
     "id": 26,
-    "deliverableType": "LessonsLearnedPostProjectReport"
+    "deliverableTypeId": 26
   },
   {
     "id": 59,
-    "deliverableType": "SystemSubsystemRequirementsSpecificationSRS"
+    "deliverableTypeId": 1
   },
   {
     "id": 60,
-    "deliverableType": "InterfaceControlDocumentICD"
+    "deliverableTypeId": 2
   },
   {
     "id": 61,
-    "deliverableType": "QualificationTestReport"
+    "deliverableTypeId": 17
   }
 ]

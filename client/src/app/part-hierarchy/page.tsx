@@ -22,13 +22,80 @@ interface WorkItemCounts {
 }
 
 // Custom hook to manage work item data for all parts
-const useWorkItemData = (partsOrTree: Part[] | PartHierarchyNode[]) => {
+const useWorkItemData = (partsOrTree: Part[] | PartHierarchyNode[], programId: number | null) => {
   const [workItemData, setWorkItemData] = useState<Map<number, WorkItem[]>>(new Map());
   const [loadingParts, setLoadingParts] = useState<Set<number>>(new Set());
   const fetchedPartsRef = React.useRef<Set<number>>(new Set());
+  const allWorkItemsRef = React.useRef<WorkItem[]>([]);
 
-  // Fetch work items for a specific part
-  const fetchWorkItemsForPart = useCallback(async (partId: number) => {
+  // Fetch all work items for the program once (more efficient than per-part requests)
+  const fetchAllWorkItemsForProgram = useCallback(async (programId: number) => {
+    try {
+      const headers: HeadersInit = {};
+      if (typeof window !== 'undefined') {
+        const storedUser = window.localStorage.getItem('authUser');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            if (parsedUser?.userId) {
+              headers['x-user-id'] = String(parsedUser.userId);
+            }
+          } catch (error) {
+            console.warn('Failed to parse authUser from localStorage', error);
+          }
+        }
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/workItems?programId=${programId}`, {
+        headers,
+        credentials: 'include',
+      });
+      
+      if (response.status === 429) {
+        // Rate limited - wait and retry
+        const retryAfter = response.headers.get('Retry-After') || '30';
+        const waitTime = parseInt(retryAfter, 10) * 1000;
+        console.warn(`Rate limited. Retrying after ${waitTime}ms...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        return fetchAllWorkItemsForProgram(programId);
+      }
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const workItems = await response.json();
+      const workItemsArray = Array.isArray(workItems) ? workItems : [];
+      allWorkItemsRef.current = workItemsArray;
+      console.log(`Fetched ${workItemsArray.length} work items for program ${programId}`);
+      
+      // Group work items by partId
+      const workItemsByPart = new Map<number, WorkItem[]>();
+      workItemsArray.forEach(workItem => {
+        if (workItem.partNumbers && Array.isArray(workItem.partNumbers)) {
+          workItem.partNumbers.forEach((partLink: any) => {
+            const partId = partLink.part?.id || partLink.partId;
+            if (partId) {
+              if (!workItemsByPart.has(partId)) {
+                workItemsByPart.set(partId, []);
+              }
+              workItemsByPart.get(partId)!.push(workItem);
+            }
+          });
+        }
+      });
+      
+      setWorkItemData(workItemsByPart);
+    } catch (error) {
+      console.error(`Failed to fetch work items for program ${programId}:`, error);
+      setWorkItemData(new Map());
+    }
+  }, []);
+
+  // Fetch work items for a specific part (fallback if program fetch fails)
+  const fetchWorkItemsForPart = useCallback(async (partId: number, retryCount = 0) => {
+    const maxRetries = 3;
+    
     setLoadingParts(prev => {
       if (prev.has(partId)) return prev;
       return new Set(prev).add(partId);
@@ -52,13 +119,26 @@ const useWorkItemData = (partsOrTree: Part[] | PartHierarchyNode[]) => {
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/workItems?partId=${partId}`, {
         headers,
-        credentials: 'include', // Include cookies for authentication
+        credentials: 'include',
       });
+      
+      if (response.status === 429) {
+        if (retryCount < maxRetries) {
+          const retryAfter = response.headers.get('Retry-After') || '30';
+          const waitTime = parseInt(retryAfter, 10) * 1000;
+          console.warn(`Rate limited for part ${partId}. Retrying after ${waitTime}ms... (attempt ${retryCount + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          return fetchWorkItemsForPart(partId, retryCount + 1);
+        } else {
+          throw new Error(`Rate limited after ${maxRetries} retries`);
+        }
+      }
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+      
       const workItems = await response.json();
-      // Ensure workItems is always an array before storing
       const workItemsArray = Array.isArray(workItems) ? workItems : [];
       console.log(`Fetched ${workItemsArray.length} work items for part ${partId}:`, workItemsArray);
       setWorkItemData(prev => {
@@ -68,7 +148,6 @@ const useWorkItemData = (partsOrTree: Part[] | PartHierarchyNode[]) => {
       });
     } catch (error) {
       console.error(`Failed to fetch work items for part ${partId}:`, error);
-      // Set empty array on error to prevent retrying indefinitely
       setWorkItemData(prev => {
         const newMap = new Map(prev);
         newMap.set(partId, []);
@@ -98,42 +177,15 @@ const useWorkItemData = (partsOrTree: Part[] | PartHierarchyNode[]) => {
     return Array.from(ids).sort().join(',');
   }, [partsOrTree]);
 
-  // Fetch work items for all parts in the hierarchy
+  // Fetch all work items for the program when programId changes
   useEffect(() => {
-    if (!allPartIds || allPartIds.length === 0) {
-      fetchedPartsRef.current.clear();
-      return;
-    }
-    
-    const partIdArray = allPartIds.split(',').map(id => Number(id));
-    console.log('Checking work items for parts:', partIdArray);
-    
-    // Clear ref for parts that are no longer in the current set
-    const currentPartIds = new Set(partIdArray);
-    fetchedPartsRef.current.forEach(partId => {
-      if (!currentPartIds.has(partId)) {
-        fetchedPartsRef.current.delete(partId);
-      }
-    });
-    
-    // Filter parts that haven't been fetched yet
-    const partIdsToFetch = partIdArray.filter(partId => {
-      const alreadyFetched = fetchedPartsRef.current.has(partId);
-      if (!alreadyFetched) {
-        fetchedPartsRef.current.add(partId);
-        console.log(`Will fetch work items for part ${partId}`);
-        return true;
-      }
-      return false;
-    });
-    
-    if (partIdsToFetch.length > 0) {
-      console.log(`Fetching work items for ${partIdsToFetch.length} parts:`, partIdsToFetch);
-      partIdsToFetch.forEach(partId => fetchWorkItemsForPart(partId));
+    if (programId) {
+      fetchAllWorkItemsForProgram(programId);
     } else {
-      console.log('All parts already fetched or in progress');
+      setWorkItemData(new Map());
+      allWorkItemsRef.current = [];
     }
-  }, [allPartIds, fetchWorkItemsForPart]);
+  }, [programId, fetchAllWorkItemsForProgram]);
 
   return { workItemData, loadingParts };
 };
@@ -295,8 +347,8 @@ const PartHierarchyPage = () => {
     return rootNodes;
   }, [filteredParts]);
 
-  // Use the work item data hook with the hierarchy tree
-  const { workItemData } = useWorkItemData(hierarchyTree);
+  // Use the work item data hook with the hierarchy tree and programId
+  const { workItemData } = useWorkItemData(hierarchyTree, selectedProgramId);
 
   const toggleNode = (nodeId: number) => {
     setExpandedNodes(prev => {
