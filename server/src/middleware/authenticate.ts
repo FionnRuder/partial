@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { logAuthEvent, AuthEventType, getAuthContext } from "../lib/authLogger";
 
 const prisma = new PrismaClient();
 
@@ -17,10 +18,23 @@ export const authenticate = async (
     if (!req.session?.userInfo) {
       // Session exists but no userInfo - likely session was lost (server restart with memory store)
       // or user never completed login. Destroy the invalid session and return 401.
+      const context = getAuthContext(req);
+      
+      logAuthEvent({
+        eventType: AuthEventType.SESSION_INVALID,
+        ...context,
+        reason: "Session exists but no userInfo present",
+      });
+
       if (req.session) {
         req.session.destroy((err) => {
           if (err) {
-            console.error('Error destroying invalid session:', err);
+            logAuthEvent({
+              eventType: AuthEventType.SESSION_INVALID,
+              ...context,
+              error: err.message,
+              reason: "Error destroying invalid session",
+            });
           }
         });
       }
@@ -52,7 +66,16 @@ export const authenticate = async (
     if (!user) {
       // User authenticated with Cognito but not found in database
       // This happens during first login - redirect to onboarding
-      console.warn(`Cognito user not found in database: ${userInfo.email || userInfo.sub}`);
+      const context = getAuthContext(req);
+      
+      logAuthEvent({
+        eventType: AuthEventType.ONBOARDING_REQUIRED,
+        ...context,
+        email: userInfo.email,
+        cognitoId: userInfo.sub,
+        reason: "User authenticated with Cognito but not found in database",
+      });
+
       res.status(401).json({ 
         message: "User authenticated but not found in database. Please complete onboarding.",
         requiresOnboarding: true
@@ -66,6 +89,14 @@ export const authenticate = async (
       organizationId: user.organizationId,
       role: user.role,
     };
+
+    // Log successful authentication
+    logAuthEvent({
+      eventType: AuthEventType.LOGIN_SUCCESS,
+      ...getAuthContext(req),
+      email: userInfo.email,
+      cognitoId: userInfo.sub,
+    });
 
     next();
   } catch (error) {

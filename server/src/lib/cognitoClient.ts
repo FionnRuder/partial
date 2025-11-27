@@ -3,6 +3,18 @@
 // The client type will be inferred at runtime
 let client: any = null;
 
+// Import logger (conditional to avoid circular dependencies)
+// We'll use a simple logger function here to avoid initialization issues
+function log(message: string, level: 'info' | 'warn' | 'error' = 'info', meta?: any) {
+  try {
+    const { logger } = require('./logger');
+    logger[level](message, meta);
+  } catch (e) {
+    // Fallback to console if logger not available (shouldn't happen)
+    console[level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log'](message, meta || '');
+  }
+}
+
 export interface CognitoConfig {
   issuerUrl: string;
   clientId: string;
@@ -83,16 +95,17 @@ export async function initializeCognitoClient(): Promise<any> {
       response_types: ['code'],
     });
 
-    console.log('Cognito OIDC client initialized successfully');
-    if (customDomain) {
-      console.log('Custom domain configured:', customDomain);
-      if (useIssuerUrlForAuth) {
-        console.log('Using Cognito hosted UI domain for token exchange (custom domain DNS not ready)');
-      }
-    }
+    log('Cognito OIDC client initialized successfully', 'info', {
+      issuerUrl,
+      customDomain,
+      useIssuerUrlForAuth,
+    });
     return client;
   } catch (error) {
-    console.error('Failed to initialize Cognito OIDC client:', error);
+    log('Failed to initialize Cognito OIDC client', 'error', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     throw error;
   }
 }

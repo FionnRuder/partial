@@ -28,6 +28,13 @@ import {
   authRateLimiter,
   publicEndpointRateLimiter,
 } from "./middleware/rateLimiter";
+import {
+  requestIdMiddleware,
+  httpRequestLogger,
+  loggerContextMiddleware,
+} from "./middleware/requestLogger";
+import { errorLogger } from "./middleware/errorLogger";
+import { logger } from "./lib/logger";
 
 
 /* CONFIGURATIONS */
@@ -67,6 +74,12 @@ app.use(cors({
 // Trust proxy for accurate IP addresses (important for rate limiting behind proxies/load balancers)
 app.set('trust proxy', 1);
 
+// Request ID middleware (must be early to attach ID to all requests)
+app.use(requestIdMiddleware);
+
+// HTTP request logging middleware (logs all requests with timing)
+app.use(httpRequestLogger);
+
 /* ROUTES */
 app.get("/", (req, res) => {
   res.send("This is home route");
@@ -92,6 +105,7 @@ app.use("/invitations", publicEndpointRateLimiter, invitationRoutes);
 
 // All other routes require authentication and user-based rate limiting
 app.use(authenticate);
+app.use(loggerContextMiddleware); // Add user context to logger after authentication
 app.use(userRateLimiter);
 
 app.use("/milestones", milestoneRoutes);
@@ -113,9 +127,16 @@ app.use((req: Request, res: Response) => {
 });
 
 /* ERROR HANDLING MIDDLEWARE (must come last) */
+// Error logging middleware (logs errors with context)
+app.use(errorLogger);
+
+// Error response handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error("Unhandled error:", err.stack);
-  res.status(500).json({ message: "Something went wrong!" });
+  // Error is already logged by errorLogger middleware
+  res.status(500).json({ 
+    message: "Something went wrong!",
+    requestId: (req as any).requestId,
+  });
 });
 
 /* SERVER */
@@ -125,13 +146,19 @@ const port = Number(process.env.PORT) || 3000;
 initializeCognitoClient()
   .then(() => {
     app.listen(port, "0.0.0.0", () => {
-      console.log(`Server running on port ${port}`);
+      logger.info("Server started successfully", {
+        port,
+        environment: process.env.NODE_ENV || "development",
+      });
     });
   })
   .catch((error) => {
-    console.error("Failed to initialize Cognito client:", error);
-    console.error("Server will still start, but authentication may not work properly.");
+    logger.error("Failed to initialize Cognito client", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    logger.warn("Server will still start, but authentication may not work properly");
     app.listen(port, "0.0.0.0", () => {
-      console.log(`Server running on port ${port} (Cognito not initialized)`);
+      logger.warn("Server started without Cognito initialization", { port });
     });
   });

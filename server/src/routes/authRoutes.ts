@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { getCognitoClient } from '../lib/cognitoClient';
+import { logAuthEvent, AuthEventType, getAuthContext } from '../lib/authLogger';
+import { logger } from '../lib/logger';
 
 const prisma = new PrismaClient();
 
@@ -44,6 +46,12 @@ function getPathFromURL(urlString: string): string {
  * Note: If custom domain DNS is not configured, this will use the issuer URL for authorization.
  */
 router.get('/login', async (req: Request, res: Response) => {
+  const context = getAuthContext(req);
+  logAuthEvent({
+    eventType: AuthEventType.LOGIN_ATTEMPT,
+    ...context,
+  });
+
   try {
     // Dynamic import for ES module compatibility
     // TypeScript has issues with ES module imports in CommonJS, so we use type assertion
@@ -159,11 +167,20 @@ router.get('/login', async (req: Request, res: Response) => {
       }
     }
 
-    console.log('Generated authorization URL:', authUrl);
+    logger.debug('Generated authorization URL', { url: authUrl, ...context });
     res.redirect(authUrl);
   } catch (error) {
-    console.error('Login error:', error);
-    console.error('Error details:', error instanceof Error ? error.stack : error);
+    logAuthEvent({
+      eventType: AuthEventType.LOGIN_FAILURE,
+      ...context,
+      error: error instanceof Error ? error.message : String(error),
+      reason: 'Failed to initiate login',
+    });
+    logger.error('Login initiation error', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      ...context,
+    });
     res.status(500).json({ 
       message: 'Failed to initiate login', 
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -176,13 +193,18 @@ router.get('/login', async (req: Request, res: Response) => {
  * Callback route - handles the return from Amazon Cognito after authentication
  */
 router.get('/callback', async (req: Request, res: Response) => {
+  const context = getAuthContext(req);
+  
   try {
     const client = getCognitoClient();
     // Use same redirect URI as configured in client initialization
     const redirectUri = process.env.COGNITO_REDIRECT_URI || 'http://localhost:8000/auth/callback';
     
-    console.log('Callback received - Redirect URI:', redirectUri);
-    console.log('Callback query params:', req.query);
+    logger.debug('OAuth callback received', {
+      redirectUri,
+      queryParams: req.query,
+      ...context,
+    });
 
     const params = client.callbackParams(req);
     
@@ -294,9 +316,26 @@ router.get('/callback', async (req: Request, res: Response) => {
             : `${frontendUrl}/onboarding`;
 
           if (user) {
+            // User exists - log successful authentication
+            logAuthEvent({
+              eventType: AuthEventType.LOGIN_SUCCESS,
+              ...context,
+              userId: user.userId,
+              organizationId: user.organizationId,
+              email: userInfo.email,
+              cognitoId: userInfo.sub,
+            });
             // User exists - redirect to home
             res.redirect(`${frontendUrl}/home`);
           } else {
+            // User doesn't exist - log onboarding required
+            logAuthEvent({
+              eventType: AuthEventType.ONBOARDING_REQUIRED,
+              ...context,
+              email: userInfo.email,
+              cognitoId: userInfo.sub,
+              reason: "User authenticated but not in database",
+            });
             // User doesn't exist - redirect to onboarding with invitation token if present
             res.redirect(onboardingUrl);
           }
@@ -306,7 +345,19 @@ router.get('/callback', async (req: Request, res: Response) => {
             req.session.invitationToken = undefined;
           }
         } catch (dbError) {
-          console.error('Database error during callback:', dbError);
+          logAuthEvent({
+            eventType: AuthEventType.LOGIN_FAILURE,
+            ...context,
+            email: userInfo.email,
+            cognitoId: userInfo.sub,
+            error: dbError instanceof Error ? dbError.message : String(dbError),
+            reason: "Database error during callback",
+          });
+          logger.error('Database error during callback', {
+            error: dbError instanceof Error ? dbError.message : String(dbError),
+            stack: dbError instanceof Error ? dbError.stack : undefined,
+            ...context,
+          });
           // On error, redirect to onboarding to be safe
           const frontendUrl = process.env.FRONTEND_URL || 
                              (process.env.NODE_ENV === 'production' 
@@ -325,7 +376,17 @@ router.get('/callback', async (req: Request, res: Response) => {
           }
         }
       } catch (error) {
-        console.error('Callback error:', error);
+        logAuthEvent({
+          eventType: AuthEventType.LOGIN_FAILURE,
+          ...context,
+          error: error instanceof Error ? error.message : String(error),
+          reason: "OAuth callback error",
+        });
+        logger.error('OAuth callback error', {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          ...context,
+        });
         const frontendUrl = process.env.FRONTEND_URL || 
                            (process.env.NODE_ENV === 'production' 
                              ? 'https://your-production-domain.com' 
@@ -348,6 +409,18 @@ router.get('/callback', async (req: Request, res: Response) => {
  * Logout route - erases user session data and redirects to Cognito logout endpoint
  */
 router.get('/logout', (req: Request, res: Response) => {
+  const context = getAuthContext(req);
+  
+  // Log logout event before destroying session
+  if (req.session?.userInfo) {
+    logAuthEvent({
+      eventType: AuthEventType.LOGOUT,
+      ...context,
+      email: req.session.userInfo.email,
+      cognitoId: req.session.userInfo.sub,
+    });
+  }
+
   const userPoolDomain = process.env.COGNITO_USER_POOL_DOMAIN || '';
   const clientId = process.env.COGNITO_CLIENT_ID || '5429ep5otfjduo6ntjt2foc5of';
   const logoutUri = process.env.COGNITO_LOGOUT_URI || process.env.FRONTEND_URL || 'http://localhost:3000/onboarding';
@@ -357,7 +430,10 @@ router.get('/logout', (req: Request, res: Response) => {
 
   req.session.destroy((err) => {
     if (err) {
-      console.error('Session destroy error:', err);
+      logger.error('Session destroy error', {
+        error: err.message,
+        ...context,
+      });
     }
 
     // If custom domain DNS is not ready, use Cognito hosted UI domain for logout
