@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { logCreate, logUpdate, logDelete, sanitizeForAudit, getChangedFields } from "../lib/auditLogger";
 
 const prisma = new PrismaClient();
 
@@ -217,6 +218,15 @@ export const createPart = async (
       return createdPart;
     });
 
+    // Log part creation
+    await logCreate(
+      req,
+      "Part",
+      newPart.id,
+      `Part created: ${newPart.partName} (${newPart.code})`,
+      sanitizeForAudit(newPart)
+    );
+
     res.status(201).json(newPart);
   } catch (error: any) {
     res
@@ -234,6 +244,21 @@ export const editPart = async (
   const organizationId = req.auth.organizationId;
 
   try {
+    // Get existing part before update for audit logging
+    const existingPartFull = await prisma.part.findFirst({
+      where: { id: Number(partId), organizationId },
+      include: {
+        assignedUser: true,
+        program: true,
+        parent: true,
+      },
+    });
+
+    if (!existingPartFull) {
+      res.status(404).json({ message: "Part not found" });
+      return;
+    }
+
     const updatedPart = await prisma.$transaction(async (tx) => {
       const existingPart = await tx.part.findFirst({
         where: { id: Number(partId), organizationId },
@@ -343,6 +368,18 @@ export const editPart = async (
       return result;
     });
 
+    // Log part update
+    const changedFields = getChangedFields(existingPartFull, updatedPart);
+    await logUpdate(
+      req,
+      "Part",
+      updatedPart.id,
+      `Part updated: ${updatedPart.partName} (${updatedPart.code})`,
+      sanitizeForAudit(existingPartFull),
+      sanitizeForAudit(updatedPart),
+      changedFields
+    );
+
     res.json(updatedPart);
   } catch (error: any) {
     console.error("Error updating part:", error);
@@ -362,6 +399,23 @@ export const deletePart = async (req: Request, res: Response): Promise<void> => 
   }
 
   try {
+    // Get part before deletion for audit logging
+    const partToDelete = await prisma.part.findFirst({
+      where: {
+        id: partIdNumber,
+        organizationId: req.auth.organizationId,
+      },
+      include: {
+        assignedUser: true,
+        program: true,
+      },
+    });
+
+    if (!partToDelete) {
+      res.status(404).json({ message: "Part not found" });
+      return;
+    }
+
     const deleteResult = await prisma.part.deleteMany({
       where: {
         id: partIdNumber,
@@ -373,6 +427,15 @@ export const deletePart = async (req: Request, res: Response): Promise<void> => 
       res.status(404).json({ message: "Part not found" });
       return;
     }
+
+    // Log part deletion
+    await logDelete(
+      req,
+      "Part",
+      partToDelete.id,
+      `Part deleted: ${partToDelete.partName} (${partToDelete.code})`,
+      sanitizeForAudit(partToDelete)
+    );
 
     res.json({ message: "Part deleted successfully." });
   } catch (error: any) {

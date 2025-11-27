@@ -5,6 +5,7 @@ import {
   sendWorkItemCommentEmail,
   sendWorkItemStatusChangeEmail,
 } from "../lib/emailService";
+import { logCreate, logUpdate, logDelete, sanitizeForAudit, getChangedFields } from "../lib/auditLogger";
 
 // Define a type for creates
 type WorkItemCreate = {
@@ -539,6 +540,15 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
       return createdWorkItem;
     });
 
+    // Log work item creation
+    await logCreate(
+      req,
+      "WorkItem",
+      newWorkItem.id,
+      `Work item created: ${newWorkItem.title} (${newWorkItem.workItemType})`,
+      sanitizeForAudit(newWorkItem)
+    );
+
     // Send assignment email to assignee (if different from author)
     if (newWorkItem.assigneeUser && newWorkItem.authorUser) {
       if (newWorkItem.assigneeUser.userId !== newWorkItem.authorUser.userId) {
@@ -649,22 +659,24 @@ export const editWorkItem = async (req: Request, res: Response) => {
   }
 
   try {
-    // Fetch existing work item before transaction to get old values for email notifications
-    const existingWorkItem = await prisma.workItem.findFirst({
+    // Fetch existing work item before transaction for audit logging and email notifications
+    const existingWorkItemFull = await prisma.workItem.findFirst({
       where: { id: workItemIdNumber, organizationId },
-      select: {
-        assignedUserId: true,
-        status: true,
+      include: {
+        program: true,
+        dueByMilestone: true,
+        authorUser: true,
+        assigneeUser: true,
       },
     });
 
-    if (!existingWorkItem) {
+    if (!existingWorkItemFull) {
       res.status(404).json({ message: "Work item not found" });
       return;
     }
 
-    const oldAssigneeId = existingWorkItem.assignedUserId;
-    const oldStatus = existingWorkItem.status;
+    const oldAssigneeId = existingWorkItemFull.assignedUserId;
+    const oldStatus = existingWorkItemFull.status;
 
     const finalWorkItem = await prisma.$transaction(async (tx) => {
       const existingWorkItemInTx = await tx.workItem.findFirst({
@@ -1058,6 +1070,18 @@ export const editWorkItem = async (req: Request, res: Response) => {
       // Don't fail the request if email fails
     }
 
+    // Log work item update
+    const changedFields = getChangedFields(existingWorkItemFull, finalWorkItem);
+    await logUpdate(
+      req,
+      "WorkItem",
+      finalWorkItem.id,
+      `Work item updated: ${finalWorkItem.title}`,
+      sanitizeForAudit(existingWorkItemFull),
+      sanitizeForAudit(finalWorkItem),
+      changedFields
+    );
+
     res.json({
       ...finalWorkItem,
       partIds: finalWorkItem.partNumbers.map((p) => p.partId),
@@ -1379,6 +1403,21 @@ export const deleteWorkItem = async (req: Request, res: Response): Promise<void>
       return;
     }
 
+    // Get work item before deletion for audit logging
+    const workItemToDelete = await prisma.workItem.findFirst({
+      where: { id: workItemIdNumber, organizationId: req.auth.organizationId },
+      include: {
+        program: true,
+        authorUser: true,
+        assigneeUser: true,
+      },
+    });
+
+    if (!workItemToDelete) {
+      res.status(404).json({ message: "Work item not found" });
+      return;
+    }
+
     await prisma.$transaction(async (tx) => {
       const existingWorkItem = await tx.workItem.findFirst({
         where: { id: workItemIdNumber, organizationId: req.auth.organizationId },
@@ -1416,6 +1455,15 @@ export const deleteWorkItem = async (req: Request, res: Response): Promise<void>
         where: { id: workItemIdNumber },
       });
     });
+
+    // Log work item deletion
+    await logDelete(
+      req,
+      "WorkItem",
+      workItemToDelete.id,
+      `Work item deleted: ${workItemToDelete.title} (${workItemToDelete.workItemType})`,
+      sanitizeForAudit(workItemToDelete)
+    );
 
     res.status(200).json({ message: `Work item ${workItemId} deleted successfully.` });
   } catch (error: any) {

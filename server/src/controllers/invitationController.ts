@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import { isValidRole, canCreateInvitations as canCreateInvitationsCheck, VALID_ROLES, roleToPrismaEnum, prismaEnumToRole } from "../lib/roles";
 import { sendInvitationEmail } from "../lib/emailService";
+import { logCreate, logDelete, sanitizeForAudit } from "../lib/auditLogger";
 
 const prisma = new PrismaClient();
 
@@ -147,6 +148,15 @@ export const createInvitation = async (
         console.error("Failed to send invitation email:", emailError);
       }
     }
+
+    // Log invitation creation
+    await logCreate(
+      req,
+      "Invitation",
+      invitation.id,
+      `Invitation created for ${invitation.invitedEmail || 'user'} with role ${role}`,
+      sanitizeForAudit(invitation)
+    );
 
     res.status(201).json({
       invitation: {
@@ -528,6 +538,10 @@ export const revokeInvitation = async (
         id: invitationIdNumber,
         organizationId,
       },
+      include: {
+        organization: true,
+        createdBy: true,
+      },
     });
 
     if (!invitation) {
@@ -544,6 +558,15 @@ export const revokeInvitation = async (
       });
       return;
     }
+
+    // Log invitation revocation before deletion
+    await logDelete(
+      req,
+      "Invitation",
+      invitation.id,
+      `Invitation revoked for ${invitation.invitedEmail || 'user'} with role ${invitation.role}`,
+      sanitizeForAudit(invitation)
+    );
 
     // Delete invitation
     await (prisma as any).invitation.delete({

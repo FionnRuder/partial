@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { logCreate, logUpdate, sanitizeForAudit, getChangedFields } from "../lib/auditLogger";
 
 const prisma = new PrismaClient();
 
@@ -101,6 +102,16 @@ export const createMilestone = async (
         programId: Number(programId),
       },
     });
+
+    // Log milestone creation
+    await logCreate(
+      req,
+      "Milestone",
+      newMilestone.id,
+      `Milestone created: ${newMilestone.name}`,
+      sanitizeForAudit(newMilestone)
+    );
+
     res.status(201).json(newMilestone);
   } catch (error: any) {
     res

@@ -68,12 +68,12 @@ model User {
   disciplineTeamId  Int?
 
   // Email notification preferences (default to true for all)
-  emailNotificationsEnabled        Boolean @default(true)
-  emailWorkItemAssignment           Boolean @default(true)
-  emailWorkItemStatusChange         Boolean @default(true)
-  emailWorkItemComment              Boolean @default(true)
-  emailInvitation                   Boolean @default(true)
-  emailApproachingDeadline          Boolean @default(true)
+  emailNotificationsEnabled Boolean @default(true)
+  emailWorkItemAssignment   Boolean @default(true)
+  emailWorkItemStatusChange Boolean @default(true)
+  emailWorkItemComment      Boolean @default(true)
+  emailInvitation           Boolean @default(true)
+  emailApproachingDeadline  Boolean @default(true)
 
   organization   Organization    @relation(fields: [organizationId], references: [id])
   disciplineTeam DisciplineTeam? @relation(fields: [disciplineTeamId], references: [id])
@@ -87,8 +87,9 @@ model User {
   statusLogs          StatusLog[]
   createdInvitations  Invitation[] @relation("InvitationCreator")
   acceptedInvitations Invitation[] @relation("InvitationAccepter")
-  submittedFeedback  Feedback[]   @relation("FeedbackSubmitter")
-  resolvedFeedback   Feedback[]   @relation("FeedbackResolver")
+  submittedFeedback   Feedback[]   @relation("FeedbackSubmitter")
+  resolvedFeedback    Feedback[]   @relation("FeedbackResolver")
+  auditLogs           AuditLog[]
 
   @@unique([organizationId, username])
   @@unique([organizationId, email])
@@ -113,6 +114,7 @@ model Organization {
   deliverableTypes DeliverableType[]
   issueTypes       IssueType[]
   feedback         Feedback[]
+  auditLogs        AuditLog[]
 }
 
 model DisciplineTeam {
@@ -357,19 +359,19 @@ model Invitation {
 }
 
 model Feedback {
-  id             Int       @id @default(autoincrement())
-  organizationId Int
-  type           String    // "bug", "feature", "improvement"
-  title          String
-  description    String
-  status         String    @default("open") // "open", "in_progress", "resolved", "closed"
-  priority       Priority  @default(Medium)
+  id                Int       @id @default(autoincrement())
+  organizationId    Int
+  type              String // "bug", "feature", "improvement"
+  title             String
+  description       String
+  status            String    @default("open") // "open", "in_progress", "resolved", "closed"
+  priority          Priority  @default(Medium)
   submittedByUserId Int
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  resolvedAt     DateTime?
-  resolvedByUserId Int?
-  adminNotes     String?   // Internal notes for admins
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  resolvedAt        DateTime?
+  resolvedByUserId  Int?
+  adminNotes        String? // Internal notes for admins
 
   organization Organization @relation(fields: [organizationId], references: [id])
   submittedBy  User         @relation("FeedbackSubmitter", fields: [submittedByUserId], references: [userId])
@@ -380,4 +382,47 @@ model Feedback {
   @@index([type])
   @@index([priority])
   @@index([submittedByUserId])
+}
+
+// ===================
+// Audit Logging
+// ===================
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  VIEW
+  LOGIN
+  LOGOUT
+  EXPORT
+  IMPORT
+}
+
+model AuditLog {
+  id             Int         @id @default(autoincrement())
+  organizationId Int
+  userId         Int // User who performed the action
+  action         AuditAction
+  entityType     String // e.g., "WorkItem", "User", "Part", etc.
+  entityId       Int? // ID of the affected entity (null for bulk operations)
+  description    String // Human-readable description
+  changes        Json? // JSON object with before/after values for updates
+  metadata       Json? // Additional context (request path, query params, etc.)
+  ipAddress      String? // IP address of the user
+  userAgent      String? // User agent string
+  requestId      String? // Request ID for tracing
+  createdAt      DateTime    @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [userId])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([organizationId, entityType, entityId])
+  @@index([organizationId, createdAt])
 }

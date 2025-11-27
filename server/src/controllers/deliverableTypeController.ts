@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { logCreate, logDelete, sanitizeForAudit } from "../lib/auditLogger";
 
 const prisma = new PrismaClient();
 
@@ -97,6 +98,15 @@ export const createDeliverableType = async (
       },
     });
 
+    // Log deliverable type creation
+    await logCreate(
+      req,
+      "DeliverableType",
+      newType.id,
+      `Deliverable type created: ${newType.name}`,
+      sanitizeForAudit(newType)
+    );
+
     res.status(201).json(newType);
   } catch (error: any) {
     res
@@ -154,6 +164,15 @@ export const deleteDeliverableType = async (
       });
       return;
     }
+
+    // Log deliverable type deletion
+    await logDelete(
+      req,
+      "DeliverableType",
+      type.id,
+      `Deliverable type deleted: ${type.name}`,
+      sanitizeForAudit(type)
+    );
 
     // Delete the type
     await prisma.deliverableType.delete({

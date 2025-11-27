@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { logCreate, logUpdate, sanitizeForAudit, getChangedFields } from "../lib/auditLogger";
 
 const prisma = new PrismaClient();
 
@@ -69,6 +70,16 @@ export const createProgram = async (
         endDate,
       },
     });
+
+    // Log program creation
+    await logCreate(
+      req,
+      "Program",
+      newProgram.id,
+      `Program created: ${newProgram.name}`,
+      sanitizeForAudit(newProgram)
+    );
+
     res.status(201).json(newProgram);
   } catch (error: any) {
     res
@@ -88,6 +99,16 @@ export const updateProgram = async (
     const programIdNumber = Number(programId);
     if (!Number.isInteger(programIdNumber)) {
       res.status(400).json({ message: "programId must be a valid integer" });
+      return;
+    }
+
+    // Get existing program before update for audit logging
+    const existingProgram = await prisma.program.findFirst({
+      where: { id: programIdNumber, organizationId: req.auth.organizationId },
+    });
+
+    if (!existingProgram) {
+      res.status(404).json({ message: "Program not found" });
       return;
     }
 
@@ -137,6 +158,20 @@ export const updateProgram = async (
         workItems: true,
       },
     });
+
+    // Log program update
+    if (updatedProgram) {
+      const changedFields = getChangedFields(existingProgram, updatedProgram);
+      await logUpdate(
+        req,
+        "Program",
+        updatedProgram.id,
+        `Program updated: ${updatedProgram.name}`,
+        sanitizeForAudit(existingProgram),
+        sanitizeForAudit(updatedProgram),
+        changedFields
+      );
+    }
 
     res.json(updatedProgram);
   } catch (error: any) {

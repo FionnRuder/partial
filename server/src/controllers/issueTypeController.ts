@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { logCreate, logDelete, sanitizeForAudit } from "../lib/auditLogger";
 
 const prisma = new PrismaClient();
 
@@ -84,6 +85,15 @@ export const createIssueType = async (
       },
     });
 
+    // Log issue type creation
+    await logCreate(
+      req,
+      "IssueType",
+      newType.id,
+      `Issue type created: ${newType.name}`,
+      sanitizeForAudit(newType)
+    );
+
     res.status(201).json(newType);
   } catch (error: any) {
     res
@@ -141,6 +151,15 @@ export const deleteIssueType = async (
       });
       return;
     }
+
+    // Log issue type deletion
+    await logDelete(
+      req,
+      "IssueType",
+      type.id,
+      `Issue type deleted: ${type.name}`,
+      sanitizeForAudit(type)
+    );
 
     // Delete the type
     await prisma.issueType.delete({
