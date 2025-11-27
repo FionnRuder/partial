@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient, UserRole } from "@prisma/client";
 import { isValidRole, roleToPrismaEnum } from "../lib/roles";
+import { logCreate, logUpdate, sanitizeForAudit, getChangedFields } from "../lib/auditLogger";
 
 const prisma = new PrismaClient();
 
@@ -156,6 +157,15 @@ export const createUser = async (
       },
     });
 
+    // Log user creation
+    await logCreate(
+      req,
+      "User",
+      user.userId,
+      `User created: ${user.name} (${user.email}) with role ${role}`,
+      sanitizeForAudit(user)
+    );
+
     res.status(201).json(user);
   } catch (error: any) {
     res
@@ -204,6 +214,19 @@ export const updateUser = async (
       }
     }
 
+    // Get existing user before update for audit logging
+    const existingUser = await prisma.user.findFirst({
+      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
+      include: {
+        disciplineTeam: true,
+      },
+    });
+
+    if (!existingUser) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
     // Convert role to Prisma enum format if provided
     const updateData: any = {
       ...(name && { name }),
@@ -248,6 +271,20 @@ export const updateUser = async (
         disciplineTeam: true,
       },
     });
+
+    // Log user update
+    if (user) {
+      const changedFields = getChangedFields(existingUser, user);
+      await logUpdate(
+        req,
+        "User",
+        user.userId,
+        `User updated: ${user.name} (${user.email})`,
+        sanitizeForAudit(existingUser),
+        sanitizeForAudit(user),
+        changedFields
+      );
+    }
 
     res.json(user);
   } catch (error: any) {

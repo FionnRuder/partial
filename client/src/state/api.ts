@@ -395,6 +395,39 @@ export interface UnreadFeedbackCount {
   count: number;
 }
 
+export enum AuditAction {
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
+  VIEW = "VIEW",
+  LOGIN = "LOGIN",
+  LOGOUT = "LOGOUT",
+  EXPORT = "EXPORT",
+  IMPORT = "IMPORT",
+}
+
+export interface AuditLog {
+  id: number;
+  organizationId: number;
+  userId: number;
+  action: AuditAction;
+  entityType: string;
+  entityId: number | null;
+  description: string;
+  changes: any | null;
+  metadata: any | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  requestId: string | null;
+  createdAt: string;
+  user: {
+    userId: number;
+    name: string;
+    email: string;
+    username: string;
+  };
+}
+
 export interface InvitationValidationResponse {
   invitation: {
     id: number;
@@ -529,7 +562,7 @@ export const api = createApi({
     return result;
   },
       reducerPath: "api",
-      tagTypes: ["WorkItems", "Milestones", "Parts", "Programs", "Teams", "Users", "Comments", "StatusLogs", "Attachments", "Invitations", "DeliverableTypes", "IssueTypes", "Feedback"],
+      tagTypes: ["WorkItems", "Milestones", "Parts", "Programs", "Teams", "Users", "Comments", "StatusLogs", "Attachments", "Invitations", "DeliverableTypes", "IssueTypes", "Feedback", "AuditLogs"],
   endpoints: (build) => ({
     /* ---------- WORK ITEMS ---------- */
     getWorkItems: build.query<WorkItem[], void>({
@@ -1140,6 +1173,81 @@ export const api = createApi({
         "Feedback",
       ],
     }),
+
+    /* ---------- AUDIT LOGS ---------- */
+    getAuditLogs: build.query<
+      {
+        auditLogs: AuditLog[];
+        pagination: {
+          page: number;
+          limit: number;
+          total: number;
+          totalPages: number;
+        };
+      },
+      {
+        page?: number;
+        limit?: number;
+        action?: string;
+        entityType?: string;
+        entityId?: number;
+        userId?: number;
+        startDate?: string;
+        endDate?: string;
+        search?: string;
+      }
+    >({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append("page", String(params.page));
+        if (params.limit) queryParams.append("limit", String(params.limit));
+        if (params.action) queryParams.append("action", params.action);
+        if (params.entityType) queryParams.append("entityType", params.entityType);
+        if (params.entityId) queryParams.append("entityId", String(params.entityId));
+        if (params.userId) queryParams.append("userId", String(params.userId));
+        if (params.startDate) queryParams.append("startDate", params.startDate);
+        if (params.endDate) queryParams.append("endDate", params.endDate);
+        if (params.search) queryParams.append("search", params.search);
+        return `auditLogs?${queryParams.toString()}`;
+      },
+      providesTags: ["AuditLogs"],
+    }),
+
+    getAuditLogById: build.query<AuditLog, number>({
+      query: (id) => `auditLogs/${id}`,
+      providesTags: (result, error, id) => [{ type: "AuditLogs", id }],
+    }),
+
+    getEntityAuditLogs: build.query<
+      AuditLog[],
+      { entityType: string; entityId: number }
+    >({
+      query: ({ entityType, entityId }) =>
+        `auditLogs/entity/${entityType}/${entityId}`,
+      providesTags: ["AuditLogs"],
+    }),
+
+    getAuditLogStats: build.query<
+      {
+        totalLogs: number;
+        actionsCount: Array<{ action: string; count: number }>;
+        entityTypesCount: Array<{ entityType: string; count: number }>;
+        topUsers: Array<{
+          userId: number;
+          count: number;
+          user: { userId: number; name: string; email: string; username: string } | null;
+        }>;
+      },
+      { startDate?: string; endDate?: string }
+    >({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params.startDate) queryParams.append("startDate", params.startDate);
+        if (params.endDate) queryParams.append("endDate", params.endDate);
+        return `auditLogs/stats?${queryParams.toString()}`;
+      },
+      providesTags: ["AuditLogs"],
+    }),
   }),
 });
 
@@ -1217,4 +1325,9 @@ export const {
   useGetMyFeedbackQuery,
   useCreateFeedbackMutation,
   useUpdateFeedbackMutation,
+
+  useGetAuditLogsQuery,
+  useGetAuditLogByIdQuery,
+  useGetEntityAuditLogsQuery,
+  useGetAuditLogStatsQuery,
 } = api;

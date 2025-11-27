@@ -20,6 +20,7 @@ import deliverableTypeRoutes from "./routes/deliverableTypeRoutes";
 import issueTypeRoutes from "./routes/issueTypeRoutes";
 import feedbackRoutes from "./routes/feedbackRoutes";
 import healthRoutes from "./routes/healthRoutes";
+import auditLogRoutes from "./routes/auditLogRoutes";
 import { authenticate } from "./middleware/authenticate";
 import { initializeCognitoClient } from "./lib/cognitoClient";
 import {
@@ -129,6 +130,7 @@ app.use("/workItems", workItemRoutes);
 app.use("/deliverableTypes", deliverableTypeRoutes);
 app.use("/issueTypes", issueTypeRoutes);
 app.use("/feedback", feedbackRoutes);
+app.use("/auditLogs", auditLogRoutes);
 // Note: /invitations routes are above the authenticate middleware
 // Some routes are public (validate), others require auth (create, get, revoke)
 

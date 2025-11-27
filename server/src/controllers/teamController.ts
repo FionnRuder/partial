@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { logCreate, logUpdate, sanitizeForAudit, getChangedFields } from "../lib/auditLogger";
 
 const prisma = new PrismaClient();
 
@@ -143,6 +144,15 @@ export const createTeam = async (
       return team;
     });
 
+    // Log team creation
+    await logCreate(
+      req,
+      "DisciplineTeam",
+      newTeam.id,
+      `Team created: ${newTeam.name}`,
+      sanitizeForAudit(newTeam)
+    );
+
     res.status(201).json(newTeam);
   } catch (error: any) {
     res
@@ -272,6 +282,20 @@ export const editTeam = async (
         programs: teamWithPrograms?.programs?.map((dtp: any) => dtp.program) || [],
       };
     });
+
+    // Log team update
+    if (updatedTeam && updatedTeam.id) {
+      const changedFields = getChangedFields(existingTeam, updatedTeam);
+      await logUpdate(
+        req,
+        "DisciplineTeam",
+        updatedTeam.id,
+        `Team updated: ${updatedTeam.name || 'Unknown'}`,
+        sanitizeForAudit(existingTeam),
+        sanitizeForAudit(updatedTeam),
+        changedFields
+      );
+    }
 
     res.json(updatedTeam);
   } catch (error: any) {
