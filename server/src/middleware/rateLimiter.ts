@@ -1,5 +1,6 @@
 import rateLimit from "express-rate-limit";
 import { Request, Response } from "express";
+import { logger } from "../lib/logger";
 
 /**
  * Get client IP address from request, handling proxies
@@ -38,16 +39,19 @@ function logRateLimitViolation(
   const userAgent = req.headers["user-agent"] || "unknown";
   const userId = (req as any).auth?.userId || "unauthenticated";
   
-  console.warn(
-    `[RATE LIMIT VIOLATION] ${timestamp} - ` +
-    `Identifier: ${identifier}, ` +
-    `User ID: ${userId}, ` +
-    `Limit: ${limit} requests per ${Math.floor(windowMs / 1000)}s, ` +
-    `Method: ${method}, ` +
-    `Path: ${path}, ` +
-    `IP: ${getClientIp(req)}, ` +
-    `User-Agent: ${userAgent}`
-  );
+  logger.warn("Rate limit violation", {
+    identifier,
+    userId,
+    limit,
+    windowSeconds: Math.floor(windowMs / 1000),
+    method,
+    path,
+    ip: getClientIp(req),
+    userAgent,
+    requestId: (req as any).requestId,
+    organizationId: (req as any).auth?.organizationId,
+    securityEvent: true,
+  });
 }
 
 /**
