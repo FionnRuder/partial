@@ -19,6 +19,7 @@ import invitationRoutes from "./routes/invitationRoutes";
 import deliverableTypeRoutes from "./routes/deliverableTypeRoutes";
 import issueTypeRoutes from "./routes/issueTypeRoutes";
 import feedbackRoutes from "./routes/feedbackRoutes";
+import healthRoutes from "./routes/healthRoutes";
 import { authenticate } from "./middleware/authenticate";
 import { initializeCognitoClient } from "./lib/cognitoClient";
 import {
@@ -66,13 +67,17 @@ app.use(cors({
 // Trust proxy for accurate IP addresses (important for rate limiting behind proxies/load balancers)
 app.set('trust proxy', 1);
 
-// Apply global IP rate limiting to all routes
-app.use(ipRateLimiter);
-
 /* ROUTES */
 app.get("/", (req, res) => {
   res.send("This is home route");
 });
+
+// Health check routes (public, no authentication required, no rate limiting)
+// These should be accessible without restrictions for monitoring systems
+app.use(healthRoutes);
+
+// Apply global IP rate limiting to all other routes
+app.use(ipRateLimiter);
 
 // Authentication routes with stricter rate limiting
 app.use("/auth", authRateLimiter, authRoutes);
