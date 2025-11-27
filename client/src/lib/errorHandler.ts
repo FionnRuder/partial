@@ -1,6 +1,8 @@
 /**
- * Global error handling utilities
+ * Global error handling utilities with Sentry integration
  */
+
+import * as Sentry from "@sentry/nextjs";
 
 export interface ErrorContext {
   component?: string;
@@ -10,8 +12,7 @@ export interface ErrorContext {
 }
 
 /**
- * Logs errors to console in development
- * In production, this could send errors to an error tracking service (e.g., Sentry)
+ * Logs errors to console in development and Sentry in production
  */
 export const logError = (
   error: Error | unknown,
@@ -30,9 +31,28 @@ export const logError = (
     });
   }
 
-  // In production, send to error tracking service
-  // Example: Sentry.captureException(error, { extra: context });
-  // Example: logErrorToService(error, context);
+  // Send to Sentry with context
+  if (error instanceof Error) {
+    Sentry.withScope((scope) => {
+      if (context) {
+        if (context.component) {
+          scope.setTag("component", context.component);
+        }
+        if (context.action) {
+          scope.setTag("action", context.action);
+        }
+        if (context.userId) {
+          scope.setUser({ id: context.userId.toString() });
+        }
+        if (context.additionalInfo) {
+          scope.setContext("additionalInfo", context.additionalInfo);
+        }
+      }
+      Sentry.captureException(error);
+    });
+  } else {
+    Sentry.captureMessage(String(error), "error");
+  }
 };
 
 /**

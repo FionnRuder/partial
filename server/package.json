@@ -29,6 +29,8 @@
   "dependencies": {
     "@aws-sdk/client-ses": "^3.939.0",
     "@prisma/client": "^5.18.0",
+    "@sentry/node": "^10.27.0",
+    "@sentry/profiling-node": "^10.27.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

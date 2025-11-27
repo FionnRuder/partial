@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { getCognitoClient } from '../lib/cognitoClient';
 import { logAuthEvent, AuthEventType, getAuthContext } from '../lib/authLogger';
 import { logger } from '../lib/logger';
+import { clearUserContext } from '../lib/sentry';
 
 const prisma = new PrismaClient();
 
@@ -419,6 +420,9 @@ router.get('/logout', (req: Request, res: Response) => {
       email: req.session.userInfo.email,
       cognitoId: req.session.userInfo.sub,
     });
+    
+    // Clear user context in Sentry
+    clearUserContext();
   }
 
   const userPoolDomain = process.env.COGNITO_USER_POOL_DOMAIN || '';

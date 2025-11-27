@@ -3,6 +3,7 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { AlertTriangle, RefreshCw, Home, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 
 interface Props {
   children: ReactNode;
@@ -42,6 +43,15 @@ class ErrorBoundary extends Component<Props, State> {
       console.error("ErrorBoundary caught an error:", error, errorInfo);
     }
 
+    // Send to Sentry with component stack
+    Sentry.withScope((scope) => {
+      scope.setContext("reactErrorBoundary", {
+        componentStack: errorInfo.componentStack,
+      });
+      scope.setTag("errorBoundary", "true");
+      Sentry.captureException(error);
+    });
+
     // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
@@ -52,9 +62,6 @@ class ErrorBoundary extends Component<Props, State> {
       error,
       errorInfo,
     });
-
-    // In production, you could send this to an error tracking service
-    // Example: logErrorToService(error, errorInfo);
   }
 
   componentDidUpdate(prevProps: Props) {

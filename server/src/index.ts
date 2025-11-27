@@ -35,11 +35,22 @@ import {
 } from "./middleware/requestLogger";
 import { errorLogger } from "./middleware/errorLogger";
 import { logger } from "./lib/logger";
+import {
+  initSentry,
+  setUserContext,
+} from "./lib/sentry";
 
 
 /* CONFIGURATIONS */
 dotenv.config();
+
+// Initialize Sentry BEFORE creating Express app
+initSentry();
+
 const app = express();
+
+// Sentry integrations handle request/tracing automatically
+// No need for separate middleware with expressIntegration()
 
 // Session configuration
 // Determine if we're in production based on NODE_ENV or if FRONTEND_URL uses HTTPS
@@ -127,12 +138,12 @@ app.use((req: Request, res: Response) => {
 });
 
 /* ERROR HANDLING MIDDLEWARE (must come last) */
-// Error logging middleware (logs errors with context)
+// Error logging middleware (logs errors with context and Sentry)
 app.use(errorLogger);
 
 // Error response handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  // Error is already logged by errorLogger middleware
+  // Error is already logged by errorLogger middleware and Sentry
   res.status(500).json({ 
     message: "Something went wrong!",
     requestId: (req as any).requestId,

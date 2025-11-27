@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { logAuthEvent, AuthEventType, getAuthContext } from "../lib/authLogger";
+import { setUserContext, clearUserContext } from "../lib/sentry";
 
 const prisma = new PrismaClient();
 
@@ -89,6 +90,9 @@ export const authenticate = async (
       organizationId: user.organizationId,
       role: user.role,
     };
+
+    // Set user context in Sentry for error tracking
+    setUserContext(user.userId, user.organizationId, userInfo.email);
 
     // Log successful authentication
     logAuthEvent({
