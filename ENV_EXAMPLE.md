@@ -130,6 +130,10 @@ NODE_ENV=development
 
 ## For PRODUCTION:
 
+**📘 See `PRODUCTION_DEPLOYMENT.md` for the complete production deployment guide.**
+
+Quick setup:
+
 1. **Create a separate `.env` file in the server directory with production values:**
    ```env
    NODE_ENV=production
@@ -148,6 +152,8 @@ NODE_ENV=development
    ```
 
 3. **Ensure your Cognito App Client has BOTH local and production URLs configured** (see above)
+
+**For detailed production setup instructions, including EC2 deployment, see `PRODUCTION_DEPLOYMENT.md`**
 
 ## Important Notes:
 
