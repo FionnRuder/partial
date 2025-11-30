@@ -56,3 +56,4 @@ Sentry.init({
   release: process.env.NEXT_PUBLIC_SENTRY_RELEASE || undefined,
 });
 
+

@@ -28,7 +28,7 @@ export const authenticate = async (
       });
 
       if (req.session) {
-        req.session.destroy((err) => {
+        req.session.destroy((err: Error | null) => {
           if (err) {
             logAuthEvent({
               eventType: AuthEventType.SESSION_INVALID,

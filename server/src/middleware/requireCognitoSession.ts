@@ -22,21 +22,3 @@ export const requireCognitoSession = (
   next();
 };
 
-// Extend Express Request to include cognitoUserInfo
-declare global {
-  namespace Express {
-    interface Request {
-      cognitoUserInfo?: {
-        sub: string;
-        email?: string;
-        email_verified?: boolean;
-        phone_number?: string;
-        phone_number_verified?: boolean;
-        username?: string;
-        name?: string;
-        [key: string]: any;
-      };
-    }
-  }
-}
-

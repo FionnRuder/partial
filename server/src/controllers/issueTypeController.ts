@@ -141,7 +141,9 @@ export const deleteIssueType = async (
     // Check if type is in use
     const inUse = await prisma.issueDetail.findFirst({
       where: {
-        issueTypeId: typeId,
+        issueType: {
+          id: typeId,
+        },
       },
     });
 

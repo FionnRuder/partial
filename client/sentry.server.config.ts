@@ -27,3 +27,4 @@ Sentry.init({
   release: process.env.SENTRY_RELEASE || process.env.NEXT_PUBLIC_SENTRY_RELEASE || undefined,
 });
 
+

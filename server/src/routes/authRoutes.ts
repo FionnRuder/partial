@@ -9,25 +9,6 @@ const prisma = new PrismaClient();
 
 const router = Router();
 
-// Extend Express Session to include our custom properties
-declare module 'express-session' {
-  interface SessionData {
-    nonce?: string;
-    state?: string;
-    invitationToken?: string; // Preserve invitation token through OAuth flow
-    userInfo?: {
-      sub: string;
-      email?: string;
-      email_verified?: boolean;
-      phone_number?: string;
-      phone_number_verified?: boolean;
-      username?: string;
-      name?: string;
-      [key: string]: any;
-    };
-  }
-}
-
 /**
  * Helper function to get the path from a URL
  * Example: "http://localhost/hello" returns "/hello"
@@ -432,7 +413,7 @@ router.get('/logout', (req: Request, res: Response) => {
   const useIssuerUrlForAuth = process.env.COGNITO_USE_ISSUER_URL_FOR_AUTH === 'true' || 
                                (userPoolDomain && !userPoolDomain.includes('.amazoncognito.com'));
 
-  req.session.destroy((err) => {
+  req.session.destroy((err: Error | null) => {
     if (err) {
       logger.error('Session destroy error', {
         error: err.message,

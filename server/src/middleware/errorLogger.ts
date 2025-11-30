@@ -50,7 +50,7 @@ export const errorLogger: ErrorRequestHandler = (
   trackErrorMetrics(req.method, req.path, err);
 
   // Send to Sentry with full context
-  Sentry.withScope((scope) => {
+  Sentry.withScope((scope: Sentry.Scope) => {
     // Set request context
     scope.setContext("request", {
       method: req.method,
