@@ -1,4 +1,4 @@
-import winston from "winston";
+import winston, { Logger as WinstonLogger } from "winston";
 import WinstonCloudWatch from "winston-cloudwatch";
 import { randomUUID } from "crypto";
 
@@ -17,15 +17,16 @@ export enum LogLevel {
 
 /**
  * Extended Winston logger interface with request context
+ * Note: All winston.Logger methods (error, warn, info, debug, etc.) are inherited
  */
-export interface Logger extends winston.Logger {
+export type Logger = WinstonLogger & {
   requestId?: string;
   userId?: number;
   organizationId?: number;
   setRequestId(requestId: string): void;
   setUser(userId: number, organizationId: number): void;
   clearContext(): void;
-}
+};
 
 /**
  * Create structured logger with Winston
@@ -120,7 +121,7 @@ function createLogger(): Logger {
   }
 
   // Create logger instance
-  const logger = winston.createLogger({
+  const logger: Logger = winston.createLogger({
     level: logLevel,
     format: jsonFormat,
     defaultMeta: {

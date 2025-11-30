@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/node";
+import type { ErrorEvent, EventHint, Scope } from "@sentry/node";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
 import { expressIntegration, httpIntegration } from "@sentry/node";
 
@@ -42,7 +43,7 @@ export function initSentry(): void {
     ],
 
     // Error filtering - don't send certain errors
-    beforeSend(event, hint) {
+    beforeSend(event: ErrorEvent, hint: EventHint) {
       // Filter out 4xx errors (client errors) unless they're critical
       if (event.request?.headers && event.request.headers.status_code) {
         const statusCode = parseInt(event.request.headers.status_code as string);
@@ -60,7 +61,7 @@ export function initSentry(): void {
     },
 
     // Group similar errors
-    beforeSendTransaction(event) {
+    beforeSendTransaction(event, hint) {
       return event;
     },
 
@@ -112,7 +113,7 @@ export function addBreadcrumb(breadcrumb: Sentry.Breadcrumb): void {
  */
 export function captureException(error: Error, context?: Record<string, any>): string {
   if (context) {
-    Sentry.withScope((scope) => {
+    Sentry.withScope((scope: Scope) => {
       Object.entries(context).forEach(([key, value]) => {
         scope.setContext(key, value);
       });
