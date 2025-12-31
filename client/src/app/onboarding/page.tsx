@@ -1737,7 +1737,11 @@ const SuccessScreen = ({ role, onComplete }: {
   role: string;
   onComplete: () => void;
 }) => {
-  const roleTitle = role === "engineer" ? "Engineer" : "Program Manager";
+  const roleTitle = role === "engineer" || role === "Engineer" 
+    ? "Engineer" 
+    : role === "Admin" || role === "admin"
+    ? "Admin"
+    : "Program Manager";
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -1848,10 +1852,17 @@ const OnboardingPage = () => {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       
       try {
+        // Add timeout to prevent hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
         const response = await fetch(`${apiBaseUrl}/auth/me`, {
           method: 'GET',
           credentials: 'include', // Include session cookie
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           const data = await response.json();
@@ -1894,7 +1905,21 @@ const OnboardingPage = () => {
           setStep("landing");
         }
       } catch (error) {
-        console.error('Failed to check Cognito session:', error);
+        // Only log if it's not a network error (backend might not be running)
+        if (error instanceof Error) {
+          if (error.name === 'AbortError') {
+            // Request timed out - backend might be slow or unavailable
+            console.debug('Auth check request timed out - backend may be unavailable');
+          } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            // Network error - backend is likely not running
+            console.debug('Backend server appears to be unavailable');
+          } else {
+            // Other error - log it
+            console.error('Failed to check Cognito session:', error);
+          }
+        } else {
+          console.error('Failed to check Cognito session:', error);
+        }
         // On error, show landing page
         setStep("landing");
       } finally {
@@ -1967,10 +1992,17 @@ const OnboardingPage = () => {
   const createUserInDatabase = async (role: string, orgName?: string) => {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
     try {
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
       const sessionCheck = await fetch(`${apiBaseUrl}/auth/me`, {
         method: 'GET',
         credentials: 'include',
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (sessionCheck.ok) {
         const sessionData = await sessionCheck.json();
@@ -2058,7 +2090,23 @@ const OnboardingPage = () => {
         }
       }
     } catch (error) {
-      console.error('Error creating user:', error);
+      // Improve error logging with specific handling
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          // Request timed out - backend might be slow or unavailable
+          console.error('Request timed out - backend may be unavailable');
+          throw new Error('Backend server is not responding. Please check if the server is running.');
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          // Network error - backend is likely not running
+          console.error('Backend server appears to be unavailable');
+          throw new Error('Cannot connect to backend server. Please check if the server is running.');
+        } else {
+          // Other error - log and re-throw
+          console.error('Error creating user:', error);
+        }
+      } else {
+        console.error('Error creating user:', error);
+      }
       throw error; // Re-throw so caller can handle it
     }
   };
@@ -2285,9 +2333,11 @@ const OnboardingPage = () => {
           />
         );
       case "success":
+        // Use actual user role from auth context if available, otherwise fall back to userRole state
+        const displayRole = authUser?.role || userRole || "Admin";
         return (
           <SuccessScreen
-            role={userRole}
+            role={displayRole}
             onComplete={handleComplete}
           />
         );
