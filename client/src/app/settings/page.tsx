@@ -293,7 +293,7 @@ const Settings = () => {
 
             {/* Email Notification Preferences Section */}
             <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Email Notification Preferences</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Email Notification Preferences (Coming Soon)</h2>
                 <form onSubmit={handleEmailPrefsSubmit} className="space-y-6">
                     {/* Master Toggle */}
                     <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">

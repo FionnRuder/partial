@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Priority,
   Program,
@@ -188,10 +188,52 @@ const HomePage = () => {
   const [selectedPriority, setSelectedPriority] = useState<Priority | "all">("all");
   const [workItemFilter, setWorkItemFilter] = useState<"all" | "open">("all");
   const [showPastMilestones, setShowPastMilestones] = useState(false);
+  const barChartContainerRef = useRef<HTMLDivElement>(null);
+  const [barChartHeight, setBarChartHeight] = useState(400);
+  const pieChartContainerRef = useRef<HTMLDivElement>(null);
+  const [pieChartHeight, setPieChartHeight] = useState(400);
 
   useEffect(() => {
     setShowPastMilestones(false);
   }, [selectedProgramId]);
+
+  // Measure bar chart container height to fill available space
+  useEffect(() => {
+    const updateBarChartHeight = () => {
+      if (barChartContainerRef.current) {
+        // Get the full container height and subtract header (h3 + mb-4) and padding (p-4 = 16px top + 16px bottom)
+        const containerHeight = barChartContainerRef.current.clientHeight;
+        const headerHeight = 28 + 16; // h3 text-lg (~28px) + mb-4 (16px margin)
+        const padding = 32; // p-4 = 16px top + 16px bottom
+        const chartHeight = containerHeight - headerHeight - padding;
+        setBarChartHeight(Math.max(chartHeight, 300)); // Minimum 300px
+      }
+    };
+
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(updateBarChartHeight);
+    window.addEventListener('resize', updateBarChartHeight);
+    return () => window.removeEventListener('resize', updateBarChartHeight);
+  }, []); // Only recalculate on mount and window resize
+
+  // Measure pie chart container height to fill available space
+  useEffect(() => {
+    const updatePieChartHeight = () => {
+      if (pieChartContainerRef.current) {
+        // Get the full container height and subtract header (h3 + mb-4) and padding (p-4 = 16px top + 16px bottom)
+        const containerHeight = pieChartContainerRef.current.clientHeight;
+        const headerHeight = 28 + 16; // h3 text-lg (~28px) + mb-4 (16px margin)
+        const padding = 32; // p-4 = 16px top + 16px bottom
+        const chartHeight = containerHeight - headerHeight - padding;
+        setPieChartHeight(Math.max(chartHeight, 300)); // Minimum 300px
+      }
+    };
+
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(updatePieChartHeight);
+    window.addEventListener('resize', updatePieChartHeight);
+    return () => window.removeEventListener('resize', updatePieChartHeight);
+  }, []); // Only recalculate on mount and window resize
 
   // Redirect to onboarding if not authenticated
   useEffect(() => {
@@ -333,7 +375,7 @@ const HomePage = () => {
     : workItems.filter((item) => item.workItemType === selectedWorkItemType);
 
   const formattedTeamName = (name: string) => 
-    name.length > 10 ? name.slice(0, 10) + "…" : name;
+    name.length > 8 ? name.slice(0, 8) + "…" : name;
 
   // 📊 Priority counts for datagrid dropdown
   const priorityCounts = filteredWorkItems.reduce(
@@ -415,59 +457,30 @@ const HomePage = () => {
 
       {/* ---- Charts and Table ---- */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {/* ---- Bar Chart and Pie Chart sit on first row ---- */}
-        <div className="col-span-3 md:col-span-2 grid grid-cols-2 gap-4">
-          {/* ---- Bar Chart: Work Items by Discipline Team ---- */}
-          <div className="rounded-lg bg-white p-4 shadow dark:bg-dark-secondary">
-            <h3 className="mb-4 text-lg font-semibold dark:text-white">
-              Work Items by Discipline Team
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={teamDistribution}>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.barGrid} />
-                <XAxis 
-                  dataKey="name"
-                  tickFormatter={formattedTeamName}
-                  stroke={chartColors.text}
-                  interval={0}
-                />
-                <YAxis stroke={chartColors.text} />
-                <Tooltip />
-                <Bar dataKey="count" fill={chartColors.bar}>
-                  {teamDistribution.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* ---- Pie Chart: Type vs Priority ---- */}
+        {/* ---- Burndown Chart: Work Items — spans 2 columns ---- */}
+        <div className="col-span-3 md:col-span-2">
           <div className="rounded-lg bg-white p-4 shadow dark:bg-dark-secondary">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold dark:text-white">
-                Work Item Distribution (By Type / By Priority)
+                Work Item Burndown
               </h3>
               <select
-                value={chartMode}
-                onChange={(e) => setChartMode(e.target.value as "type" | "priority")}
                 className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm dark:bg-dark-secondary dark:text-white"
+                value={selectedWorkItemType}
+                onChange={(e) => {
+                  const value = e.target.value as WorkItemType | "all";
+                  setSelectedWorkItemType(value);
+                }}
               >
-                <option value="type">By Type</option>
-                <option value="priority">By Priority</option>
+                <option value="all">All Types</option>
+                {Object.values(WorkItemType).map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
               </select>
             </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie dataKey="count" data={pieData} fill={chartColors.pieFill} label>
-                  {pieData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+            <BurndownChart workItems={filteredWorkItemsForChart} isDarkMode={isDarkMode} />
           </div>
         </div>
 
@@ -676,33 +689,70 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* ---- Burndown Chart: Work Items — spans 2 columns ---- */}
-        <div className="col-span-3 md:col-span-2">
-          <div className="rounded-lg bg-white p-4 shadow dark:bg-dark-secondary">
+        {/* ---- Bar Chart and Pie Chart sit on first row ---- */}
+        <div className="col-span-3 md:col-span-2 grid grid-cols-2 gap-4">
+          {/* ---- Bar Chart: Work Items by Discipline Team ---- */}
+          <div ref={barChartContainerRef} className="flex flex-col rounded-lg bg-white p-4 shadow dark:bg-dark-secondary min-h-[400px] h-full">
+            <h3 className="mb-4 text-lg font-semibold dark:text-white">
+              Work Items by Discipline Team
+            </h3>
+            <div className="flex-1 min-h-0">
+              <ResponsiveContainer width="100%" height={barChartHeight}>
+                <BarChart data={teamDistribution} margin={{ bottom: 50 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.barGrid} />
+                  <XAxis 
+                    dataKey="name"
+                    tickFormatter={formattedTeamName}
+                    stroke={chartColors.text}
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                    height={70}
+                    tick={{ fill: chartColors.text, fontSize: 11 }}
+                  />
+                  <YAxis stroke={chartColors.text} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill={chartColors.bar}>
+                    {teamDistribution.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* ---- Pie Chart: Type vs Priority ---- */}
+          <div ref={pieChartContainerRef} className="flex flex-col rounded-lg bg-white p-4 shadow dark:bg-dark-secondary min-h-[400px] h-full">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="mb-4 text-lg font-semibold dark:text-white">
-                Work Item Burndown
+              <h3 className="text-lg font-semibold dark:text-white">
+                Work Item Distribution (By Type / By Priority)
               </h3>
               <select
+                value={chartMode}
+                onChange={(e) => setChartMode(e.target.value as "type" | "priority")}
                 className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm dark:bg-dark-secondary dark:text-white"
-                value={selectedWorkItemType}
-                onChange={(e) => {
-                  const value = e.target.value as WorkItemType | "all";
-                  setSelectedWorkItemType(value);
-                }}
               >
-                <option value="all">All Types</option>
-                {Object.values(WorkItemType).map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
+                <option value="type">By Type</option>
+                <option value="priority">By Priority</option>
               </select>
             </div>
-            <BurndownChart workItems={filteredWorkItemsForChart} isDarkMode={isDarkMode} />
+            <div className="flex-1 min-h-0">
+              <ResponsiveContainer width="100%" height={pieChartHeight}>
+                <PieChart>
+                  <Pie dataKey="count" data={pieData} fill={chartColors.pieFill} label>
+                    {pieData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
-        
+
         {/* ---- Urgent Work Items DataGrid ---- */}
         <div className="rounded-lg bg-white p-4 shadow dark:bg-dark-secondary md:col-span-3">
           <div className="mb-4 flex items-center justify-between">
@@ -749,3 +799,4 @@ const HomePage = () => {
 };
 
 export default HomePage;
+

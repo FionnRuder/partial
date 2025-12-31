@@ -265,18 +265,20 @@ export class MockAuthService implements AuthService {
   }
 
   async getCurrentUser(): Promise<AuthUser | null> {
-    // First check if we have a local user
-    if (this.currentUser) {
-      return this.currentUser;
-    }
-
-    // Check for Cognito session on server
+    // Always check for Cognito session on server to get fresh data (including organization name)
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
     try {
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
       const response = await fetch(`${apiBaseUrl}/auth/me`, {
         method: 'GET',
         credentials: 'include', // Include session cookie
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
@@ -309,10 +311,30 @@ export class MockAuthService implements AuthService {
         }
       }
     } catch (error) {
-      console.error('Failed to check Cognito session:', error);
+      // Only log if it's not a network error (backend might not be running)
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          // Request timed out - backend might be slow or unavailable
+          console.debug('Auth check request timed out - backend may be unavailable');
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          // Network error - backend is likely not running
+          console.debug('Backend server appears to be unavailable');
+        } else {
+          // Other error - log it
+          console.error('Failed to check Cognito session:', error);
+        }
+      } else {
+        console.error('Failed to check Cognito session:', error);
+      }
+      
+      // If we have a cached user and the server is unavailable, return the cached user
+      if (this.currentUser) {
+        return this.currentUser;
+      }
     }
 
-    return this.currentUser;
+    // If no server response and no cached user, return null
+    return this.currentUser || null;
   }
 
   async updateUserProfile(updates: Partial<AuthUser>): Promise<AuthUser> {
