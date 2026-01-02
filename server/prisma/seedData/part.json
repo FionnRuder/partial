@@ -5,10 +5,10 @@
     "level": 0,
     "state": "Released",
     "revisionLevel": "E",
-    "assignedUserId": 1,
     "programId": 1,
     "parentId": null,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000001"
   },
   {
     "code": "4100000",
@@ -16,10 +16,10 @@
     "level": 1,
     "state": "UnderReview",
     "revisionLevel": "C",
-    "assignedUserId": 3,
     "programId": 1,
     "parentId": 1,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000003"
   },
   {
     "code": "4101000",
@@ -27,10 +27,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "E",
-    "assignedUserId": 4,
     "programId": 1,
     "parentId": 2,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000004"
   },
   {
     "code": "4101001",
@@ -38,10 +38,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "F",
-    "assignedUserId": 11,
     "programId": 1,
     "parentId": 3,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000011"
   },
   {
     "code": "4101002",
@@ -49,10 +49,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "B",
-    "assignedUserId": 8,
     "programId": 1,
     "parentId": 3,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000008"
   },
   {
     "code": "4101003",
@@ -60,10 +60,10 @@
     "level": 3,
     "state": "Released",
     "revisionLevel": "C",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 3,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4102000",
@@ -71,10 +71,10 @@
     "level": 2,
     "state": "UnderReview",
     "revisionLevel": "D",
-    "assignedUserId": 10,
     "programId": 1,
     "parentId": 2,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000010"
   },
   {
     "code": "4102001",
@@ -82,10 +82,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "C",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 7,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4102002",
@@ -93,10 +93,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "D",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 7,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4102003",
@@ -104,10 +104,10 @@
     "level": 3,
     "state": "Released",
     "revisionLevel": "E",
-    "assignedUserId": 15,
     "programId": 1,
     "parentId": 7,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000015"
   },
   {
     "code": "4103000",
@@ -115,10 +115,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "F",
-    "assignedUserId": 6,
     "programId": 1,
     "parentId": 2,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000006"
   },
   {
     "code": "4103001",
@@ -126,10 +126,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "E",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 11,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4103002",
@@ -137,10 +137,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "B",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 11,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4200000",
@@ -148,10 +148,10 @@
     "level": 1,
     "state": "Released",
     "revisionLevel": "B",
-    "assignedUserId": 2,
     "programId": 1,
     "parentId": 1,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000002"
   },
   {
     "code": "4201000",
@@ -159,10 +159,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "B",
-    "assignedUserId": 11,
     "programId": 1,
     "parentId": 14,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000011"
   },
   {
     "code": "4201001",
@@ -170,10 +170,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "C",
-    "assignedUserId": 12,
     "programId": 1,
     "parentId": 15,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000012"
   },
   {
     "code": "4201002",
@@ -181,10 +181,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "dash",
-    "assignedUserId": 12,
     "programId": 1,
     "parentId": 15,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000012"
   },
   {
     "code": "4201003",
@@ -192,10 +192,10 @@
     "level": 3,
     "state": "Released",
     "revisionLevel": "D",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 15,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4202000",
@@ -203,10 +203,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "C",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 14,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4202001",
@@ -214,10 +214,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "F",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 19,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4202002",
@@ -225,10 +225,10 @@
     "level": 3,
     "state": "Released",
     "revisionLevel": "B",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 19,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4203000",
@@ -236,10 +236,10 @@
     "level": 2,
     "state": "UnderReview",
     "revisionLevel": "C",
-    "assignedUserId": 16,
     "programId": 1,
     "parentId": 14,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000016"
   },
   {
     "code": "4203001",
@@ -247,10 +247,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "C",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 22,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4203002",
@@ -258,10 +258,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "D",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 22,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4300000",
@@ -269,10 +269,10 @@
     "level": 1,
     "state": "Implementation",
     "revisionLevel": "B",
-    "assignedUserId": 3,
     "programId": 1,
     "parentId": 1,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000003"
   },
   {
     "code": "4301000",
@@ -280,10 +280,10 @@
     "level": 2,
     "state": "Released",
     "revisionLevel": "dash",
-    "assignedUserId": 15,
     "programId": 1,
     "parentId": 25,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000015"
   },
   {
     "code": "4301001",
@@ -291,10 +291,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "A",
-    "assignedUserId": 18,
     "programId": 1,
     "parentId": 26,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000018"
   },
   {
     "code": "4301002",
@@ -302,10 +302,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "D",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 26,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4302000",
@@ -313,10 +313,10 @@
     "level": 2,
     "state": "Released",
     "revisionLevel": "dash",
-    "assignedUserId": 16,
     "programId": 1,
     "parentId": 25,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000016"
   },
   {
     "code": "4302001",
@@ -324,10 +324,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "C",
-    "assignedUserId": 19,
     "programId": 1,
     "parentId": 29,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000019"
   },
   {
     "code": "4302002",
@@ -335,10 +335,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "B",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 29,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4303000",
@@ -346,10 +346,10 @@
     "level": 2,
     "state": "Implementation",
     "revisionLevel": "E",
-    "assignedUserId": 3,
     "programId": 1,
     "parentId": 25,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000003"
   },
   {
     "code": "4303001",
@@ -357,10 +357,10 @@
     "level": 3,
     "state": "Released",
     "revisionLevel": "D",
-    "assignedUserId": 17,
     "programId": 1,
     "parentId": 32,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000017"
   },
   {
     "code": "4303002",
@@ -368,10 +368,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "dash",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 32,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4303003",
@@ -379,10 +379,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "C",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 32,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4400000",
@@ -390,10 +390,10 @@
     "level": 1,
     "state": "Implementation",
     "revisionLevel": "dash",
-    "assignedUserId": 3,
     "programId": 1,
     "parentId": 1,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000003"
   },
   {
     "code": "4401000",
@@ -401,10 +401,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "D",
-    "assignedUserId": 15,
     "programId": 1,
     "parentId": 36,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000015"
   },
   {
     "code": "4401001",
@@ -412,10 +412,10 @@
     "level": 3,
     "state": "Released",
     "revisionLevel": "D",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 37,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4401002",
@@ -423,10 +423,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "A",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 37,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4402000",
@@ -434,10 +434,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "B",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 36,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4402001",
@@ -445,10 +445,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "C",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 40,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4402002",
@@ -456,10 +456,10 @@
     "level": 3,
     "state": "Released",
     "revisionLevel": "B",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 40,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4402003",
@@ -467,10 +467,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "B",
-    "assignedUserId": 15,
     "programId": 1,
     "parentId": 40,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000015"
   },
   {
     "code": "4500000",
@@ -478,10 +478,10 @@
     "level": 1,
     "state": "Implementation",
     "revisionLevel": "C",
-    "assignedUserId": 2,
     "programId": 1,
     "parentId": 1,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000002"
   },
   {
     "code": "4501000",
@@ -489,10 +489,10 @@
     "level": 2,
     "state": "UnderReview",
     "revisionLevel": "F",
-    "assignedUserId": 9,
     "programId": 1,
     "parentId": 44,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000009"
   },
   {
     "code": "4501001",
@@ -500,10 +500,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "B",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 45,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4501002",
@@ -511,10 +511,10 @@
     "level": 3,
     "state": "Released",
     "revisionLevel": "D",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 45,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4502000",
@@ -522,10 +522,10 @@
     "level": 2,
     "state": "UnderReview",
     "revisionLevel": "E",
-    "assignedUserId": 7,
     "programId": 1,
     "parentId": 44,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000007"
   },
   {
     "code": "4502001",
@@ -533,10 +533,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "dash",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 48,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4502002",
@@ -544,10 +544,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "F",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 48,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4600000",
@@ -555,10 +555,10 @@
     "level": 1,
     "state": "Released",
     "revisionLevel": "D",
-    "assignedUserId": 1,
     "programId": 1,
     "parentId": 1,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000001"
   },
   {
     "code": "4601000",
@@ -566,10 +566,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 5,
     "programId": 1,
     "parentId": 51,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000005"
   },
   {
     "code": "4601001",
@@ -577,10 +577,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "E",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 52,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4601002",
@@ -588,10 +588,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "C",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 52,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4602000",
@@ -599,10 +599,10 @@
     "level": 2,
     "state": "Released",
     "revisionLevel": "A",
-    "assignedUserId": 3,
     "programId": 1,
     "parentId": 51,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000003"
   },
   {
     "code": "4602001",
@@ -610,10 +610,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "C",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 55,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4602002",
@@ -621,10 +621,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "E",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 55,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4700000",
@@ -632,10 +632,10 @@
     "level": 1,
     "state": "UnderReview",
     "revisionLevel": "B",
-    "assignedUserId": 3,
     "programId": 1,
     "parentId": 1,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000003"
   },
   {
     "code": "4701000",
@@ -643,10 +643,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "E",
-    "assignedUserId": 1,
     "programId": 1,
     "parentId": 58,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000001"
   },
   {
     "code": "4701001",
@@ -654,10 +654,10 @@
     "level": 3,
     "state": "Released",
     "revisionLevel": "E",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 59,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4701002",
@@ -665,10 +665,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "F",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 59,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4702000",
@@ -676,10 +676,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "F",
-    "assignedUserId": 2,
     "programId": 1,
     "parentId": 58,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000002"
   },
   {
     "code": "4702001",
@@ -687,10 +687,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "A",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 62,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4702002",
@@ -698,10 +698,10 @@
     "level": 3,
     "state": "Released",
     "revisionLevel": "A",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 62,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4703000",
@@ -709,10 +709,10 @@
     "level": 2,
     "state": "UnderReview",
     "revisionLevel": "D",
-    "assignedUserId": 7,
     "programId": 1,
     "parentId": 58,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000007"
   },
   {
     "code": "4703001",
@@ -720,10 +720,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "B",
-    "assignedUserId": 13,
     "programId": 1,
     "parentId": 65,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000013"
   },
   {
     "code": "4703002",
@@ -731,10 +731,10 @@
     "level": 3,
     "state": "Released",
     "revisionLevel": "E",
-    "assignedUserId": 14,
     "programId": 1,
     "parentId": 65,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000014"
   },
   {
     "code": "4703003",
@@ -742,10 +742,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "C",
-    "assignedUserId": 15,
     "programId": 1,
     "parentId": 65,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000015"
   },
   {
     "code": "5000000",
@@ -753,10 +753,10 @@
     "level": 0,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 21,
     "programId": 2,
     "parentId": null,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000021"
   },
   {
     "code": "5100000",
@@ -764,10 +764,10 @@
     "level": 1,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 22,
     "programId": 2,
     "parentId": 69,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000022"
   },
   {
     "code": "5101000",
@@ -775,10 +775,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 22,
     "programId": 2,
     "parentId": 70,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000022"
   },
   {
     "code": "5101001",
@@ -786,10 +786,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 22,
     "programId": 2,
     "parentId": 71,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000022"
   },
   {
     "code": "5101002",
@@ -797,10 +797,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "B",
-    "assignedUserId": 24,
     "programId": 2,
     "parentId": 71,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000024"
   },
   {
     "code": "5101003",
@@ -808,10 +808,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "A",
-    "assignedUserId": 27,
     "programId": 2,
     "parentId": 71,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000027"
   },
   {
     "code": "5102000",
@@ -819,10 +819,10 @@
     "level": 2,
     "state": "UnderReview",
     "revisionLevel": "B",
-    "assignedUserId": 24,
     "programId": 2,
     "parentId": 70,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000024"
   },
   {
     "code": "5102001",
@@ -830,10 +830,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 24,
     "programId": 2,
     "parentId": 75,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000024"
   },
   {
     "code": "5102002",
@@ -841,10 +841,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "B",
-    "assignedUserId": 27,
     "programId": 2,
     "parentId": 75,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000027"
   },
   {
     "code": "5103000",
@@ -852,10 +852,10 @@
     "level": 2,
     "state": "Implementation",
     "revisionLevel": "A",
-    "assignedUserId": 23,
     "programId": 2,
     "parentId": 70,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000023"
   },
   {
     "code": "5103001",
@@ -863,10 +863,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 23,
     "programId": 2,
     "parentId": 78,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000023"
   },
   {
     "code": "5103002",
@@ -874,10 +874,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 23,
     "programId": 2,
     "parentId": 78,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000023"
   },
   {
     "code": "5200000",
@@ -885,10 +885,10 @@
     "level": 1,
     "state": "UnderReview",
     "revisionLevel": "B",
-    "assignedUserId": 23,
     "programId": 2,
     "parentId": 69,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000023"
   },
   {
     "code": "5201000",
@@ -896,10 +896,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 23,
     "programId": 2,
     "parentId": 81,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000023"
   },
   {
     "code": "5201001",
@@ -907,10 +907,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 23,
     "programId": 2,
     "parentId": 82,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000023"
   },
   {
     "code": "5201002",
@@ -918,10 +918,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "B",
-    "assignedUserId": 26,
     "programId": 2,
     "parentId": 82,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000026"
   },
   {
     "code": "5202000",
@@ -929,10 +929,10 @@
     "level": 2,
     "state": "Implementation",
     "revisionLevel": "A",
-    "assignedUserId": 26,
     "programId": 2,
     "parentId": 81,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000026"
   },
   {
     "code": "5202001",
@@ -940,10 +940,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 26,
     "programId": 2,
     "parentId": 85,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000026"
   },
   {
     "code": "5202002",
@@ -951,10 +951,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 26,
     "programId": 2,
     "parentId": 85,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000026"
   },
   {
     "code": "5203000",
@@ -962,10 +962,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 27,
     "programId": 2,
     "parentId": 81,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000027"
   },
   {
     "code": "5203001",
@@ -973,10 +973,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 27,
     "programId": 2,
     "parentId": 88,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000027"
   },
   {
     "code": "5203002",
@@ -984,10 +984,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "B",
-    "assignedUserId": 23,
     "programId": 2,
     "parentId": 88,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000023"
   },
   {
     "code": "5203003",
@@ -995,10 +995,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 27,
     "programId": 2,
     "parentId": 88,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000027"
   },
   {
     "code": "5300000",
@@ -1006,10 +1006,10 @@
     "level": 1,
     "state": "InWork",
     "revisionLevel": "B",
-    "assignedUserId": 25,
     "programId": 2,
     "parentId": 69,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000025"
   },
   {
     "code": "5301000",
@@ -1017,10 +1017,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 25,
     "programId": 2,
     "parentId": 92,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000025"
   },
   {
     "code": "5301001",
@@ -1028,10 +1028,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 25,
     "programId": 2,
     "parentId": 93,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000025"
   },
   {
     "code": "5301002",
@@ -1039,10 +1039,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "B",
-    "assignedUserId": 28,
     "programId": 2,
     "parentId": 93,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000028"
   },
   {
     "code": "5301003",
@@ -1050,10 +1050,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "A",
-    "assignedUserId": 25,
     "programId": 2,
     "parentId": 93,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000025"
   },
   {
     "code": "5302000",
@@ -1061,10 +1061,10 @@
     "level": 2,
     "state": "UnderReview",
     "revisionLevel": "B",
-    "assignedUserId": 28,
     "programId": 2,
     "parentId": 92,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000028"
   },
   {
     "code": "5302001",
@@ -1072,10 +1072,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 28,
     "programId": 2,
     "parentId": 97,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000028"
   },
   {
     "code": "5302002",
@@ -1083,10 +1083,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "B",
-    "assignedUserId": 25,
     "programId": 2,
     "parentId": 97,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000025"
   },
   {
     "code": "5302003",
@@ -1094,10 +1094,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 28,
     "programId": 2,
     "parentId": 97,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000028"
   },
   {
     "code": "5303000",
@@ -1105,10 +1105,10 @@
     "level": 2,
     "state": "Implementation",
     "revisionLevel": "A",
-    "assignedUserId": 25,
     "programId": 2,
     "parentId": 92,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000025"
   },
   {
     "code": "5303001",
@@ -1116,10 +1116,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 25,
     "programId": 2,
     "parentId": 101,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000025"
   },
   {
     "code": "5303002",
@@ -1127,10 +1127,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "B",
-    "assignedUserId": 24,
     "programId": 2,
     "parentId": 101,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000024"
   },
   {
     "code": "5400000",
@@ -1138,10 +1138,10 @@
     "level": 1,
     "state": "UnderReview",
     "revisionLevel": "A",
-    "assignedUserId": 24,
     "programId": 2,
     "parentId": 69,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000024"
   },
   {
     "code": "5401000",
@@ -1149,10 +1149,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 24,
     "programId": 2,
     "parentId": 104,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000024"
   },
   {
     "code": "5401001",
@@ -1160,10 +1160,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 24,
     "programId": 2,
     "parentId": 105,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000024"
   },
   {
     "code": "5401002",
@@ -1171,10 +1171,10 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "A",
-    "assignedUserId": 27,
     "programId": 2,
     "parentId": 105,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000027"
   },
   {
     "code": "5401003",
@@ -1182,10 +1182,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "B",
-    "assignedUserId": 23,
     "programId": 2,
     "parentId": 105,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000023"
   },
   {
     "code": "5402000",
@@ -1193,10 +1193,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 27,
     "programId": 2,
     "parentId": 104,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000027"
   },
   {
     "code": "5402001",
@@ -1204,10 +1204,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 27,
     "programId": 2,
     "parentId": 109,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000027"
   },
   {
     "code": "5402002",
@@ -1215,10 +1215,10 @@
     "level": 3,
     "state": "UnderReview",
     "revisionLevel": "B",
-    "assignedUserId": 23,
     "programId": 2,
     "parentId": 109,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000023"
   },
   {
     "code": "5402003",
@@ -1226,10 +1226,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 27,
     "programId": 2,
     "parentId": 109,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000027"
   },
   {
     "code": "5500000",
@@ -1237,10 +1237,10 @@
     "level": 1,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 27,
     "programId": 2,
     "parentId": 69,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000027"
   },
   {
     "code": "5501000",
@@ -1248,10 +1248,10 @@
     "level": 2,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 27,
     "programId": 2,
     "parentId": 113,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000027"
   },
   {
     "code": "5501001",
@@ -1259,10 +1259,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "A",
-    "assignedUserId": 27,
     "programId": 2,
     "parentId": 114,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000027"
   },
   {
     "code": "5501002",
@@ -1270,10 +1270,10 @@
     "level": 3,
     "state": "InWork",
     "revisionLevel": "B",
-    "assignedUserId": 28,
     "programId": 2,
     "parentId": 114,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000028"
   },
   {
     "code": "5502000",
@@ -1281,10 +1281,10 @@
     "level": 2,
     "state": "UnderReview",
     "revisionLevel": "B",
-    "assignedUserId": 28,
     "programId": 2,
     "parentId": 113,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000028"
   },
   {
     "code": "5502001",
@@ -1292,9 +1292,9 @@
     "level": 3,
     "state": "Implementation",
     "revisionLevel": "A",
-    "assignedUserId": 28,
     "programId": 2,
     "parentId": 117,
-    "organizationId": 1
+    "organizationId": 1,
+    "assignedById": "clseed0000000000000000000028"
   }
 ]

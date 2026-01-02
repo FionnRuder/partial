@@ -56,9 +56,8 @@ enum UserRole {
 // ===================
 
 model User {
-  userId            Int      @id @default(autoincrement())
+  id                String   @id @default(cuid()) // Better Auth user ID
   organizationId    Int
-  cognitoId         String   @unique
   username          String
   name              String
   email             String
@@ -78,8 +77,10 @@ model User {
   organization   Organization    @relation(fields: [organizationId], references: [id])
   disciplineTeam DisciplineTeam? @relation(fields: [disciplineTeamId], references: [id])
 
-  authoredWorkItems WorkItem[] @relation("WorkItemAuthor")
-  assignedWorkItems WorkItem[] @relation("WorkItemAssignee")
+  managedTeams      DisciplineTeam[] @relation("TeamManager")
+  managedPrograms   Program[]        @relation("ProgramManager")
+  authoredWorkItems WorkItem[]       @relation("WorkItemAuthor")
+  assignedWorkItems WorkItem[]       @relation("WorkItemAssignee")
 
   partNumbers         Part[]
   attachments         Attachment[]
@@ -91,8 +92,16 @@ model User {
   resolvedFeedback    Feedback[]   @relation("FeedbackResolver")
   auditLogs           AuditLog[]
 
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
   @@unique([organizationId, username])
   @@unique([organizationId, email])
+  @@map("user")
 }
 
 model Organization {
@@ -118,13 +127,14 @@ model Organization {
 }
 
 model DisciplineTeam {
-  id                Int    @id @default(autoincrement())
+  id                Int     @id @default(autoincrement())
   organizationId    Int
   name              String
   description       String
-  teamManagerUserId Int?
+  teamManagerUserId String?
 
   organization Organization              @relation(fields: [organizationId], references: [id])
+  teamManager  User?                     @relation("TeamManager", fields: [teamManagerUserId], references: [id])
   users        User[]
   programs     DisciplineTeamToProgram[]
 }
@@ -134,11 +144,12 @@ model Program {
   organizationId       Int
   name                 String
   description          String
-  programManagerUserId Int?
+  programManagerUserId String?
   startDate            DateTime
   endDate              DateTime
 
   organization    Organization              @relation(fields: [organizationId], references: [id])
+  programManager  User?                     @relation("ProgramManager", fields: [programManagerUserId], references: [id])
   partNumbers     Part[]
   disciplineTeams DisciplineTeamToProgram[]
   milestones      Milestone[]
@@ -175,12 +186,12 @@ model Part {
   level          Int
   state          PartState
   revisionLevel  String
-  assignedUserId Int
+  assignedUserId String
   programId      Int
   parentId       Int?
 
   organization Organization @relation(fields: [organizationId], references: [id])
-  assignedUser User         @relation(fields: [assignedUserId], references: [userId])
+  assignedUser User         @relation(fields: [assignedUserId], references: [id])
   program      Program      @relation(fields: [programId], references: [id])
   parent       Part?        @relation("ParentChildren", fields: [parentId], references: [id])
   children     Part[]       @relation("ParentChildren")
@@ -211,14 +222,14 @@ model WorkItem {
   inputStatus             String
   programId               Int
   dueByMilestoneId        Int
-  authorUserId            Int
-  assignedUserId          Int
+  authorUserId            String
+  assignedUserId          String
 
   organization   Organization @relation(fields: [organizationId], references: [id])
   program        Program      @relation(fields: [programId], references: [id])
   dueByMilestone Milestone    @relation(fields: [dueByMilestoneId], references: [id])
-  authorUser     User         @relation("WorkItemAuthor", fields: [authorUserId], references: [userId])
-  assigneeUser   User         @relation("WorkItemAssignee", fields: [assignedUserId], references: [userId])
+  authorUser     User         @relation("WorkItemAuthor", fields: [authorUserId], references: [id])
+  assigneeUser   User         @relation("WorkItemAssignee", fields: [assignedUserId], references: [id])
 
   // Relations
   partNumbers WorkItemToPart[]
@@ -302,11 +313,11 @@ model Attachment {
   fileUrl          String
   fileName         String
   dateAttached     DateTime @default(now())
-  uploadedByUserId Int
+  uploadedByUserId String
   workItemId       Int?
 
   organization   Organization @relation(fields: [organizationId], references: [id])
-  uploadedByUser User         @relation(fields: [uploadedByUserId], references: [userId])
+  uploadedByUser User         @relation(fields: [uploadedByUserId], references: [id])
   workItem       WorkItem?    @relation(fields: [workItemId], references: [id])
 }
 
@@ -315,11 +326,11 @@ model Comment {
   organizationId  Int
   text            String
   dateCommented   DateTime @default(now())
-  commenterUserId Int
+  commenterUserId String
   workItemId      Int?
 
   organization  Organization @relation(fields: [organizationId], references: [id])
-  commenterUser User         @relation(fields: [commenterUserId], references: [userId])
+  commenterUser User         @relation(fields: [commenterUserId], references: [id])
   workItem      WorkItem?    @relation(fields: [workItemId], references: [id])
 }
 
@@ -328,11 +339,11 @@ model StatusLog {
   organizationId Int
   status         String
   dateLogged     DateTime @default(now())
-  engineerUserId Int
+  engineerUserId String
   workItemId     Int
 
   organization Organization @relation(fields: [organizationId], references: [id])
-  engineerUser User         @relation(fields: [engineerUserId], references: [userId])
+  engineerUser User         @relation(fields: [engineerUserId], references: [id])
   workItem     WorkItem     @relation(fields: [workItemId], references: [id])
 }
 
@@ -345,13 +356,13 @@ model Invitation {
   expiresAt       DateTime // Expiration date
   used            Boolean   @default(false)
   usedAt          DateTime?
-  usedByUserId    Int? // User who accepted the invitation
-  createdByUserId Int // User who created the invitation
+  usedByUserId    String? // User who accepted the invitation
+  createdByUserId String // User who created the invitation
   createdAt       DateTime  @default(now())
 
   organization Organization @relation(fields: [organizationId], references: [id])
-  createdBy    User         @relation("InvitationCreator", fields: [createdByUserId], references: [userId])
-  usedBy       User?        @relation("InvitationAccepter", fields: [usedByUserId], references: [userId])
+  createdBy    User         @relation("InvitationCreator", fields: [createdByUserId], references: [id])
+  usedBy       User?        @relation("InvitationAccepter", fields: [usedByUserId], references: [id])
 
   @@index([token])
   @@index([organizationId])
@@ -366,16 +377,16 @@ model Feedback {
   description       String
   status            String    @default("open") // "open", "in_progress", "resolved", "closed"
   priority          Priority  @default(Medium)
-  submittedByUserId Int
+  submittedByUserId String
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   resolvedAt        DateTime?
-  resolvedByUserId  Int?
+  resolvedByUserId  String?
   adminNotes        String? // Internal notes for admins
 
   organization Organization @relation(fields: [organizationId], references: [id])
-  submittedBy  User         @relation("FeedbackSubmitter", fields: [submittedByUserId], references: [userId])
-  resolvedBy   User?        @relation("FeedbackResolver", fields: [resolvedByUserId], references: [userId])
+  submittedBy  User         @relation("FeedbackSubmitter", fields: [submittedByUserId], references: [id])
+  resolvedBy   User?        @relation("FeedbackResolver", fields: [resolvedByUserId], references: [id])
 
   @@index([organizationId])
   @@index([status])
@@ -402,7 +413,7 @@ enum AuditAction {
 model AuditLog {
   id             Int         @id @default(autoincrement())
   organizationId Int
-  userId         Int // User who performed the action
+  userId         String // User who performed the action
   action         AuditAction
   entityType     String // e.g., "WorkItem", "User", "Part", etc.
   entityId       Int? // ID of the affected entity (null for bulk operations)
@@ -415,7 +426,7 @@ model AuditLog {
   createdAt      DateTime    @default(now())
 
   organization Organization @relation(fields: [organizationId], references: [id])
-  user         User         @relation(fields: [userId], references: [userId])
+  user         User         @relation(fields: [userId], references: [id])
 
   @@index([organizationId])
   @@index([userId])
@@ -425,4 +436,52 @@ model AuditLog {
   @@index([createdAt])
   @@index([organizationId, entityType, entityId])
   @@index([organizationId, createdAt])
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }

@@ -1,6 +1,7 @@
-# Environment Configuration for Cognito Integration
-# This file shows configuration for LOCAL DEVELOPMENT
-# For PRODUCTION, create a separate .env file with production values
+# Environment Configuration
+
+This file shows configuration for LOCAL DEVELOPMENT.
+For PRODUCTION, create a separate .env file with production values.
 
 # ============================================
 # SERVER-SIDE CONFIGURATION (Backend)
@@ -22,86 +23,39 @@ SESSION_SECRET=some-secret-change-this-in-production
 
 # Frontend URL (for CORS and redirects after authentication)
 # LOCAL: http://localhost:3000
-# PRODUCTION: https://your-production-domain.com (or your CloudFront URL)
+# PRODUCTION: https://your-production-domain.com
 FRONTEND_URL=http://localhost:3000
 
-# AWS Cognito OIDC Configuration (Server-side)
-# These values are the SAME for both development and production
-# Issuer URL format: https://cognito-idp.{region}.amazonaws.com/{userPoolId}
-COGNITO_ISSUER_URL=https://cognito-idp.us-east-1.amazonaws.com/us-east-1_zFt1mmhx8
-COGNITO_CLIENT_ID=5429ep5otfjduo6ntjt2foc5of
-COGNITO_CLIENT_SECRET=<your-client-secret-here>
+# Database URL (PostgreSQL)
+# Format: postgresql://user:password@host:port/database
+DATABASE_URL=postgresql://user:password@localhost:5432/partial
 
-# IMPORTANT: Redirect URI must point to your SERVER's callback route, not the client!
-# LOCAL: http://localhost:8000/auth/callback
-# PRODUCTION: https://your-api-domain.com/auth/callback (or your CloudFront/server URL)
-# This MUST match what you configure in Cognito App Client settings (see setup instructions below)
-COGNITO_REDIRECT_URI=http://localhost:8000/auth/callback
+# Better Auth Configuration
+# Secret key for encryption and hashing (generate with: openssl rand -base64 32)
+# Can reuse SESSION_SECRET if desired, but recommended to use a separate secret
+BETTER_AUTH_SECRET=some-secret-change-this-in-production
+# Base URL of your application (used for auth callbacks and redirects)
+# Should match FRONTEND_URL in most cases
+BETTER_AUTH_URL=http://localhost:3000
 
-# Cognito Domain Configuration
-# For Cognito domain: your-prefix.auth.us-east-1.amazoncognito.com
-# For custom domain: auth.yourdomain.com (requires DNS setup)
-# Leave empty or comment out if not using Cognito logout
-# NOTE: Same value works for both dev and prod if using a custom domain
-COGNITO_USER_POOL_DOMAIN=<your-user-pool-domain>
-
-# Cognito Hosted UI Domain (REQUIRED when custom domain DNS is not configured)
-# Find this in AWS Console → Cognito → Your User Pool → App integration → Domain
-# Format: your-prefix.auth.us-east-1.amazoncognito.com
-# This is the default Cognito domain that works without DNS configuration
-COGNITO_HOSTED_UI_DOMAIN=<your-prefix>.auth.us-east-1.amazoncognito.com
-
-# If custom domain DNS is not configured yet, set this to 'true' to use Cognito domain for login
-# This allows login to work while you set up DNS for the custom domain
-# Set to 'false' or remove once DNS is configured
-COGNITO_USE_ISSUER_URL_FOR_AUTH=true
-
-# Logout redirect URI
-# LOCAL: http://localhost:3000/onboarding
-# PRODUCTION: https://your-production-domain.com/onboarding
-COGNITO_LOGOUT_URI=http://localhost:3000/onboarding
+# TODO: Email Service Configuration
+# When implementing your email service (SendGrid, Resend, Nodemailer, etc.), add configuration here:
+# EMAIL_API_KEY=...
+# EMAIL_FROM=notifications@partialsystems.com
+# etc.
 
 # ============================================
 # CLIENT-SIDE CONFIGURATION (Frontend)
 # ============================================
 
-# Authentication Provider
-# Options: 'mock' (current implementation) or 'cognito' (future implementation)
-NEXT_PUBLIC_AUTH_PROVIDER=mock
-
-# AWS Cognito Configuration (Client-side)
-# These will be used when NEXT_PUBLIC_AUTH_PROVIDER=cognito
-NEXT_PUBLIC_AWS_REGION=us-east-1
-NEXT_PUBLIC_COGNITO_USER_POOL_ID=us-east-1_zFt1mmhx8
-NEXT_PUBLIC_COGNITO_USER_POOL_WEB_CLIENT_ID=5429ep5otfjduo6ntjt2foc5of
-NEXT_PUBLIC_COGNITO_IDENTITY_POOL_ID=your-identity-pool-id
-NEXT_PUBLIC_COGNITO_DOMAIN=your-cognito-domain
-
-# Redirect URLs for Cognito
-NEXT_PUBLIC_REDIRECT_SIGN_IN=http://localhost:3000/home
-NEXT_PUBLIC_REDIRECT_SIGN_OUT=http://localhost:3000/onboarding
-
 # API Configuration
 # Should match your server port (default is 8000 for local development)
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 
-# ============================================
-# AWS SES CONFIGURATION (Email Notifications)
-# ============================================
-
-# AWS Region (where your SES is configured)
-AWS_REGION=us-east-1
-
-# AWS Access Credentials
-# Option 1: Use access keys (for local development or non-AWS deployments)
-AWS_ACCESS_KEY_ID=your-aws-access-key-id
-AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
-
-# Option 2: If running on AWS (EC2, ECS, Lambda), you can use IAM roles instead
-# In that case, leave AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY empty
-# and ensure your IAM role has SES permissions
-
-# Note: Email sender is hardcoded to: notifications@partialsystems.com
+# TODO: Authentication Provider Configuration
+# When implementing better-auth.com, add configuration here:
+# NEXT_PUBLIC_BETTER_AUTH_URL=...
+# etc.
 
 # ============================================
 # DEVELOPMENT SETTINGS
@@ -116,17 +70,10 @@ NODE_ENV=development
 
 1. **Copy this file to `.env` in the server directory**
 2. **Copy relevant `NEXT_PUBLIC_*` variables to `.env.local` in the client directory**
-3. **Replace `<your-client-secret-here>` with your actual Cognito app client secret**
-4. **Replace `<your-user-pool-domain>` with your Cognito user pool domain (or leave empty)**
-5. **Configure your Cognito User Pool App Client** (AWS Console → Cognito → Your User Pool → App integration → App clients):
-   - **Allowed callback URLs**: Add BOTH:
-     - `http://localhost:8000/auth/callback` (for local development)
-     - `https://your-production-api-domain.com/auth/callback` (for production)
-   - **Allowed sign-out URLs**: Add BOTH:
-     - `http://localhost:3000/onboarding` (for local development)
-     - `https://your-production-domain.com/onboarding` (for production)
-   - **Allowed OAuth scopes**: Check: `openid`, `email`, `profile`, `phone`
-   - **Allowed OAuth flows**: Check: `Authorization code grant`
+3. **Update `DATABASE_URL` with your PostgreSQL connection string**
+4. **Generate a secure `SESSION_SECRET`**: `openssl rand -base64 32`
+5. **Configure authentication**: When implementing better-auth.com, add the required environment variables
+6. **Configure email service**: When implementing your email service, add the required environment variables
 
 ## For PRODUCTION:
 
@@ -136,23 +83,19 @@ NODE_ENV=development
    PORT=8000  # Or your production port
    SESSION_SECRET=<generate-secure-random-string>
    FRONTEND_URL=https://your-production-domain.com
-   COGNITO_REDIRECT_URI=https://your-api-domain.com/auth/callback
-   COGNITO_LOGOUT_URI=https://your-production-domain.com/onboarding
-   # ... other values same as development
+   DATABASE_URL=postgresql://user:password@host:port/database
+   # ... authentication and email service configuration
    ```
 
 2. **Update client `.env.local` with production values:**
    ```env
    NEXT_PUBLIC_API_BASE_URL=https://your-api-domain.com
-   # ... other values
+   # ... authentication configuration
    ```
-
-3. **Ensure your Cognito App Client has BOTH local and production URLs configured** (see above)
 
 ## Important Notes:
 
-- **Cognito App Client settings must include BOTH local and production URLs** for seamless development
 - **Session cookies**: Automatically use `secure: true` in production (when FRONTEND_URL uses HTTPS)
 - **CORS**: Automatically configured based on FRONTEND_URL
 - **Generate SESSION_SECRET for production**: `openssl rand -base64 32`
-- **Custom Domain**: If using a custom domain, ensure DNS is configured before removing `COGNITO_USE_ISSUER_URL_FOR_AUTH=true`
+- **Database**: Ensure your PostgreSQL database is accessible and migrations are run

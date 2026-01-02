@@ -54,7 +54,7 @@ export const createFeedback = async (
       include: {
         submittedBy: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
           },
@@ -98,14 +98,14 @@ export const getFeedback = async (
       include: {
         submittedBy: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
           },
         },
         resolvedBy: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
           },
@@ -141,14 +141,14 @@ export const getFeedbackById = async (
       include: {
         submittedBy: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
           },
         },
         resolvedBy: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
           },
@@ -239,14 +239,14 @@ export const updateFeedback = async (
       include: {
         submittedBy: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
           },
         },
         resolvedBy: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
           },
@@ -276,14 +276,14 @@ export const getMyFeedback = async (
       include: {
         submittedBy: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
           },
         },
         resolvedBy: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
           },

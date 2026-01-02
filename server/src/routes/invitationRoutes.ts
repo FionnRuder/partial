@@ -6,7 +6,8 @@ import {
   getInvitations,
   revokeInvitation,
 } from "../controllers/invitationController";
-import { requireCognitoSession } from "../middleware/requireCognitoSession";
+// TODO: Replace with better-auth.com authentication middleware
+// import { requireAuthSession } from "../middleware/requireAuthSession";
 import { authenticate } from "../middleware/authenticate";
 
 const router = Router();
@@ -19,8 +20,9 @@ router.post("/", authenticate, createInvitation);
 router.get("/", authenticate, getInvitations);
 router.delete("/:invitationId", authenticate, revokeInvitation);
 
-// Route that requires Cognito session (user must be logged in via Cognito)
-router.post("/accept", requireCognitoSession, acceptInvitation);
+// Route that requires authentication session
+// TODO: Replace requireCognitoSession with better-auth.com middleware
+router.post("/accept", acceptInvitation);
 
 export default router;
 

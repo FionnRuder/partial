@@ -22,7 +22,7 @@ type Props = {
     level?: number;
     state?: PartState;
     revisionLevel?: string;
-    assignedUserId?: number;
+    assignedUserId?: string;
     programId?: number;
     parentId?: number | null;
     } | null;
@@ -58,7 +58,7 @@ const ModalEditPart = ({ isOpen, onClose, part }: Props) => {
       
       setAssignedUserId(part?.assignedUserId?.toString() || "");
       // prefill assignedUserName if part.assignedUserId is known
-      const assignedUser = users.find((u) => u.userId === part.assignedUserId);
+      const assignedUser = users.find((u) => u.id === part.assignedUserId);
       setAssignedUserName(assignedUser?.name || "");
       
       setProgramId(part?.programId?.toString() || "");
@@ -84,7 +84,7 @@ const ModalEditPart = ({ isOpen, onClose, part }: Props) => {
         level: Number(level),
         state: state || undefined,
         revisionLevel,
-        assignedUserId: Number(assignedUserId),
+        assignedUserId: assignedUserId,
         programId: Number(programId),
         parentId: parentId ? Number(parentId) : undefined,
       },
@@ -198,14 +198,14 @@ const ModalEditPart = ({ isOpen, onClose, part }: Props) => {
               value={assignedUserId}
               onChange={(e) => {
                 setAssignedUserId(e.target.value);
-                const selected = users.find((u) => u.userId === Number(e.target.value));
+                const selected = users.find((u) => u.id === e.target.value);
                 setAssignedUserName(selected?.name || "");
               }}
               disabled={usersLoading}
             >
               <option value="">Select Assigned User</option>
               {users.map((user) => (
-                <option key={user.userId} value={user.userId}>
+                <option key={user.id} value={user.id}>
                   {user.name} ({user.username})
                 </option>
               ))}

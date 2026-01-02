@@ -8,10 +8,10 @@ import { showApiSuccess, showApiError } from '@/lib/toast';
 
 const Settings = () => {
     const { user: authUser, updateProfile } = useAuth();
-    const { data: user, isLoading: isUserLoading } = useGetUserByIdQuery(authUser?.userId || 0, { skip: !authUser?.userId });
+    const { data: user, isLoading: isUserLoading } = useGetUserByIdQuery(authUser?.id || "", { skip: !authUser?.id });
     const { data: teams, isLoading: isTeamsLoading } = useGetTeamsQuery();
     const [updateUser] = useUpdateUserMutation();
-    const { data: emailPreferences, isLoading: isEmailPreferencesLoading } = useGetEmailPreferencesQuery(authUser?.userId || 0, { skip: !authUser?.userId });
+    const { data: emailPreferences, isLoading: isEmailPreferencesLoading } = useGetEmailPreferencesQuery(authUser?.id || "", { skip: !authUser?.id });
     const [updateEmailPreferences] = useUpdateEmailPreferencesMutation();
 
     const sanitizeProfilePictureUrl = (value?: string | null) => {
@@ -80,7 +80,7 @@ const Settings = () => {
         try {
             // Update via API
             await updateUser({
-                userId: user.userId,
+                id: user.id,
                 data: {
                     name: formData.name,
                     phoneNumber: formData.phoneNumber,
@@ -112,14 +112,14 @@ const Settings = () => {
 
     const handleEmailPrefsSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!authUser?.userId) return;
+        if (!authUser?.id) return;
 
         setIsSavingEmailPrefs(true);
         setEmailPrefsSaveStatus('idle');
 
         try {
             await updateEmailPreferences({
-                userId: authUser.userId,
+                id: authUser.id,
                 preferences: emailPrefs,
             }).unwrap();
 

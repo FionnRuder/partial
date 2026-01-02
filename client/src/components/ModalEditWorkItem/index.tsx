@@ -101,12 +101,12 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
 
       setAuthorUserId(workItem.authorUserId?.toString() || "");
       // prefill authorUserName if workItem.authorUserId is known
-      const authorUser = users.find((u) => u.userId === workItem.authorUserId);
+      const authorUser = users.find((u) => u.id === workItem.authorUserId);
       setAuthorUserName(authorUser?.name || "");
 
       setAssignedUserId(workItem.assignedUserId?.toString() || "");
       // prefill assignedUserName if workItem.assignedUserId is known
-      const assignedUser = users.find((u) => u.userId === workItem.assignedUserId);
+      const assignedUser = users.find((u) => u.id === workItem.assignedUserId);
       setAssignedUserName(assignedUser?.name || "");
 
       if (workItem.workItemType === WorkItemType.Issue) {
@@ -160,8 +160,8 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
       partIds,
       programId: parseInt(programId),
       dueByMilestoneId: parseInt(dueByMilestoneId),
-      authorUserId: parseInt(authorUserId),
-      assignedUserId: parseInt(assignedUserId),
+      authorUserId: authorUserId,
+      assignedUserId: assignedUserId,
       issueDetail: workItemType === WorkItemType.Issue && issueType
         ? {
             issueType: issueType, // Send type name as string
@@ -522,14 +522,14 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
               value={authorUserId}
               onChange={(e) => {
                 setAuthorUserId(e.target.value);
-                const selected = users.find((u) => u.userId === Number(e.target.value));
+                const selected = users.find((u) => u.id === e.target.value);
                 setAuthorUserName(selected?.name || "");
               }}
               disabled={usersLoading}
             >
               <option value="">Select Author User</option>
               {users.map((user) => (
-                <option key={user.userId} value={user.userId}>
+                <option key={user.id} value={user.id}>
                   {user.name} ({user.username})
                 </option>
               ))}
@@ -545,14 +545,14 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
               value={assignedUserId}
               onChange={(e) => {
                 setAssignedUserId(e.target.value);
-                const selected = users.find((u) => u.userId === Number(e.target.value));
+                const selected = users.find((u) => u.id === e.target.value);
                 setAssignedUserName(selected?.name || "");
               }}
               disabled={usersLoading}
             >
               <option value="">Select Assigned User</option>
               {users.map((user) => (
-                <option key={user.userId} value={user.userId}>
+                <option key={user.id} value={user.id}>
                   {user.name} ({user.username})
                 </option>
               ))}

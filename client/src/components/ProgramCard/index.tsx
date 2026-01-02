@@ -9,7 +9,7 @@ type Props = {
 const ProgramCard = ({ program }: Props) => {
   const router = useRouter();
   const { data: users } = useGetUsersQuery();
-  const programManager = users?.find((u) => u.userId === program.programManagerUserId);
+  const programManager = users?.find((u) => u.id === program.programManagerUserId);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {

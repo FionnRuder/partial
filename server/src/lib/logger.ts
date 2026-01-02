@@ -1,5 +1,4 @@
 import winston, { Logger as WinstonLogger } from "winston";
-import WinstonCloudWatch from "winston-cloudwatch";
 import { randomUUID } from "crypto";
 
 /**
@@ -95,30 +94,8 @@ function createLogger(): Logger {
     );
   }
 
-  // CloudWatch transport (production only)
-  if (isProduction && process.env.AWS_CLOUDWATCH_LOG_GROUP && process.env.AWS_REGION) {
-    try {
-      transports.push(
-        new WinstonCloudWatch({
-          logGroupName: process.env.AWS_CLOUDWATCH_LOG_GROUP,
-          logStreamName: `${process.env.AWS_CLOUDWATCH_LOG_STREAM_PREFIX || "server"}-${new Date().toISOString().split("T")[0]}`,
-          awsRegion: process.env.AWS_REGION,
-          messageFormatter: ({ level, message, ...meta }) => {
-            return JSON.stringify({
-              level,
-              message,
-              timestamp: new Date().toISOString(),
-              ...meta,
-            });
-          },
-          // CloudWatch has rate limits, so batch logs
-          jsonMessage: true,
-        })
-      );
-    } catch (error) {
-      console.error("Failed to initialize CloudWatch transport:", error);
-    }
-  }
+  // TODO: Add logging service transport here if needed (e.g., Datadog, LogRocket, etc.)
+  // CloudWatch has been removed - add your preferred logging service here
 
   // Create logger instance
   const logger: Logger = winston.createLogger({

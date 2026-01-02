@@ -46,7 +46,7 @@ export const createProgram = async (
     if (programManagerUserId !== undefined && programManagerUserId !== null) {
       const programManager = await prisma.user.findFirst({
         where: {
-          userId: Number(programManagerUserId),
+          id: programManagerUserId,
           organizationId: req.auth.organizationId,
         },
       });
@@ -62,10 +62,7 @@ export const createProgram = async (
         organizationId: req.auth.organizationId,
         name,
         description,
-        programManagerUserId:
-          programManagerUserId !== undefined && programManagerUserId !== null
-            ? Number(programManagerUserId)
-            : null,
+        programManagerUserId: programManagerUserId || null,
         startDate,
         endDate,
       },
@@ -115,7 +112,7 @@ export const updateProgram = async (
     if (programManagerUserId !== undefined && programManagerUserId !== null) {
       const programManager = await prisma.user.findFirst({
         where: {
-          userId: Number(programManagerUserId),
+          id: programManagerUserId,
           organizationId: req.auth.organizationId,
         },
       });
@@ -132,8 +129,7 @@ export const updateProgram = async (
         ...(name !== undefined && { name }),
         ...(description !== undefined && { description }),
         ...(programManagerUserId !== undefined && {
-          programManagerUserId:
-            programManagerUserId !== null ? Number(programManagerUserId) : null,
+          programManagerUserId: programManagerUserId || null,
         }),
         ...(startDate !== undefined && { startDate }),
         ...(endDate !== undefined && { endDate }),

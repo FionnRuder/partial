@@ -80,17 +80,11 @@ export const getPartsByUser = async (
   res: Response
 ): Promise<void> => {
   const { userId } = req.params;
-  const userIdNumber = Number(userId);
-
-  if (!Number.isInteger(userIdNumber)) {
-    res.status(400).json({ message: "userId must be a valid integer" });
-    return;
-  }
 
   try {
     const user = await prisma.user.findFirst({
-      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
-      select: { userId: true },
+      where: { id: userId, organizationId: req.auth.organizationId },
+      select: { id: true },
     });
 
     if (!user) {
@@ -101,7 +95,7 @@ export const getPartsByUser = async (
     const parts = await prisma.part.findMany({
       where: {
         organizationId: req.auth.organizationId,
-        assignedUserId: userIdNumber,
+        assignedUserId: userId,
       },
       include: {
         parent: true,
@@ -136,7 +130,7 @@ export const createPart = async (
         throw new Error("Valid programId is required");
       }
 
-      if (!assignedUserId || !Number.isInteger(Number(assignedUserId))) {
+      if (!assignedUserId || typeof assignedUserId !== 'string') {
         throw new Error("Valid assignedUserId is required");
       }
 
@@ -155,10 +149,10 @@ export const createPart = async (
       if (assignedUserId !== undefined && assignedUserId !== null) {
         const assignee = await tx.user.findFirst({
           where: {
-            userId: Number(assignedUserId),
+            id: assignedUserId,
             organizationId,
           },
-          select: { disciplineTeamId: true, userId: true },
+          select: { disciplineTeamId: true, id: true },
         });
 
         if (!assignee) {
@@ -184,7 +178,7 @@ export const createPart = async (
           level,
           state,
           revisionLevel,
-          assignedUserId: Number(assignedUserId),
+          assignedUserId: assignedUserId,
           programId: Number(programId),
           parentId: parentId !== undefined && parentId !== null ? Number(parentId) : null,
         },
@@ -192,7 +186,7 @@ export const createPart = async (
 
       if (assignedUserId) {
         const assignedUser = await tx.user.findFirst({
-          where: { userId: Number(assignedUserId), organizationId },
+          where: { id: assignedUserId, organizationId },
           select: { disciplineTeamId: true },
         });
 
@@ -284,7 +278,7 @@ export const editPart = async (
       if (updates.assignedUserId !== undefined && updates.assignedUserId !== null) {
         const assigneeExists = await tx.user.findFirst({
           where: {
-            userId: Number(updates.assignedUserId),
+            id: updates.assignedUserId,
             organizationId,
           },
         });
@@ -313,10 +307,7 @@ export const editPart = async (
           level: updates.level,
           state: updates.state,
           revisionLevel: updates.revisionLevel,
-          assignedUserId:
-            updates.assignedUserId !== undefined && updates.assignedUserId !== null
-              ? Number(updates.assignedUserId)
-              : undefined,
+          assignedUserId: updates.assignedUserId || undefined,
           programId: updates.programId !== undefined ? Number(updates.programId) : undefined,
           parentId:
             updates.parentId === undefined
@@ -342,7 +333,7 @@ export const editPart = async (
 
       if (finalAssignedUserId) {
         const assignedUser = await tx.user.findFirst({
-          where: { userId: finalAssignedUserId, organizationId },
+          where: { id: finalAssignedUserId, organizationId },
           select: { disciplineTeamId: true },
         });
 

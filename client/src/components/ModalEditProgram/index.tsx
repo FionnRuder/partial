@@ -46,7 +46,7 @@ const ModalEditProgram = ({ isOpen, onClose, program }: Props) => {
     const updatedProgram: Partial<Program> = {
       name,
       description,
-      programManagerUserId: programManagerUserId ? parseInt(programManagerUserId) : undefined,
+      programManagerUserId: programManagerUserId || undefined,
       startDate: formatISO(new Date(startDate), { representation: 'complete' }),
       endDate: formatISO(new Date(endDate), { representation: 'complete' }),
     };
@@ -116,7 +116,7 @@ const ModalEditProgram = ({ isOpen, onClose, program }: Props) => {
           >
             <option value="">Select Program Manager (Optional)</option>
             {users.map((user) => (
-              <option key={user.userId} value={user.userId}>
+              <option key={user.id} value={user.id}>
                 {user.name} ({user.username})
               </option>
             ))}

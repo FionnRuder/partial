@@ -129,7 +129,7 @@ const ModalEditDisciplineTeam = ({ isOpen, onClose, team }: Props) => {
           >
             <option value="">Select Team Manager (Optional)</option>
             {users.map((user) => (
-              <option key={user.userId} value={user.userId}>
+              <option key={user.id} value={user.id}>
                 {user.name} ({user.username})
               </option>
             ))}

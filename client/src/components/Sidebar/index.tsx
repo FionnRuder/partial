@@ -41,8 +41,8 @@ const Sidebar = () => {
     const { data: programs } = useGetProgramsQuery();
 
     const { user } = useAuth();
-    const userId = user?.userId;
-    const { data: userParts } = useGetPartsByUserQuery(userId || 0, { skip: !userId });
+    const userId = user?.id;
+    const { data: userParts } = useGetPartsByUserQuery(userId || "", { skip: !userId });
 
     // ✅ Group parts by programId for easy display
     const partsByProgram = useMemo(() => {
@@ -134,7 +134,7 @@ const Sidebar = () => {
 
                 {/* TEAM HEADER */}
                 <div className="flex items-center gap-5 border-y-[1.5px] border-gray-200 px-8 py-4 dark:border-gray-700">
-                    <Image src="https://partial-s3-images.s3.us-east-1.amazonaws.com/logo1.png" alt="Logo" width={40} height={40} />
+                    <Image src="/logo1.png" alt="Logo" width={40} height={40} />
                     <div>
                         <h3 className="text-md font-bold tracking-wide dark:text-gray-200">
                             {user?.organizationName || "Organization"}

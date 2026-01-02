@@ -14,15 +14,14 @@ import teamRoutes from "./routes/teamRoutes";
 import userRoutes from "./routes/userRoutes";
 import workItemRoutes from "./routes/workItemRoutes";
 import onboardingRoutes from "./routes/onboardingRoutes";
-import authRoutes from "./routes/authRoutes";
 import invitationRoutes from "./routes/invitationRoutes";
 import deliverableTypeRoutes from "./routes/deliverableTypeRoutes";
 import issueTypeRoutes from "./routes/issueTypeRoutes";
 import feedbackRoutes from "./routes/feedbackRoutes";
 import healthRoutes from "./routes/healthRoutes";
 import auditLogRoutes from "./routes/auditLogRoutes";
+import authRoutes from "./routes/authRoutes";
 import { authenticate } from "./middleware/authenticate";
-import { initializeCognitoClient } from "./lib/cognitoClient";
 import {
   ipRateLimiter,
   userRateLimiter,
@@ -104,8 +103,8 @@ app.use(healthRoutes);
 // Apply global IP rate limiting to all other routes
 app.use(ipRateLimiter);
 
-// Authentication routes with stricter rate limiting
-app.use("/auth", authRateLimiter, authRoutes);
+// Better Auth routes - public endpoints for authentication
+app.use("/api/auth", authRateLimiter, authRoutes);
 
 // Onboarding routes (require Cognito session but user may not exist in DB yet)
 // Apply public endpoint rate limiting (similar to invitations)
@@ -114,6 +113,10 @@ app.use("/onboarding", publicEndpointRateLimiter, onboardingRoutes);
 // Invitation routes - some public (validate), some require auth (handled in route file)
 // Public endpoint rate limiting applied to all invitation routes (validates endpoint handles it)
 app.use("/invitations", publicEndpointRateLimiter, invitationRoutes);
+
+// Auth routes that require authentication (like /auth/me)
+// Mount before global authenticate middleware so we can handle auth manually
+app.use("/auth", authRoutes);
 
 // All other routes require authentication and user-based rate limiting
 app.use(authenticate);
@@ -155,23 +158,10 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 /* SERVER */
 const port = Number(process.env.PORT) || 3000;
 
-// Initialize Cognito client before starting server
-initializeCognitoClient()
-  .then(() => {
-    app.listen(port, "0.0.0.0", () => {
-      logger.info("Server started successfully", {
-        port,
-        environment: process.env.NODE_ENV || "development",
-      });
-    });
-  })
-  .catch((error) => {
-    logger.error("Failed to initialize Cognito client", {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-    logger.warn("Server will still start, but authentication may not work properly");
-    app.listen(port, "0.0.0.0", () => {
-      logger.warn("Server started without Cognito initialization", { port });
-    });
+// Start server
+app.listen(port, "0.0.0.0", () => {
+  logger.info("Server started successfully", {
+    port,
+    environment: process.env.NODE_ENV || "development",
   });
+});

@@ -3,42 +3,42 @@
     "organizationId": 1,
     "name": "Mechanical Engineering",
     "description": "Design and development of structural and mechanical subsystems.",
-    "teamManagerUserId": 5
+    "teamManagerId": "clseed0000000000000000000005"
   },
   {
     "organizationId": 1,
     "name": "Electrical Engineering",
     "description": "Responsible for avionics, power distribution, and electronics design.",
-    "teamManagerUserId": 3
+    "teamManagerId": "clseed0000000000000000000003"
   },
   {
     "organizationId": 1,
     "name": "Structural Engineering",
     "description": "Analysis and verification of primary and secondary structures for loads, vibration, and fatigue.",
-    "teamManagerUserId": 9
+    "teamManagerId": "clseed0000000000000000000009"
   },
   {
     "organizationId": 1,
     "name": "Mechanisms Engineering",
     "description": "Design and testing of deployable structures, actuators, and moving hardware interfaces.",
-    "teamManagerUserId": 8
+    "teamManagerId": "clseed0000000000000000000008"
   },
   {
     "organizationId": 1,
     "name": "Systems Engineering",
     "description": "Cross-functional coordination of requirements, interfaces, and verification for the spacecraft.",
-    "teamManagerUserId": null
+    "teamManagerId": null
   },
   {
     "organizationId": 1,
     "name": "Propulsion Engineering",
     "description": "Design, analysis, and testing of chemical and electric propulsion elements.",
-    "teamManagerUserId": null
+    "teamManagerId": null
   },
   {
     "organizationId": 1,
     "name": "Flight Software Engineering",
     "description": "Development and validation of on-board flight software and control algorithms.",
-    "teamManagerUserId": null
+    "teamManagerId": null
   }
 ]

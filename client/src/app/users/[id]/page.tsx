@@ -165,7 +165,7 @@ const sanitizeProfilePictureUrl = (value?: string | null) => {
 const UserDetailPage = ({ params }: Props) => {
   const { id } = React.use(params);
   const router = useRouter();
-  const userId = Number(id);
+  const userId = id; // userId is now a string
   const [selectedPriority, setSelectedPriority] = useState<Priority | "all">("all");
 
   const { data: user, isLoading, isError } = useGetUserByIdQuery(userId);
@@ -182,11 +182,20 @@ const UserDetailPage = ({ params }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [isSaving, setIsSaving] = useState(false);
+  // Helper to convert Prisma enum role to display name
+  const getRoleDisplayName = (role: string | undefined): string => {
+    if (!role) return "";
+    // Convert Prisma enum "ProgramManager" to display "Program Manager"
+    if (role === "ProgramManager") return "Program Manager";
+    return role; // Other roles match exactly
+  };
+
   const [formData, setFormData] = useState({
     name: user?.name || "",
     phoneNumber: user?.phoneNumber || "",
     profilePictureUrl: sanitizeProfilePictureUrl(user?.profilePictureUrl),
     disciplineTeamId: user?.disciplineTeamId || null,
+    role: getRoleDisplayName(user?.role),
   });
 
   useEffect(() => {
@@ -195,10 +204,17 @@ const UserDetailPage = ({ params }: Props) => {
       phoneNumber: user?.phoneNumber || "",
       profilePictureUrl: sanitizeProfilePictureUrl(user?.profilePictureUrl),
       disciplineTeamId: user?.disciplineTeamId || null,
+      role: getRoleDisplayName(user?.role),
     });
   }, [user]);
 
-  const isOwnProfile = authUser?.userId === user?.userId;
+  const isOwnProfile = authUser?.id === user?.id;
+  // Admins, Managers, and Program Managers can manage users
+  // Handle both Prisma enum format (ProgramManager) and display format (Program Manager)
+  const authUserRole = authUser?.role || "";
+  const normalizedAuthRole = authUserRole === "ProgramManager" ? "Program Manager" : authUserRole;
+  const canManageUsers = normalizedAuthRole === "Admin" || normalizedAuthRole === "Manager" || normalizedAuthRole === "Program Manager";
+  const canEdit = isOwnProfile || canManageUsers;
 
   if (isLoading) return <div className="p-8">Loading user...</div>;
   if (isError || !user) return <div className="p-8">Error loading user or user not found</div>;
@@ -209,14 +225,21 @@ const UserDetailPage = ({ params }: Props) => {
     try {
       const sanitizedProfileUrl = sanitizeProfilePictureUrl(formData.profilePictureUrl);
 
+      const updateData: any = {
+        name: formData.name,
+        phoneNumber: formData.phoneNumber,
+        profilePictureUrl: sanitizedProfileUrl || undefined,
+        disciplineTeamId: formData.disciplineTeamId || undefined,
+      };
+
+      // Only allow Admins to update roles (and only when editing other users)
+      if (canManageUsers && !isOwnProfile && formData.role) {
+        updateData.role = formData.role;
+      }
+
       await updateUser({
-        userId: user.userId,
-        data: {
-          name: formData.name,
-          phoneNumber: formData.phoneNumber,
-          profilePictureUrl: sanitizedProfileUrl || undefined,
-          disciplineTeamId: formData.disciplineTeamId || undefined,
-        },
+        id: user.id,
+        data: updateData,
       }).unwrap();
 
       if (isOwnProfile) {
@@ -280,14 +303,14 @@ const UserDetailPage = ({ params }: Props) => {
     <div className="flex w-full flex-col p-8">
       <div className="flex items-center justify-between">
         <Header name={user.name} />
-        {isOwnProfile && !isEditing && (
+        {canEdit && !isEditing && (
           <button
             type="button"
             onClick={() => setIsEditing(true)}
             className="flex items-center gap-2 whitespace-nowrap rounded-md bg-gray-300 px-3 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:bg-dark-tertiary dark:text-white dark:hover:bg-gray-600"
           >
             <SquarePen className="h-4 w-4" />
-            Edit Profile
+            {isOwnProfile ? "Edit Profile" : "Edit User"}
           </button>
         )}
       </div>
@@ -299,7 +322,7 @@ const UserDetailPage = ({ params }: Props) => {
           <div className="h-24 w-24 flex-shrink-0">
             {formData.profilePictureUrl ? (
               <Image
-                src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${formData.profilePictureUrl}`}
+                src={formData.profilePictureUrl ? `/images/${formData.profilePictureUrl}` : '/placeholder.png'}
                 alt={user.username}
                 width={96}
                 height={96}
@@ -340,7 +363,21 @@ const UserDetailPage = ({ params }: Props) => {
               </div>
               <div>
                 <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Role:</span>
-                <p className="text-gray-900 dark:text-gray-100">{user.role}</p>
+                {isEditing && canManageUsers && !isOwnProfile ? (
+                  <select
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                  >
+                    <option value="Admin">Admin</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Program Manager">Program Manager</option>
+                    <option value="Engineer">Engineer</option>
+                    <option value="Viewer">Viewer</option>
+                  </select>
+                ) : (
+                  <p className="text-gray-900 dark:text-gray-100">{user.role}</p>
+                )}
               </div>
               <div>
                 <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Discipline Team:</span>
@@ -424,6 +461,7 @@ const UserDetailPage = ({ params }: Props) => {
                       phoneNumber: user.phoneNumber || "",
                       profilePictureUrl: sanitizeProfilePictureUrl(user.profilePictureUrl),
                       disciplineTeamId: user.disciplineTeamId || null,
+                      role: user.role || "",
                     });
                   }}
                   className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700"

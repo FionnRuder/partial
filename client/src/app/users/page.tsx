@@ -30,7 +30,6 @@ const getInitials = (name?: string, username?: string) => {
 };
 
 const columns: GridColDef[] = [
-  { field: "userId", headerName: "ID", width: 100 },
   { field: "name", headerName: "Name", width: 200 },
   { field: "username", headerName: "Username", width: 150 },
   { field: "email", headerName: "Email", width: 250 },
@@ -67,7 +66,7 @@ const columns: GridColDef[] = [
         {params.value ? (
           <div className="h-9 w-9">
             <Image
-              src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${params.value}`}
+              src={`/images/${params.value}`}
               alt={params.row.username}
               width={100}
               height={50}
@@ -90,7 +89,7 @@ const Users = () => {
   const router = useRouter();
 
   const handleRowClick = (params: any) => {
-    router.push(`/users/${params.row.userId}`);
+    router.push(`/users/${params.row.id}`);
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -103,7 +102,7 @@ const Users = () => {
         <DataGrid
           rows={users || []}
           columns={columns}
-          getRowId={(row) => row.userId}
+          getRowId={(row) => row.id}
           pagination
           showToolbar
           className={dataGridClassNames}

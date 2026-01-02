@@ -33,7 +33,6 @@ async function resetSequences() {
     '"Part_id_seq"',
     '"DisciplineTeamToProgram_id_seq"',
     '"Program_id_seq"',
-    '"User_userId_seq"',
     '"DisciplineTeam_id_seq"',
     '"DeliverableType_id_seq"',
     '"IssueType_id_seq"',

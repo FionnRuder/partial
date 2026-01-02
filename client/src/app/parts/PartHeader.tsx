@@ -36,7 +36,7 @@ const PartHeader = ({
         : "My Part";
     
     const assignedUser = activePart?.assignedUserId 
-        ? users.find(user => user.userId === activePart.assignedUserId)
+        ? users.find(user => user.id === activePart.assignedUserId)
         : null;
     const activeProgramName = activePart
         ? activePart.program?.name ?? programs.find(program => program.id === activePart.programId)?.name
@@ -111,9 +111,9 @@ const PartHeader = ({
                         </span>
                         <span>
                             Assignee:{' '}
-                            {assignedUser || activePart?.assignedUserId ? (
+                            {assignedUser?.username ? (
                                 <Link
-                                    href={`/users/${assignedUser?.userId ?? activePart?.assignedUserId}`}
+                                    href={`/users/${assignedUser?.id ?? activePart?.assignedUserId}`}
                                     className="text-blue-600 hover:underline dark:text-blue-400"
                                 >
                                     {assignedUser?.name ?? 'View Assignee'}

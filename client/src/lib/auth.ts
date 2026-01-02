@@ -1,10 +1,10 @@
 // Authentication service abstraction layer
 // This will allow easy switching between mock auth and Cognito
+import { BetterAuthService } from "./betterAuthService";
 
 export interface AuthUser {
-  userId: number;
+  id: string; // Better Auth user ID (string)
   organizationId: number;
-  cognitoId: string;
   username: string;
   name: string;
   email: string;
@@ -27,6 +27,7 @@ export interface SignUpData {
   name: string;
   phoneNumber: string;
   role: string;
+  invitationToken?: string; // Optional invitation token
 }
 
 export interface SignInData {
@@ -142,15 +143,14 @@ export class MockAuthService implements AuthService {
         console.log('Onboarding response:', result);
         
         // Ensure userId is present - Prisma returns userId as the primary key
-        if (!result.user?.userId) {
-          console.error('User object missing userId:', result.user);
+        if (!result.user?.id) {
+          console.error('User object missing id:', result.user);
           throw new Error('User creation response missing userId');
         }
         
         user = {
-          userId: result.user.userId,
+          id: result.user.id,
           organizationId: result.organization.id,
-          cognitoId: result.user.cognitoId,
           username: result.user.username,
           name: result.user.name,
           email: result.user.email,
@@ -169,9 +169,8 @@ export class MockAuthService implements AuthService {
         // If user already exists (409), use that user data
         if (response.status === 409 && errorData.user) {
           user = {
-            userId: errorData.user.userId,
+            id: errorData.user.id,
             organizationId: errorData.user.organizationId,
-            cognitoId: errorData.user.cognitoId,
             username: errorData.user.username,
             name: errorData.user.name,
             email: errorData.user.email,
@@ -202,7 +201,7 @@ export class MockAuthService implements AuthService {
     }
 
     // Verify user has required fields before saving
-    if (!user.userId || !user.organizationId) {
+    if (!user.id || !user.organizationId) {
       console.error('User object missing required fields:', user);
       throw new Error('User creation failed: missing userId or organizationId');
     }
@@ -286,9 +285,8 @@ export class MockAuthService implements AuthService {
         // If user has Cognito session and exists in database, use that
         if (data.isAuthenticated && data.userExistsInDb && data.user) {
           const user: AuthUser = {
-            userId: data.user.userId,
+            id: data.user.id,
             organizationId: data.user.organizationId,
-            cognitoId: data.userInfo?.sub || '',
             username: data.user.username,
             name: data.user.name,
             email: data.user.email,
@@ -347,11 +345,11 @@ export class MockAuthService implements AuthService {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
     
     try {
-      const response = await fetch(`${apiBaseUrl}/users/${this.currentUser.userId}`, {
+      const response = await fetch(`${apiBaseUrl}/users/${this.currentUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': String(this.currentUser.userId),
+          'x-user-id': String(this.currentUser.id),
         },
         body: JSON.stringify(updates),
       });
@@ -362,7 +360,7 @@ export class MockAuthService implements AuthService {
         const mergedUser: AuthUser = {
           ...baseUser,
           ...updatedUser,
-          userId: baseUser.userId,
+          id: baseUser.id,
           organizationId: updatedUser?.organizationId ?? baseUser.organizationId,
         };
         this.currentUser = mergedUser;
@@ -373,7 +371,7 @@ export class MockAuthService implements AuthService {
         const mergedUser: AuthUser = {
           ...baseUser,
           ...updates,
-          userId: baseUser.userId,
+          id: baseUser.id,
           organizationId: baseUser.organizationId,
         };
         this.currentUser = mergedUser;
@@ -384,7 +382,7 @@ export class MockAuthService implements AuthService {
       const mergedUser: AuthUser = {
         ...baseUser,
         ...updates,
-        userId: baseUser.userId,
+        id: baseUser.id,
         organizationId: baseUser.organizationId,
       };
       this.currentUser = mergedUser;
@@ -440,72 +438,11 @@ export class MockAuthService implements AuthService {
   }
 }
 
-// Cognito authentication service (to be implemented)
-export class CognitoAuthService implements AuthService {
-  // TODO: Implement Cognito integration
-  // This will use AWS Amplify or AWS SDK for Cognito
-  
-  async signUp(data: SignUpData): Promise<AuthUser> {
-    throw new Error('Cognito integration not yet implemented');
-  }
-
-  async signIn(data: SignInData): Promise<AuthUser> {
-    throw new Error('Cognito integration not yet implemented');
-  }
-
-  async signOut(): Promise<void> {
-    throw new Error('Cognito integration not yet implemented');
-  }
-
-  async refreshTokens(): Promise<AuthTokens> {
-    throw new Error('Cognito integration not yet implemented');
-  }
-
-  async getCurrentUser(): Promise<AuthUser | null> {
-    throw new Error('Cognito integration not yet implemented');
-  }
-
-  async updateUserProfile(updates: Partial<AuthUser>): Promise<AuthUser> {
-    throw new Error('Cognito integration not yet implemented');
-  }
-
-  async changePassword(oldPassword: string, newPassword: string): Promise<void> {
-    throw new Error('Cognito integration not yet implemented');
-  }
-
-  async resetPassword(email: string): Promise<void> {
-    throw new Error('Cognito integration not yet implemented');
-  }
-
-  async confirmPasswordReset(email: string, code: string, newPassword: string): Promise<void> {
-    throw new Error('Cognito integration not yet implemented');
-  }
-
-  getTokens(): AuthTokens | null {
-    throw new Error('Cognito integration not yet implemented');
-  }
-
-  isAuthenticated(): boolean {
-    throw new Error('Cognito integration not yet implemented');
-  }
-
-  onAuthStateChange(callback: (user: AuthUser | null) => void): () => void {
-    throw new Error('Cognito integration not yet implemented');
-  }
-}
-
 // Factory function to create auth service
 export function createAuthService(): AuthService {
-  const authProvider = process.env.NEXT_PUBLIC_AUTH_PROVIDER || 'mock';
-  
-  switch (authProvider) {
-    case 'cognito':
-      return new CognitoAuthService();
-    case 'mock':
-    default:
-      return new MockAuthService();
-  }
+  // Use Better Auth service
+  return new BetterAuthService();
 }
 
-// Singleton instance
-export const authService = createAuthService();
+// Singleton instance - create synchronously for backward compatibility
+export const authService: AuthService = new BetterAuthService();

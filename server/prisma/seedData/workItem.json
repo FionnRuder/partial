@@ -14,9 +14,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 1,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -33,9 +33,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 2,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -52,9 +52,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 5,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -71,9 +71,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 5,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -90,9 +90,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 6,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -109,9 +109,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 6,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -128,9 +128,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 7,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -147,9 +147,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 8,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -166,9 +166,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 8,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -185,9 +185,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 9,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -204,9 +204,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 9,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -223,9 +223,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 13,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -242,9 +242,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 13,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -261,9 +261,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 14,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -280,9 +280,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 14,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -299,9 +299,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 15,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -318,9 +318,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 16,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -337,9 +337,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 16,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -356,9 +356,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 17,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -375,9 +375,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 17,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -394,9 +394,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 18,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -413,9 +413,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 19,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -432,9 +432,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 20,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -451,9 +451,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 20,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -470,9 +470,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 21,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -489,9 +489,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 22,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Issue",
@@ -508,9 +508,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 11,
-    "authorUserId": 1,
-    "assignedUserId": 13,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000001",
+    "assignedId": "clseed0000000000000000000013"
   },
   {
     "workItemType": "Issue",
@@ -527,9 +527,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 12,
-    "authorUserId": 6,
-    "assignedUserId": 5,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000006",
+    "assignedId": "clseed0000000000000000000005"
   },
   {
     "workItemType": "Issue",
@@ -546,9 +546,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 12,
-    "authorUserId": 8,
-    "assignedUserId": 19,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000008",
+    "assignedId": "clseed0000000000000000000019"
   },
   {
     "workItemType": "Issue",
@@ -565,9 +565,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 12,
-    "authorUserId": 19,
-    "assignedUserId": 2,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000019",
+    "assignedId": "clseed0000000000000000000002"
   },
   {
     "workItemType": "Issue",
@@ -584,9 +584,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 6,
-    "authorUserId": 3,
-    "assignedUserId": 10,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000003",
+    "assignedId": "clseed0000000000000000000010"
   },
   {
     "workItemType": "Issue",
@@ -603,9 +603,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 13,
-    "authorUserId": 10,
-    "assignedUserId": 10,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000010",
+    "assignedId": "clseed0000000000000000000010"
   },
   {
     "workItemType": "Issue",
@@ -622,9 +622,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 14,
-    "authorUserId": 14,
-    "assignedUserId": 1,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000014",
+    "assignedId": "clseed0000000000000000000001"
   },
   {
     "workItemType": "Issue",
@@ -641,9 +641,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 16,
-    "authorUserId": 17,
-    "assignedUserId": 10,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000017",
+    "assignedId": "clseed0000000000000000000010"
   },
   {
     "workItemType": "Issue",
@@ -660,9 +660,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 18,
-    "authorUserId": 6,
-    "assignedUserId": 7,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000006",
+    "assignedId": "clseed0000000000000000000007"
   },
   {
     "workItemType": "Issue",
@@ -679,9 +679,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 18,
-    "authorUserId": 8,
-    "assignedUserId": 19,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000008",
+    "assignedId": "clseed0000000000000000000019"
   },
   {
     "workItemType": "Issue",
@@ -698,9 +698,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 10,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Issue",
@@ -717,9 +717,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 11,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Issue",
@@ -736,9 +736,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 12,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Issue",
@@ -755,9 +755,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 13,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Issue",
@@ -774,9 +774,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 14,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Issue",
@@ -793,9 +793,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 15,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Task",
@@ -812,9 +812,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 1,
-    "authorUserId": 1,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000001",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Task",
@@ -831,9 +831,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 2,
-    "authorUserId": 13,
-    "assignedUserId": 14,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000013",
+    "assignedId": "clseed0000000000000000000014"
   },
   {
     "workItemType": "Task",
@@ -850,9 +850,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 8,
-    "authorUserId": 6,
-    "assignedUserId": 15,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000006",
+    "assignedId": "clseed0000000000000000000015"
   },
   {
     "workItemType": "Task",
@@ -869,9 +869,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 5,
-    "authorUserId": 14,
-    "assignedUserId": 7,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000014",
+    "assignedId": "clseed0000000000000000000007"
   },
   {
     "workItemType": "Task",
@@ -888,9 +888,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 15,
-    "authorUserId": 14,
-    "assignedUserId": 13,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000014",
+    "assignedId": "clseed0000000000000000000013"
   },
   {
     "workItemType": "Task",
@@ -907,9 +907,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 8,
-    "authorUserId": 11,
-    "assignedUserId": 14,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000011",
+    "assignedId": "clseed0000000000000000000014"
   },
   {
     "workItemType": "Task",
@@ -926,9 +926,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 7,
-    "authorUserId": 13,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000013",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Task",
@@ -945,9 +945,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 9,
-    "authorUserId": 19,
-    "assignedUserId": 15,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000019",
+    "assignedId": "clseed0000000000000000000015"
   },
   {
     "workItemType": "Task",
@@ -964,9 +964,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 20,
-    "authorUserId": 2,
-    "assignedUserId": 13,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000002",
+    "assignedId": "clseed0000000000000000000013"
   },
   {
     "workItemType": "Task",
@@ -983,9 +983,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 22,
-    "authorUserId": 5,
-    "assignedUserId": 14,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000005",
+    "assignedId": "clseed0000000000000000000014"
   },
   {
     "workItemType": "Task",
@@ -1002,9 +1002,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 9,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Task",
@@ -1021,9 +1021,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 13,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Task",
@@ -1040,9 +1040,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 14,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Task",
@@ -1059,9 +1059,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 9,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Task",
@@ -1078,9 +1078,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 13,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Task",
@@ -1097,9 +1097,9 @@
     "inputStatus": "",
     "programId": 1,
     "dueByMilestoneId": 14,
-    "authorUserId": 12,
-    "assignedUserId": 12,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000012",
+    "assignedId": "clseed0000000000000000000012"
   },
   {
     "workItemType": "Deliverable",
@@ -1116,9 +1116,9 @@
     "inputStatus": "Internal review in progress",
     "programId": 2,
     "dueByMilestoneId": 24,
-    "authorUserId": 21,
-    "assignedUserId": 21,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000021",
+    "assignedId": "clseed0000000000000000000021"
   },
   {
     "workItemType": "Deliverable",
@@ -1135,9 +1135,9 @@
     "inputStatus": "Awaiting subsystem inputs",
     "programId": 2,
     "dueByMilestoneId": 27,
-    "authorUserId": 24,
-    "assignedUserId": 24,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000024",
+    "assignedId": "clseed0000000000000000000024"
   },
   {
     "workItemType": "Deliverable",
@@ -1154,9 +1154,9 @@
     "inputStatus": "Awaiting propulsion lead sign-off",
     "programId": 2,
     "dueByMilestoneId": 29,
-    "authorUserId": 25,
-    "assignedUserId": 25,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000025",
+    "assignedId": "clseed0000000000000000000025"
   },
   {
     "workItemType": "Task",
@@ -1173,9 +1173,9 @@
     "inputStatus": "Routing draft under review",
     "programId": 2,
     "dueByMilestoneId": 26,
-    "authorUserId": 24,
-    "assignedUserId": 24,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000024",
+    "assignedId": "clseed0000000000000000000024"
   },
   {
     "workItemType": "Task",
@@ -1192,9 +1192,9 @@
     "inputStatus": "Pending hardware availability",
     "programId": 2,
     "dueByMilestoneId": 27,
-    "authorUserId": 23,
-    "assignedUserId": 27,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000023",
+    "assignedId": "clseed0000000000000000000027"
   },
   {
     "workItemType": "Task",
@@ -1211,9 +1211,9 @@
     "inputStatus": "Thermal model calibration underway",
     "programId": 2,
     "dueByMilestoneId": 32,
-    "authorUserId": 27,
-    "assignedUserId": 27,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000027",
+    "assignedId": "clseed0000000000000000000027"
   },
   {
     "workItemType": "Issue",
@@ -1230,9 +1230,9 @@
     "inputStatus": "Supplier corrective action in work",
     "programId": 2,
     "dueByMilestoneId": 33,
-    "authorUserId": 28,
-    "assignedUserId": 28,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000028",
+    "assignedId": "clseed0000000000000000000028"
   },
   {
     "workItemType": "Issue",
@@ -1249,9 +1249,9 @@
     "inputStatus": "Replicating failure in lab environment",
     "programId": 2,
     "dueByMilestoneId": 34,
-    "authorUserId": 23,
-    "assignedUserId": 27,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000023",
+    "assignedId": "clseed0000000000000000000027"
   },
   {
     "workItemType": "Task",
@@ -1268,9 +1268,9 @@
     "inputStatus": "Controller retuned, awaiting verification",
     "programId": 1,
     "dueByMilestoneId": 9,
-    "authorUserId": 6,
-    "assignedUserId": 15,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000006",
+    "assignedId": "clseed0000000000000000000015"
   },
   {
     "workItemType": "Task",
@@ -1287,9 +1287,9 @@
     "inputStatus": "Waiting on supplier confirmation",
     "programId": 1,
     "dueByMilestoneId": 10,
-    "authorUserId": 14,
-    "assignedUserId": 13,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000014",
+    "assignedId": "clseed0000000000000000000013"
   },
   {
     "workItemType": "Task",
@@ -1306,8 +1306,8 @@
     "inputStatus": "Draft procedure circulating for feedback",
     "programId": 1,
     "dueByMilestoneId": 11,
-    "authorUserId": 16,
-    "assignedUserId": 14,
-    "organizationId": 1
+    "organizationId": 1,
+    "authorId": "clseed0000000000000000000016",
+    "assignedId": "clseed0000000000000000000014"
   }
 ]

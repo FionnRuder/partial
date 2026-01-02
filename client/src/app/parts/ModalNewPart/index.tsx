@@ -36,7 +36,7 @@ const ModalNewPart = ({isOpen, onClose}: Props) => {
             level: Number(level),
             state,
             revisionLevel,
-            assignedUserId: Number(assignedUserId),
+            assignedUserId: assignedUserId,
             programId: Number(programId),
             parentId: parentId ? Number(parentId) : undefined,
             //startDate: formattedStartDate,
@@ -107,7 +107,7 @@ const ModalNewPart = ({isOpen, onClose}: Props) => {
                 >
                     <option value="">Select Assigned User</option>
                     {users.map((user) => (
-                        <option key={user.userId} value={user.userId}>
+                        <option key={user.id} value={user.id}>
                         {user.name} ({user.username})
                         </option>
                     ))}

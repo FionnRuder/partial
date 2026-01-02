@@ -203,7 +203,7 @@ const Teams = () => {
   const teamWorkItems = useMemo(() => {
     if (!workItems || selectedTeamId === "all") return [];
     return workItems.filter((item) => {
-      const assignee = users?.find((u) => u.userId === item.assignedUserId);
+      const assignee = users?.find((u) => u.id === item.assignedUserId);
       return assignee?.disciplineTeamId === selectedTeamId;
     });
   }, [workItems, users, selectedTeamId]);
@@ -227,7 +227,7 @@ const Teams = () => {
     if (!teamMembers.length) return [];
     
     const counts = teamMembers.map((member) => {
-      const count = filteredTeamWorkItems.filter((item) => item.assignedUserId === member.userId).length;
+      const count = filteredTeamWorkItems.filter((item) => item.assignedUserId === member.id).length;
       return {
         name: member.name,
         count,

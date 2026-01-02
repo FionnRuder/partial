@@ -35,7 +35,7 @@ const AuditLogsPage = () => {
     ...(filters.action && { action: filters.action as AuditAction }),
     ...(filters.entityType && { entityType: filters.entityType }),
     ...(filters.entityId && { entityId: parseInt(filters.entityId) }),
-    ...(filters.userId && { userId: parseInt(filters.userId) }),
+    ...(filters.userId && { userId: filters.userId }),
     ...(filters.startDate && { startDate: filters.startDate }),
     ...(filters.endDate && { endDate: filters.endDate }),
     ...(filters.search && { search: filters.search }),

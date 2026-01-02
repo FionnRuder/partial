@@ -88,8 +88,8 @@ const ModalNewWorkItem = ({
       inputStatus,
       programId: parseInt(programId),
       dueByMilestoneId: parseInt(dueByMilestoneId),
-      authorUserId: parseInt(authorUserId),
-      assignedUserId: parseInt(assignedUserId),
+      authorUserId: authorUserId,
+      assignedUserId: assignedUserId,
     };
 
     if (partIds.length > 0) {
@@ -404,7 +404,7 @@ const ModalNewWorkItem = ({
         >
           <option value="">Select Author User</option>
           {users.map((user) => (
-              <option key={user.userId} value={user.userId}>
+              <option key={user.id} value={user.id}>
               {user.name} ({user.username})
               </option>
           ))}
@@ -417,7 +417,7 @@ const ModalNewWorkItem = ({
         >
           <option value="">Select Assigned User</option>
           {users.map((user) => (
-              <option key={user.userId} value={user.userId}>
+              <option key={user.id} value={user.id}>
               {user.name} ({user.username})
               </option>
           ))}

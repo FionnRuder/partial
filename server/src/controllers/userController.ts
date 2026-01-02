@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient, UserRole } from "@prisma/client";
-import { isValidRole, roleToPrismaEnum } from "../lib/roles";
+import { isValidRole, roleToPrismaEnum, canManageUsers } from "../lib/roles";
 import { logCreate, logUpdate, sanitizeForAudit, getChangedFields } from "../lib/auditLogger";
 
 const prisma = new PrismaClient();
@@ -42,8 +42,9 @@ export const getUserById = async (
     const { userId } = req.params;
     
     const user = await prisma.user.findFirst({
-      where: { userId: Number(userId), organizationId: req.auth.organizationId },
+      where: { id: userId, organizationId: req.auth.organizationId },
       include: {
+        organization: true,
         disciplineTeam: true,
         authoredWorkItems: {
           where: { organizationId: req.auth.organizationId },
@@ -85,12 +86,12 @@ export const createUser = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { cognitoId, username, name, email, phoneNumber, role, profilePictureUrl, disciplineTeamId } = req.body;
+    const { username, name, email, phoneNumber, role, profilePictureUrl, disciplineTeamId } = req.body;
 
     // Validate required fields
-    if (!cognitoId || !username || !name || !email || !phoneNumber || !role) {
+    if (!username || !name || !email || !phoneNumber || !role) {
       res.status(400).json({ 
-        message: "Missing required fields: cognitoId, username, name, email, phoneNumber, and role are required" 
+        message: "Missing required fields: username, name, email, phoneNumber, and role are required" 
       });
       return;
     }
@@ -99,7 +100,6 @@ export const createUser = async (
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
-          { cognitoId },
           {
             AND: [
               { organizationId: req.auth.organizationId },
@@ -118,7 +118,7 @@ export const createUser = async (
 
     if (existingUser) {
       res.status(409).json({ 
-        message: "User with this email, username, or cognitoId already exists" 
+        message: "User with this email or username already exists" 
       });
       return;
     }
@@ -142,7 +142,6 @@ export const createUser = async (
 
     const user = await prisma.user.create({
       data: {
-        cognitoId,
         username,
         name,
         email,
@@ -161,7 +160,7 @@ export const createUser = async (
     await logCreate(
       req,
       "User",
-      user.userId,
+      user.id,
       `User created: ${user.name} (${user.email}) with role ${role}`,
       sanitizeForAudit(user)
     );
@@ -194,12 +193,6 @@ export const updateUser = async (
       emailApproachingDeadline,
     } = req.body;
 
-    const userIdNumber = Number(userId);
-    if (!Number.isInteger(userIdNumber)) {
-      res.status(400).json({ message: "userId must be a valid integer" });
-      return;
-    }
-
     if (disciplineTeamId !== undefined && disciplineTeamId !== null) {
       const disciplineTeam = await prisma.disciplineTeam.findFirst({
         where: {
@@ -216,7 +209,7 @@ export const updateUser = async (
 
     // Get existing user before update for audit logging
     const existingUser = await prisma.user.findFirst({
-      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
+      where: { id: userId, organizationId: req.auth.organizationId },
       include: {
         disciplineTeam: true,
       },
@@ -245,6 +238,15 @@ export const updateUser = async (
     };
     
     if (role) {
+      // SECURITY: Only Admins, Managers, and Program Managers can update user roles
+      const currentUserRole = req.auth.role || "";
+      if (!canManageUsers(currentUserRole)) {
+        res.status(403).json({ 
+          message: "You do not have permission to update user roles. Only Admins, Managers, and Program Managers can update roles." 
+        });
+        return;
+      }
+
       // Validate role before updating
       if (!isValidRole(role)) {
         res.status(400).json({ 
@@ -256,7 +258,7 @@ export const updateUser = async (
     }
 
     const updateResult = await prisma.user.updateMany({
-      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
+      where: { id: userId, organizationId: req.auth.organizationId },
       data: updateData,
     });
 
@@ -266,8 +268,9 @@ export const updateUser = async (
     }
 
     const user = await prisma.user.findFirst({
-      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
+      where: { id: userId, organizationId: req.auth.organizationId },
       include: {
+        organization: true,
         disciplineTeam: true,
       },
     });
@@ -278,7 +281,7 @@ export const updateUser = async (
       await logUpdate(
         req,
         "User",
-        user.userId,
+        user.id,
         `User updated: ${user.name} (${user.email})`,
         sanitizeForAudit(existingUser),
         sanitizeForAudit(user),
@@ -304,29 +307,23 @@ export const getEmailPreferences = async (
 ): Promise<void> => {
   try {
     const { userId } = req.params;
-    const userIdNumber = Number(userId);
-    
-    if (!Number.isInteger(userIdNumber)) {
-      res.status(400).json({ message: "userId must be a valid integer" });
-      return;
-    }
 
     // Users can only view their own preferences, or admins can view any
     const requestingUserId = req.auth.userId;
     const requestingUser = await prisma.user.findUnique({
-      where: { userId: requestingUserId },
+      where: { id: requestingUserId },
       select: { role: true },
     });
 
-    if (userIdNumber !== requestingUserId && requestingUser?.role !== 'Admin') {
+    if (userId !== requestingUserId && requestingUser?.role !== 'Admin') {
       res.status(403).json({ message: "You can only view your own email preferences" });
       return;
     }
 
     const user = await prisma.user.findFirst({
-      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
+      where: { id: userId, organizationId: req.auth.organizationId },
       select: {
-        userId: true,
+        id: true,
         emailNotificationsEnabled: true,
         emailWorkItemAssignment: true,
         emailWorkItemStatusChange: true,
@@ -364,21 +361,14 @@ export const updateEmailPreferences = async (
       emailApproachingDeadline,
     } = req.body;
 
-    const userIdNumber = Number(userId);
-    
-    if (!Number.isInteger(userIdNumber)) {
-      res.status(400).json({ message: "userId must be a valid integer" });
-      return;
-    }
-
     // Users can only update their own preferences, or admins can update any
     const requestingUserId = req.auth.userId;
     const requestingUser = await prisma.user.findUnique({
-      where: { userId: requestingUserId },
+      where: { id: requestingUserId },
       select: { role: true },
     });
 
-    if (userIdNumber !== requestingUserId && requestingUser?.role !== 'Admin') {
+    if (userId !== requestingUserId && requestingUser?.role !== 'Admin') {
       res.status(403).json({ message: "You can only update your own email preferences" });
       return;
     }
@@ -405,7 +395,7 @@ export const updateEmailPreferences = async (
     }
 
     const updateResult = await prisma.user.updateMany({
-      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
+      where: { id: userId, organizationId: req.auth.organizationId },
       data: updateData,
     });
 
@@ -415,9 +405,9 @@ export const updateEmailPreferences = async (
     }
 
     const user = await prisma.user.findFirst({
-      where: { userId: userIdNumber, organizationId: req.auth.organizationId },
+      where: { id: userId, organizationId: req.auth.organizationId },
       select: {
-        userId: true,
+        id: true,
         emailNotificationsEnabled: true,
         emailWorkItemAssignment: true,
         emailWorkItemStatusChange: true,
