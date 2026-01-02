@@ -347,7 +347,15 @@ export interface DeliverableTypeCreateInput {
   name: string;
 }
 
+export interface DeliverableTypeUpdateInput {
+  name: string;
+}
+
 export interface IssueTypeCreateInput {
+  name: string;
+}
+
+export interface IssueTypeUpdateInput {
   name: string;
 }
 
@@ -1098,6 +1106,14 @@ export const api = createApi({
       }),
       invalidatesTags: ["DeliverableTypes"],
     }),
+    updateDeliverableType: build.mutation<DeliverableTypeModel, { typeId: number; updates: DeliverableTypeUpdateInput }>({
+      query: ({ typeId, updates }) => ({
+        url: `deliverableTypes/${typeId}`,
+        method: "PATCH",
+        body: updates,
+      }),
+      invalidatesTags: ["DeliverableTypes"],
+    }),
     deleteDeliverableType: build.mutation<void, number>({
       query: (typeId) => ({
         url: `deliverableTypes/${typeId}`,
@@ -1116,6 +1132,14 @@ export const api = createApi({
         url: "issueTypes",
         method: "POST",
         body,
+      }),
+      invalidatesTags: ["IssueTypes"],
+    }),
+    updateIssueType: build.mutation<IssueTypeModel, { typeId: number; updates: IssueTypeUpdateInput }>({
+      query: ({ typeId, updates }) => ({
+        url: `issueTypes/${typeId}`,
+        method: "PATCH",
+        body: updates,
       }),
       invalidatesTags: ["IssueTypes"],
     }),
@@ -1310,10 +1334,12 @@ export const {
 
   useGetDeliverableTypesQuery,
   useCreateDeliverableTypeMutation,
+  useUpdateDeliverableTypeMutation,
   useDeleteDeliverableTypeMutation,
 
   useGetIssueTypesQuery,
   useCreateIssueTypeMutation,
+  useUpdateIssueTypeMutation,
   useDeleteIssueTypeMutation,
 
   useGetUnreadFeedbackCountQuery,

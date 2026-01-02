@@ -25,58 +25,58 @@ const ProgramCard = ({ program }: Props) => {
 
   return (
     <div 
-      className="rounded border p-4 shadow cursor-pointer hover:shadow-lg transition-shadow"
+      className="rounded border border-gray-200 p-4 shadow cursor-pointer hover:shadow-lg transition-shadow dark:border-gray-700 dark:bg-dark-secondary"
       onClick={handleClick}
     >
       {/* Header Section */}
       <div className="mb-3">
-        <h3 className="font-semibold text-lg">{program.name}</h3>
-        <p className="mt-1 text-sm text-gray-600">ID: {program.id}</p>
+        <h3 className="font-semibold text-lg dark:text-white">{program.name}</h3>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">ID: {program.id}</p>
       </div>
 
       {/* Description */}
       {program.description && (
-        <div className="mb-3 rounded bg-gray-50 p-3">
-          <p className="text-sm">{program.description}</p>
+        <div className="mb-3 rounded bg-gray-50 p-3 dark:bg-dark-tertiary">
+          <p className="text-sm dark:text-gray-200">{program.description}</p>
         </div>
       )}
 
       {/* Main Details */}
-      <div className="space-y-2 text-sm">
+      <div className="space-y-2 text-sm dark:text-gray-200">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className="font-medium">Start Date:</span> {formatDate(program.startDate)}
+            <span className="font-medium dark:text-gray-300">Start Date:</span> {formatDate(program.startDate)}
           </div>
           <div>
-            <span className="font-medium">End Date:</span> {formatDate(program.endDate)}
+            <span className="font-medium dark:text-gray-300">End Date:</span> {formatDate(program.endDate)}
           </div>
         </div>
 
-        <div className="border-t pt-2">
-          <span className="font-medium">Program Manager:</span> {programManager?.name || "N/A"}
+        <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
+          <span className="font-medium dark:text-gray-300">Program Manager:</span> {programManager?.name || "N/A"}
         </div>
 
         {/* Related items */}
-        <div className="border-t pt-2">
+        <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
           <div className="grid grid-cols-2 gap-2 text-xs">
             {program.partNumbers && program.partNumbers.length > 0 && (
               <div>
-                <span className="font-medium">Parts:</span> {program.partNumbers.length}
+                <span className="font-medium dark:text-gray-300">Parts:</span> {program.partNumbers.length}
               </div>
             )}
             {program.disciplineTeams && program.disciplineTeams.length > 0 && (
               <div>
-                <span className="font-medium">Discipline Teams:</span> {program.disciplineTeams.length}
+                <span className="font-medium dark:text-gray-300">Discipline Teams:</span> {program.disciplineTeams.length}
               </div>
             )}
             {program.milestones && program.milestones.length > 0 && (
               <div>
-                <span className="font-medium">Milestones:</span> {program.milestones.length}
+                <span className="font-medium dark:text-gray-300">Milestones:</span> {program.milestones.length}
               </div>
             )}
             {program.workItems && program.workItems.length > 0 && (
               <div>
-                <span className="font-medium">Work Items:</span> {program.workItems.length}
+                <span className="font-medium dark:text-gray-300">Work Items:</span> {program.workItems.length}
               </div>
             )}
           </div>
@@ -84,11 +84,11 @@ const ProgramCard = ({ program }: Props) => {
 
         {/* Discipline Teams List */}
         {program.disciplineTeams && program.disciplineTeams.length > 0 && (
-          <div className="border-t pt-2">
-            <p className="font-medium mb-1 text-xs">Discipline Teams:</p>
+          <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
+            <p className="font-medium mb-1 text-xs dark:text-gray-300">Discipline Teams:</p>
             <div className="ml-3 space-y-1 text-xs">
               {program.disciplineTeams.map((teamLink) => (
-                <div key={teamLink.id} className="text-gray-600">
+                <div key={teamLink.id} className="text-gray-600 dark:text-gray-400">
                   • {teamLink.disciplineTeam.name}
                 </div>
               ))}
@@ -98,11 +98,11 @@ const ProgramCard = ({ program }: Props) => {
 
         {/* Milestones List */}
         {program.milestones && program.milestones.length > 0 && (
-          <div className="border-t pt-2">
-            <p className="font-medium mb-1 text-xs">Milestones:</p>
+          <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
+            <p className="font-medium mb-1 text-xs dark:text-gray-300">Milestones:</p>
             <div className="ml-3 space-y-1 text-xs">
               {program.milestones.map((milestone) => (
-                <div key={milestone.id} className="text-gray-600">
+                <div key={milestone.id} className="text-gray-600 dark:text-gray-400">
                   • {milestone.name} - {formatDate(milestone.date)}
                 </div>
               ))}

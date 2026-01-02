@@ -103,7 +103,7 @@ const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Part Management</h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Organize parts hierarchically and track their development state and ownership.
+                Organize parts hierarchically and track their development state and catalog of work items.
               </p>
             </div>
 
@@ -115,7 +115,7 @@ const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Program Analytics</h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Monitor program health, identify bottlenecks, and track team performance.
+                Monitor program health, identify dependencies and bottlenecks, and track team performance.
               </p>
             </div>
           </div>
@@ -845,6 +845,13 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
     setError(null);
 
     try {
+      // Validate that a discipline team is selected
+      if (!selectedTeamId) {
+        setError("Please select a discipline team to continue.");
+        setIsSaving(false);
+        return;
+      }
+
       // If user doesn't exist in context yet, refresh from server
       // (User should have been created in role selection step)
       let currentUser = user;
@@ -860,7 +867,7 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
       }
 
       await updateProfile({
-        disciplineTeamId: selectedTeamId || undefined,
+        disciplineTeamId: selectedTeamId,
         profilePictureUrl: sanitizeProfilePictureUrl(profilePictureUrl),
       });
 
@@ -944,7 +951,7 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
             {/* Discipline Team Selection */}
             <div>
               <label htmlFor="disciplineTeam" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Discipline Team (Optional)
+                Discipline Team <span className="text-red-500">*</span>
               </label>
               {teamsLoading ? (
                 <div className="flex items-center justify-center py-4">
@@ -968,7 +975,7 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
                 </select>
               )}
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                Select your team to connect with colleagues and collaborate on projects
+                Select your team to connect with colleagues and collaborate on projects. You can create a new team if needed.
               </p>
 
               <div className="mt-4">
@@ -1087,7 +1094,7 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
               </button>
               <button
                 type="submit"
-                disabled={isSaving}
+                disabled={isSaving || !selectedTeamId}
                 className="px-6 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSaving ? (
@@ -2478,19 +2485,19 @@ const OnboardingPage = () => {
                     <div className="space-y-2">
                       <h4 className="font-medium text-gray-900 dark:text-white">For Engineers:</h4>
                       <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                        <li>• Track work items for assigned parts</li>
-                        <li>• Manage deliverables and issues</li>
+                        <li>• Track work items for parts they own</li>
+                        <li>• Manage tasks, deliverables, and issues</li>
                         <li>• Collaborate with team members</li>
-                        <li>• Update progress and status</li>
+                        <li>• Update progress and status against program milestones</li>
                       </ul>
                     </div>
                     <div className="space-y-2">
                       <h4 className="font-medium text-gray-900 dark:text-white">For Program Managers:</h4>
                       <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                         <li>• Monitor program status</li>
-                        <li>• Track team performance</li>
-                        <li>• Identify bottlenecks</li>
-                        <li>• Manage milestones</li>
+                        <li>• Track team performance and workload</li>
+                        <li>• Identify bottlenecks and blockers</li>
+                        <li>• Manage milestones and trace their dependencies</li>
                       </ul>
                     </div>
                   </div>
@@ -2501,11 +2508,13 @@ const OnboardingPage = () => {
                     Hardware-Specific Features
                   </h3>
                   <ul className="text-gray-600 dark:text-gray-400 space-y-2">
-                    <li>• Hierarchical part number management</li>
-                    <li>• Hardware-specific deliverable types (SRS, ICD, PDR, etc.)</li>
-                    <li>• Issue tracking for defects, failures, and NCRs</li>
-                    <li>• Program analytics and burndown charts</li>
-                    <li>• Team-based work organization</li>
+                    <li>• Hierarchical part management to reflect the actual hardware assembly (component → subsystem → system)</li>
+                    <li>• Work items (tasks, deliverables, issues) link to specific parts, enabling part-centric views rather than people-centric stories/epics</li>
+                    <li>• Hardware-specific deliverable types (drawing, BOM, CoC, ATP, etc.)</li>
+                    <li>• Hardware-specific issue types (defect, failure, requirement waiver, etc.)</li>
+                    <li>• Cradle to grave ownership of parts and work items through required user assignments</li>
+                    <li>• Program analytics, team workload visualizations, and dynamic burndown charts</li>
+                    <li>• Engineering discipline-based team organization (mechanical, electrical, structural, etc.) rather than feature/product-based</li>
                   </ul>
                 </div>
               </div>

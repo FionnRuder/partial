@@ -1,15 +1,11 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { logCreate, logDelete, sanitizeForAudit } from "../lib/auditLogger";
+import { logCreate, logDelete, logUpdate, sanitizeForAudit, getChangedFields } from "../lib/auditLogger";
 
 const prisma = new PrismaClient();
 
 // System/default issue types that should be seeded for each organization
 const SYSTEM_ISSUE_TYPES = [
-  "Defect",
-  "Failure",
-  "Requirement Waiver",
-  "Non-Conformance Report (NCR)",
   "Process / Manufacturing Issue",
   "Supply-Chain / Procurement Issue",
   "Integration / Interface Issue",
@@ -17,9 +13,7 @@ const SYSTEM_ISSUE_TYPES = [
   "Environmental / Reliability Issue",
   "Configuration / Documentation Control Issue",
   "Safety / Regulatory Issue",
-  "Programmatic / Risk Item",
   "Obsolescence / End-of-Life Issue",
-  "Other",
 ];
 
 /**
@@ -103,6 +97,83 @@ export const createIssueType = async (
 };
 
 /**
+ * Update an issue type
+ */
+export const updateIssueType = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const organizationId = req.auth.organizationId;
+    const { id } = req.params;
+    const typeId = Number(id);
+    const { name } = req.body;
+
+    if (!Number.isInteger(typeId)) {
+      res.status(400).json({ message: "Invalid issue type ID" });
+      return;
+    }
+
+    if (!name || typeof name !== "string" || name.trim().length === 0) {
+      res.status(400).json({ message: "Name is required and must be a non-empty string" });
+      return;
+    }
+
+    // Find the type
+    const existingType = await prisma.issueType.findFirst({
+      where: {
+        id: typeId,
+        organizationId,
+      },
+    });
+
+    if (!existingType) {
+      res.status(404).json({ message: "Issue type not found" });
+      return;
+    }
+
+    // Check if name already exists for another type
+    const nameConflict = await prisma.issueType.findFirst({
+      where: {
+        organizationId,
+        name: name.trim(),
+        id: { not: typeId },
+      },
+    });
+
+    if (nameConflict) {
+      res.status(409).json({ message: "Issue type with this name already exists" });
+      return;
+    }
+
+    const updatedType = await prisma.issueType.update({
+      where: { id: typeId },
+      data: {
+        name: name.trim(),
+      },
+    });
+
+    // Log issue type update
+    const changes = getChangedFields(existingType, updatedType);
+    await logUpdate(
+      req,
+      "IssueType",
+      updatedType.id,
+      `Issue type updated: ${updatedType.name}`,
+      changes,
+      sanitizeForAudit(existingType),
+      sanitizeForAudit(updatedType)
+    );
+
+    res.json(updatedType);
+  } catch (error: any) {
+    res
+      .status(500)
+      .json({ message: `Error updating issue type: ${error.message}` });
+  }
+};
+
+/**
  * Delete an issue type
  */
 export const deleteIssueType = async (
@@ -129,12 +200,6 @@ export const deleteIssueType = async (
 
     if (!type) {
       res.status(404).json({ message: "Issue type not found" });
-      return;
-    }
-
-    // Prevent deletion of system types
-    if (type.isSystem) {
-      res.status(403).json({ message: "Cannot delete system issue types" });
       return;
     }
 
@@ -178,26 +243,43 @@ export const deleteIssueType = async (
 
 /**
  * Initialize system issue types for an organization (called during organization setup)
+ * This function is idempotent - it will create missing standard types without creating duplicates
  */
 export const initializeSystemIssueTypes = async (
   organizationId: number
 ): Promise<void> => {
-  // Check if types already exist
-  const existingCount = await prisma.issueType.count({
-    where: { organizationId },
-  });
+  try {
+    // Get existing system types for this organization
+    const existingTypes = await prisma.issueType.findMany({
+      where: { 
+        organizationId,
+        isSystem: true,
+      },
+      select: { name: true },
+    });
 
-  if (existingCount > 0) {
-    return; // Already initialized
+    const existingNames = new Set(existingTypes.map(t => t.name));
+
+    // Find missing system types
+    const missingTypes = SYSTEM_ISSUE_TYPES.filter(name => !existingNames.has(name));
+
+    // Create missing system types
+    if (missingTypes.length > 0) {
+      const result = await prisma.issueType.createMany({
+        data: missingTypes.map((name) => ({
+          organizationId,
+          name,
+          isSystem: true,
+        })),
+        skipDuplicates: true, // Extra safety to prevent duplicates
+      });
+      console.log(`Created ${result.count} issue types for organization ${organizationId}`);
+    } else {
+      console.log(`All issue types already exist for organization ${organizationId}`);
+    }
+  } catch (error: any) {
+    console.error(`Error in initializeSystemIssueTypes for organization ${organizationId}:`, error);
+    throw error; // Re-throw to be caught by caller
   }
-
-  // Create all system types
-  await prisma.issueType.createMany({
-    data: SYSTEM_ISSUE_TYPES.map((name) => ({
-      organizationId,
-      name,
-      isSystem: true,
-    })),
-  });
 };
 

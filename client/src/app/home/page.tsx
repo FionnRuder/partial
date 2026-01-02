@@ -405,7 +405,7 @@ const HomePage = () => {
 
   return (
     <div className="h-full w-full bg-gray-100 bg-transparent p-8">
-      <Header name="Program Management Dashboard" />
+      <Header name="Home Dashboard" />
 
       {/* ---- Program Selector and Work Item Filter ---- */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

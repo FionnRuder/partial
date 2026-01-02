@@ -272,6 +272,18 @@ export const createOrganizationAndUser = async (
         },
       });
 
+      // Initialize system deliverable types and issue types for the new organization
+      try {
+        await initializeSystemDeliverableTypes(organization.id);
+        await initializeSystemIssueTypes(organization.id);
+        console.log(`Successfully initialized system types for organization ${organization.id}`);
+      } catch (error: any) {
+        console.error(`Error initializing system types for organization ${organization.id}:`, error);
+        console.error("Error stack:", error?.stack);
+        // Don't fail user creation if type initialization fails
+        // Types can be initialized later if needed
+      }
+
       res.status(200).json({
         user: updatedUser,
         organization,
@@ -325,8 +337,10 @@ export const createOrganizationAndUser = async (
     try {
       await initializeSystemDeliverableTypes(organization.id);
       await initializeSystemIssueTypes(organization.id);
+      console.log(`Successfully initialized system types for organization ${organization.id}`);
     } catch (error: any) {
-      console.error("Error initializing system types:", error);
+      console.error(`Error initializing system types for organization ${organization.id}:`, error);
+      console.error("Error stack:", error?.stack);
       // Don't fail user creation if type initialization fails
       // Types can be initialized later if needed
     }
