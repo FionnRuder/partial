@@ -16,7 +16,7 @@ const UserCard = ({ user }: Props) => {
 
   return (
     <div 
-      className="rounded border p-4 shadow cursor-pointer hover:shadow-lg transition-shadow"
+      className="rounded border border-gray-200 p-4 shadow cursor-pointer hover:shadow-lg transition-shadow dark:border-gray-700 dark:bg-dark-secondary"
       onClick={handleClick}
     >
       <div className="flex items-center gap-3 mb-3">
@@ -29,7 +29,7 @@ const UserCard = ({ user }: Props) => {
             className="rounded-full"
           />
         ) : (
-          <div className="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm font-medium">
+          <div className="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-sm font-medium dark:bg-gray-700 dark:text-gray-300">
             {(() => {
               // Get initials from name (first letter of first name and first letter of last name)
               if (user.name) {
@@ -50,41 +50,41 @@ const UserCard = ({ user }: Props) => {
           </div>
         )}
         <div>
-          <h3 className="font-semibold text-lg">{user.name}</h3>
-          <p className="text-sm text-gray-600">{user.username}</p>
+          <h3 className="font-semibold text-lg dark:text-white">{user.name}</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{user.username}</p>
         </div>
       </div>
       
-      <div className="space-y-2 text-sm">
+      <div className="space-y-2 text-sm dark:text-gray-200">
         <div>
-          <span className="font-medium">Email:</span> {user.email}
+          <span className="font-medium dark:text-gray-300">Email:</span> {user.email}
         </div>
         {user.phoneNumber && (
           <div>
-            <span className="font-medium">Phone:</span> {user.phoneNumber}
+            <span className="font-medium dark:text-gray-300">Phone:</span> {user.phoneNumber}
           </div>
         )}
         <div>
-          <span className="font-medium">Role:</span> {user.role}
+          <span className="font-medium dark:text-gray-300">Role:</span> {user.role}
         </div>
         {user.disciplineTeam && (
           <div>
-            <span className="font-medium">Discipline Team:</span> {user.disciplineTeam.name}
+            <span className="font-medium dark:text-gray-300">Discipline Team:</span> {user.disciplineTeam.name}
           </div>
         )}
         {user.authoredWorkItems && user.authoredWorkItems.length > 0 && (
           <div>
-            <span className="font-medium">Authored Work Items:</span> {user.authoredWorkItems.length}
+            <span className="font-medium dark:text-gray-300">Authored Work Items:</span> {user.authoredWorkItems.length}
           </div>
         )}
         {user.assignedWorkItems && user.assignedWorkItems.length > 0 && (
           <div>
-            <span className="font-medium">Assigned Work Items:</span> {user.assignedWorkItems.length}
+            <span className="font-medium dark:text-gray-300">Assigned Work Items:</span> {user.assignedWorkItems.length}
           </div>
         )}
         {user.partNumbers && user.partNumbers.length > 0 && (
           <div>
-            <span className="font-medium">Parts:</span> {user.partNumbers.length}
+            <span className="font-medium dark:text-gray-300">Parts:</span> {user.partNumbers.length}
           </div>
         )}
       </div>

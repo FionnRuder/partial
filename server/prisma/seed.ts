@@ -69,7 +69,13 @@ async function main() {
     "attachment.json",
   ];
 
-  // Delete dependent tables first (StatusLog, Invitation, Feedback)
+  // Delete dependent tables first (AuditLog, StatusLog, Invitation, Feedback)
+  try {
+    await prisma.auditLog.deleteMany({});
+    console.log("Cleared data from AuditLog");
+  } catch (error) {
+    console.error("Error clearing data from AuditLog:", error);
+  }
   try {
     await prisma.statusLog.deleteMany({});
     console.log("Cleared data from StatusLog");
@@ -92,7 +98,64 @@ async function main() {
   await deleteAllData(orderedFileNames);
   await resetSequences();
 
-  for (const fileName of orderedFileNames) {
+  // Seed files that don't have circular dependencies first
+  const independentFiles = ["organization.json", "deliverableType.json", "issueType.json"];
+  for (const fileName of independentFiles) {
+    const filePath = path.join(dataDirectory, fileName);
+    const jsonData = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    const modelName = path.basename(fileName, path.extname(fileName));
+    const model: any = prisma[modelName as keyof typeof prisma];
+
+    try {
+      for (const data of jsonData) {
+        await model.create({ data });
+      }
+      console.log(`Seeded ${modelName} with data from ${fileName}`);
+    } catch (error) {
+      console.error(`Error seeding data for ${modelName}:`, error);
+    }
+  }
+
+  // Handle circular dependency between DisciplineTeam and User
+  // Step 1: Create DisciplineTeams without teamManagerUserId
+  const disciplineTeamPath = path.join(dataDirectory, "disciplineTeam.json");
+  const disciplineTeamData = JSON.parse(fs.readFileSync(disciplineTeamPath, "utf-8"));
+  for (const data of disciplineTeamData) {
+    const { teamManagerUserId, ...teamData } = data;
+    await prisma.disciplineTeam.create({ data: teamData });
+  }
+  console.log("Seeded disciplineTeam with data from disciplineTeam.json (without managers)");
+
+  // Step 2: Create Users (they can reference teams now)
+  const userPath = path.join(dataDirectory, "user.json");
+  const userData = JSON.parse(fs.readFileSync(userPath, "utf-8"));
+  for (const data of userData) {
+    await prisma.user.create({ data });
+  }
+  console.log("Seeded user with data from user.json");
+
+  // Step 3: Update DisciplineTeams with teamManagerUserId
+  for (const data of disciplineTeamData) {
+    if (data.teamManagerUserId) {
+      const team = await prisma.disciplineTeam.findFirst({
+        where: { name: data.name, organizationId: data.organizationId },
+      });
+      if (team) {
+        await prisma.disciplineTeam.update({
+          where: { id: team.id },
+          data: { teamManagerUserId: data.teamManagerUserId },
+        });
+      }
+    }
+  }
+  console.log("Updated disciplineTeam with team managers");
+
+  // Continue with remaining seed data
+  const remainingFiles = orderedFileNames.filter(
+    (fileName) => !independentFiles.includes(fileName) && fileName !== "disciplineTeam.json" && fileName !== "user.json"
+  );
+
+  for (const fileName of remainingFiles) {
     const filePath = path.join(dataDirectory, fileName);
     const jsonData = JSON.parse(fs.readFileSync(filePath, "utf-8"));
     const modelName = path.basename(fileName, path.extname(fileName));

@@ -29,18 +29,18 @@ const WorkItemCard = ({ workItem }: Props) => {
 
   return (
     <div 
-      className="rounded border p-4 shadow cursor-pointer hover:shadow-lg transition-shadow"
+      className="rounded border border-gray-200 p-4 shadow cursor-pointer hover:shadow-lg transition-shadow dark:border-gray-700 dark:bg-dark-secondary"
       onClick={handleClick}
     >
       {/* Header Section */}
       <div className="mb-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-lg">{workItem.title}</h3>
-          <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
+          <h3 className="font-semibold text-lg dark:text-white">{workItem.title}</h3>
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
             {workItem.workItemType}
           </span>
         </div>
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
           ID: {workItem.workItemType === "Deliverable"
             ? "D"
             : workItem.workItemType === "Issue"
@@ -51,84 +51,84 @@ const WorkItemCard = ({ workItem }: Props) => {
 
       {/* Description */}
       {workItem.description && (
-        <div className="mb-3 rounded bg-gray-50 p-3">
-          <p className="text-sm">{workItem.description}</p>
+        <div className="mb-3 rounded bg-gray-50 p-3 dark:bg-dark-tertiary">
+          <p className="text-sm dark:text-gray-200">{workItem.description}</p>
         </div>
       )}
 
       {/* Main Details */}
-      <div className="space-y-2 text-sm">
+      <div className="space-y-2 text-sm dark:text-gray-200">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className="font-medium">Status:</span> {StatusLabels[workItem.status]}
+            <span className="font-medium dark:text-gray-300">Status:</span> {StatusLabels[workItem.status]}
           </div>
           <div>
-            <span className="font-medium">Priority:</span> {workItem.priority}
+            <span className="font-medium dark:text-gray-300">Priority:</span> {workItem.priority}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className="font-medium">Date Opened:</span> {formatDateOnly(workItem.dateOpened)}
+            <span className="font-medium dark:text-gray-300">Date Opened:</span> {formatDateOnly(workItem.dateOpened)}
           </div>
           <div>
-            <span className="font-medium">Due Date:</span> {formatDateOnly(workItem.dueDate)}
+            <span className="font-medium dark:text-gray-300">Due Date:</span> {formatDateOnly(workItem.dueDate)}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className="font-medium">Est. Completion:</span> {formatDateOnly(workItem.estimatedCompletionDate)}
+            <span className="font-medium dark:text-gray-300">Est. Completion:</span> {formatDateOnly(workItem.estimatedCompletionDate)}
           </div>
           {workItem.actualCompletionDate && (
             <div>
-              <span className="font-medium">Actual Completion:</span> {formatDateOnly(workItem.actualCompletionDate)}
+              <span className="font-medium dark:text-gray-300">Actual Completion:</span> {formatDateOnly(workItem.actualCompletionDate)}
             </div>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className="font-medium">Progress:</span> {workItem.percentComplete}%
+            <span className="font-medium dark:text-gray-300">Progress:</span> {workItem.percentComplete}%
           </div>
           <div>
-            <span className="font-medium">Input Status:</span> {workItem.inputStatus}
+            <span className="font-medium dark:text-gray-300">Input Status:</span> {workItem.inputStatus}
           </div>
         </div>
 
         {workItem.tags && (
           <div>
-            <span className="font-medium">Tags:</span> {workItem.tags}
+            <span className="font-medium dark:text-gray-300">Tags:</span> {workItem.tags}
           </div>
         )}
 
-        <div className="border-t pt-2">
+        <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <span className="font-medium">Program:</span> {workItem.program?.name || "N/A"}
+              <span className="font-medium dark:text-gray-300">Program:</span> {workItem.program?.name || "N/A"}
             </div>
             <div>
-              <span className="font-medium">Milestone:</span> {workItem.dueByMilestone?.name || "N/A"}
+              <span className="font-medium dark:text-gray-300">Milestone:</span> {workItem.dueByMilestone?.name || "N/A"}
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className="font-medium">Author:</span> {workItem.authorUser?.name || workItem.authorUser?.username || "Unknown"}
+            <span className="font-medium dark:text-gray-300">Author:</span> {workItem.authorUser?.name || workItem.authorUser?.username || "Unknown"}
           </div>
           <div>
-            <span className="font-medium">Assignee:</span> {workItem.assigneeUser?.name || workItem.assigneeUser?.username || "Unassigned"}
+            <span className="font-medium dark:text-gray-300">Assignee:</span> {workItem.assigneeUser?.name || workItem.assigneeUser?.username || "Unassigned"}
           </div>
         </div>
 
         {/* Type-specific details */}
         {workItem.issueDetail && (
-          <div className="border-t pt-2">
-            <p className="font-medium mb-1">Issue Details:</p>
+          <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
+            <p className="font-medium mb-1 dark:text-gray-300">Issue Details:</p>
             <div className="ml-3 space-y-1 text-xs">
               <div>
-                <span className="font-medium">Type:</span> {(() => {
+                <span className="font-medium dark:text-gray-300">Type:</span> {(() => {
                   const type = workItem.issueDetail.issueType;
                   if (typeof type === 'string') {
                     return IssueTypeLabels[type] || type;
@@ -142,12 +142,12 @@ const WorkItemCard = ({ workItem }: Props) => {
               </div>
               {workItem.issueDetail.rootCause && (
                 <div>
-                  <span className="font-medium">Root Cause:</span> {workItem.issueDetail.rootCause}
+                  <span className="font-medium dark:text-gray-300">Root Cause:</span> {workItem.issueDetail.rootCause}
                 </div>
               )}
               {workItem.issueDetail.correctiveAction && (
                 <div>
-                  <span className="font-medium">Corrective Action:</span> {workItem.issueDetail.correctiveAction}
+                  <span className="font-medium dark:text-gray-300">Corrective Action:</span> {workItem.issueDetail.correctiveAction}
                 </div>
               )}
             </div>
@@ -155,10 +155,10 @@ const WorkItemCard = ({ workItem }: Props) => {
         )}
 
         {workItem.deliverableDetail && (
-          <div className="border-t pt-2">
-            <p className="font-medium mb-1">Deliverable Details:</p>
+          <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
+            <p className="font-medium mb-1 dark:text-gray-300">Deliverable Details:</p>
             <div className="ml-3 text-xs">
-              <span className="font-medium">Type:</span> {(() => {
+              <span className="font-medium dark:text-gray-300">Type:</span> {(() => {
                 const type = workItem.deliverableDetail.deliverableType;
                 if (typeof type === 'string') {
                   return DeliverableTypeLabels[type] || type;
@@ -174,21 +174,21 @@ const WorkItemCard = ({ workItem }: Props) => {
         )}
 
         {/* Related items */}
-        <div className="border-t pt-2">
+        <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
           <div className="grid grid-cols-3 gap-2 text-xs">
             {workItem.partNumbers && workItem.partNumbers.length > 0 && (
               <div>
-                <span className="font-medium">Parts:</span> {workItem.partNumbers.length}
+                <span className="font-medium dark:text-gray-300">Parts:</span> {workItem.partNumbers.length}
               </div>
             )}
             {workItem.attachments && workItem.attachments.length > 0 && (
               <div>
-                <span className="font-medium">Attachments:</span> {workItem.attachments.length}
+                <span className="font-medium dark:text-gray-300">Attachments:</span> {workItem.attachments.length}
               </div>
             )}
             {workItem.comments && workItem.comments.length > 0 && (
               <div>
-                <span className="font-medium">Comments:</span> {workItem.comments.length}
+                <span className="font-medium dark:text-gray-300">Comments:</span> {workItem.comments.length}
               </div>
             )}
           </div>
@@ -196,11 +196,11 @@ const WorkItemCard = ({ workItem }: Props) => {
 
         {/* Attachments preview */}
         {workItem.attachments && workItem.attachments.length > 0 && (
-          <div className="border-t pt-2">
-            <p className="font-medium mb-2 text-xs">Attachment Preview:</p>
+          <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
+            <p className="font-medium mb-2 text-xs dark:text-gray-300">Attachment Preview:</p>
             <div className="flex gap-2">
               {workItem.attachments.slice(0, 3).map((attachment) => (
-                <div key={attachment.id} className="relative h-20 w-20 overflow-hidden rounded-md border">
+                <div key={attachment.id} className="relative h-20 w-20 overflow-hidden rounded-md border border-gray-200 dark:border-gray-700">
                   <Image
                     src={attachment.fileUrl.startsWith('http') ? attachment.fileUrl : `/images/${attachment.fileUrl}`}
                     alt={attachment.fileName}

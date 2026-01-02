@@ -1,17 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { useGetIssueTypesQuery, useCreateIssueTypeMutation, useDeleteIssueTypeMutation } from "@/state/api";
+import { useGetIssueTypesQuery, useCreateIssueTypeMutation, useUpdateIssueTypeMutation, useDeleteIssueTypeMutation } from "@/state/api";
 import Header from "@/components/Header";
-import { Trash2, Plus, Lock, AlertCircle } from "lucide-react";
+import { Trash2, Plus, Lock, AlertCircle, Edit2 } from "lucide-react";
 import { showToast, showApiError, showApiSuccess } from "@/lib/toast";
 
 const IssueTypesPage = () => {
   const { data: types, isLoading, error, refetch } = useGetIssueTypesQuery();
   const [createType, { isLoading: isCreating }] = useCreateIssueTypeMutation();
+  const [updateType, { isLoading: isUpdating }] = useUpdateIssueTypeMutation();
   const [deleteType] = useDeleteIssueTypeMutation();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingType, setEditingType] = useState<{ id: number; name: string } | null>(null);
   const [newTypeName, setNewTypeName] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -38,12 +40,41 @@ const IssueTypesPage = () => {
     }
   };
 
-  const handleDeleteType = async (typeId: number, typeName: string, isSystem: boolean) => {
-    if (isSystem) {
-      showToast.warning("System types cannot be deleted");
+  const handleEditType = (type: { id: number; name: string }) => {
+    setEditingType(type);
+    setNewTypeName(type.name);
+    setFormError(null);
+  };
+
+  const handleUpdateType = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingType) return;
+
+    setFormError(null);
+
+    if (!newTypeName.trim()) {
+      setFormError("Type name is required");
       return;
     }
 
+    try {
+      await updateType({ typeId: editingType.id, updates: { name: newTypeName.trim() } }).unwrap();
+      setEditingType(null);
+      setNewTypeName("");
+      refetch();
+      showApiSuccess("Issue type updated successfully");
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || "Failed to update issue type";
+      setFormError(errorMessage);
+      showApiError(error, "Failed to update issue type");
+    }
+  };
+
+  const handleDeleteType = async (typeId: number, typeName: string, isSystem: boolean) => {
+    if (isSystem) {
+      showToast.warning("Note: This is a system type.");
+    }
+    
     if (!confirm(`Are you sure you want to delete "${typeName}"? This action cannot be undone.`)) {
       return;
     }
@@ -167,7 +198,14 @@ const IssueTypesPage = () => {
                       {new Date(type.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {!type.isSystem && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleEditType({ id: type.id, name: type.name })}
+                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                          title="Edit type"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => handleDeleteType(type.id, type.name, type.isSystem)}
                           className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
@@ -175,7 +213,7 @@ const IssueTypesPage = () => {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -185,19 +223,24 @@ const IssueTypesPage = () => {
         </div>
       )}
 
-      {/* Create Type Modal */}
-      {showCreateModal && (
+      {/* Create/Edit Type Modal */}
+      {(showCreateModal || editingType) && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={() => setShowCreateModal(false)}></div>
+            <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={() => {
+              setShowCreateModal(false);
+              setEditingType(null);
+              setNewTypeName("");
+              setFormError(null);
+            }}></div>
 
             <div className="inline-block align-bottom bg-white dark:bg-dark-secondary rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleCreateType}>
+              <form onSubmit={editingType ? handleUpdateType : handleCreateType}>
                 <div className="bg-white dark:bg-dark-secondary px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
                     <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
                       <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
-                        Create New Issue Type
+                        {editingType ? "Edit Issue Type" : "Create New Issue Type"}
                       </h3>
 
                       {formError && (
@@ -229,15 +272,16 @@ const IssueTypesPage = () => {
                 <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"
-                    disabled={isCreating}
+                    disabled={isCreating || isUpdating}
                     className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
                   >
-                    {isCreating ? "Creating..." : "Create Type"}
+                    {isCreating || isUpdating ? (editingType ? "Updating..." : "Creating...") : (editingType ? "Update Type" : "Create Type")}
                   </button>
                   <button
                     type="button"
                     onClick={() => {
                       setShowCreateModal(false);
+                      setEditingType(null);
                       setFormError(null);
                       setNewTypeName("");
                     }}

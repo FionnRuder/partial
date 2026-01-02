@@ -18,6 +18,7 @@ const Navbar = () => {
     );
     const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     // Get user initials from username or name
     const getUserInitials = () => {
@@ -60,6 +61,15 @@ const Navbar = () => {
         }
     };
 
+    const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (searchTerm.trim()) {
+            router.push(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+        } else {
+            router.push("/search");
+        }
+    };
+
     return (
         <div className="flex items-center justify-between bg-white px-4 py-3 dark:bg-black">
             {/* Search Bar */}
@@ -71,14 +81,16 @@ const Navbar = () => {
                     <Menu className="h-8 w-8 dark:text-white" />
                 </button>
                 )}
-                <div className="relative flex h-min w-[200px]">
+                <form onSubmit={handleSearchSubmit} className="relative flex h-min w-[200px]">
                     <Search className="absolute left-[4px] top-1/2 mr-2 h-5 w-5 -translate-y-1/2 transform cursor-pointer dark:text-white" />
                     <input
                         className="w-full rounded border-none bg-gray-100 p-2 pl-8 placeholder-gray-500 focus:border-transparent focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-white"
                         type="search"
                         placeholder="Search..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                </div>
+                </form>
             </div>
 
             {/* Icons */}
