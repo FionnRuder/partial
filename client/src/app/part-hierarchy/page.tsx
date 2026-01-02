@@ -37,8 +37,8 @@ const useWorkItemData = (partsOrTree: Part[] | PartHierarchyNode[], programId: n
         if (storedUser) {
           try {
             const parsedUser = JSON.parse(storedUser);
-            if (parsedUser?.userId) {
-              headers['x-user-id'] = String(parsedUser.userId);
+            if (parsedUser?.id) {
+              headers['x-user-id'] = String(parsedUser.id);
             }
           } catch (error) {
             console.warn('Failed to parse authUser from localStorage', error);
@@ -108,8 +108,8 @@ const useWorkItemData = (partsOrTree: Part[] | PartHierarchyNode[], programId: n
         if (storedUser) {
           try {
             const parsedUser = JSON.parse(storedUser);
-            if (parsedUser?.userId) {
-              headers['x-user-id'] = String(parsedUser.userId);
+            if (parsedUser?.id) {
+              headers['x-user-id'] = String(parsedUser.id);
             }
           } catch (error) {
             console.warn('Failed to parse authUser from localStorage', error);

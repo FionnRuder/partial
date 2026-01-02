@@ -2,12 +2,13 @@ import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { logAuthEvent, AuthEventType, getAuthContext } from "../lib/authLogger";
 import { setUserContext, clearUserContext } from "../lib/sentry";
+import { getAuth } from "../lib/auth";
+import { fromNodeHeaders } from "better-auth/node";
 
 const prisma = new PrismaClient();
 
 /**
- * Authentication middleware - Cognito session-based only
- * Requires user to be authenticated via Cognito OIDC and have a valid session
+ * Authentication middleware using Better Auth
  */
 export const authenticate = async (
   req: Request,
@@ -15,18 +16,22 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
-    // Check for session-based authentication (Cognito OIDC)
-    if (!req.session?.userInfo) {
-      // Session exists but no userInfo - likely session was lost (server restart with memory store)
-      // or user never completed login. Destroy the invalid session and return 401.
+    // Get Better Auth session
+    const auth = await getAuth();
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(req.headers),
+    });
+
+    if (!session || !session.user) {
       const context = getAuthContext(req);
       
       logAuthEvent({
         eventType: AuthEventType.SESSION_INVALID,
         ...context,
-        reason: "Session exists but no userInfo present",
+        reason: "No valid Better Auth session found",
       });
 
+      // Clear any old session cookies
       if (req.session) {
         req.session.destroy((err: Error | null) => {
           if (err) {
@@ -47,34 +52,29 @@ export const authenticate = async (
       return;
     }
 
-    const userInfo = req.session.userInfo;
-    
-    // Try to find user by email or cognitoId (sub)
+    // Find user by Better Auth user ID
     const user = await prisma.user.findFirst({
       where: {
-        OR: [
-          { email: userInfo.email },
-          { cognitoId: userInfo.sub },
-        ],
+        id: session.user.id,
       },
       select: {
-        userId: true,
+        id: true,
         organizationId: true,
         role: true,
+        email: true,
       },
     });
 
     if (!user) {
-      // User authenticated with Cognito but not found in database
+      // User authenticated but not found in database
       // This happens during first login - redirect to onboarding
       const context = getAuthContext(req);
       
       logAuthEvent({
         eventType: AuthEventType.ONBOARDING_REQUIRED,
         ...context,
-        email: userInfo.email,
-        cognitoId: userInfo.sub,
-        reason: "User authenticated with Cognito but not found in database",
+        email: session.user.email,
+        reason: "User authenticated but not found in database",
       });
 
       res.status(401).json({ 
@@ -86,20 +86,19 @@ export const authenticate = async (
 
     // User found - attach to request and continue
     req.auth = {
-      userId: user.userId,
+      userId: user.id, // Keep userId name for backward compatibility in req.auth
       organizationId: user.organizationId,
       role: user.role,
     };
 
     // Set user context in Sentry for error tracking
-    setUserContext(user.userId, user.organizationId, userInfo.email);
+    setUserContext(user.id, user.organizationId, user.email);
 
     // Log successful authentication
     logAuthEvent({
       eventType: AuthEventType.LOGIN_SUCCESS,
       ...getAuthContext(req),
-      email: userInfo.email,
-      cognitoId: userInfo.sub,
+      email: user.email,
     });
 
     next();

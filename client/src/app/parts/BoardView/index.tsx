@@ -123,7 +123,7 @@ const BoardView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren
             await createComment({
                 workItemId: activeCommentsWorkItem.id,
                 text: newCommentText.trim(),
-                commenterUserId: authUser.userId,
+                commenterUserId: authUser.id,
             }).unwrap();
             resetCommentState();
             await refetchComments();
@@ -150,7 +150,7 @@ const BoardView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren
                 workItemId: activeCommentsWorkItem.id,
                 commentId: editingCommentId,
                 text: editingCommentText.trim(),
-                requesterUserId: authUser.userId,
+                requesterUserId: authUser.id,
             }).unwrap();
             resetCommentState();
             await refetchComments();
@@ -167,7 +167,7 @@ const BoardView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren
             await deleteComment({
                 workItemId: activeCommentsWorkItem.id,
                 commentId: comment.id,
-                requesterUserId: authUser.userId,
+                requesterUserId: authUser.id,
             }).unwrap();
             await refetchComments();
             refetchWorkItems();
@@ -213,7 +213,7 @@ const BoardView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren
                         <p className="text-sm text-gray-500 dark:text-neutral-400">No comments yet.</p>
                     ) : (
                         comments.map((comment) => {
-                            const isOwnComment = authUser?.userId === comment.commenterUserId;
+                            const isOwnComment = authUser?.id === comment.commenterUserId;
                             const commenterName =
                                 comment.commenterUser?.name ||
                                 comment.commenterUser?.username ||
@@ -413,7 +413,7 @@ const WorkItem = ({ workItem, setEditingWorkItem, onOpenComments }: WorkItemProp
     const formattedDateOpened = formatDateOnly(workItem.dateOpened);
     const formattedDueDate = formatDateOnly(workItem.dueDate);
     const formattedEstimatedCompletionDate = formatDateOnly(workItem.estimatedCompletionDate);
-    const formattedActualCompletionDate = formatDateOnly(workItem.actualCompletionDate);
+    const formattedActualCompletionDate = workItem.actualCompletionDate ? formatDateOnly(workItem.actualCompletionDate) : "";
 
     const numberOfComments = workItem.comments?.length ?? 0;
     const numberOfAttachments = workItem.attachments?.length ?? 0;
@@ -581,7 +581,7 @@ const WorkItem = ({ workItem, setEditingWorkItem, onOpenComments }: WorkItemProp
                         {[workItem.assigneeUser, workItem.authorUser].map((user, index) => {
                             if (!user) return null;
 
-                            const uniqueKey = `${user.userId}-${index}`;
+                            const uniqueKey = `${user.id}-${index}`;
                             const role = index === 0 ? "Assignee" : "Author";
                             const tooltip = `${role}: ${user.name || user.username}`;
 
@@ -590,13 +590,13 @@ const WorkItem = ({ workItem, setEditingWorkItem, onOpenComments }: WorkItemProp
                                     key={uniqueKey}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        router.push(`/users/${user.userId}`);
+                                        router.push(`/users/${user.id}`);
                                     }}
                                     className="relative h-7 w-7 cursor-pointer overflow-hidden rounded-full border-2 border-white ring-1 ring-gray-200 transition-all hover:z-10 hover:ring-2 hover:ring-blue-500 dark:border-dark-secondary dark:ring-gray-700"
                                     title={tooltip}
                                 >
                                     <Image
-                                        src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${user.profilePictureUrl}`}
+                                        src={user.profilePictureUrl ? `/images/${user.profilePictureUrl}` : '/placeholder.png'}
                                         alt={user.username}
                                         width={28}
                                         height={28}
@@ -608,7 +608,7 @@ const WorkItem = ({ workItem, setEditingWorkItem, onOpenComments }: WorkItemProp
                                     key={uniqueKey}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        router.push(`/users/${user.userId}`);
+                                        router.push(`/users/${user.id}`);
                                     }}
                                     title={tooltip}
                                     className="relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-gray-300 to-gray-400 text-xs font-semibold text-white ring-1 ring-gray-200 transition-all hover:z-10 hover:ring-2 hover:ring-blue-500 dark:border-dark-secondary dark:from-gray-600 dark:to-gray-700 dark:ring-gray-700"

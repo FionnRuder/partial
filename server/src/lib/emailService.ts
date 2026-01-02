@@ -1,19 +1,9 @@
-import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { PrismaClient } from "@prisma/client";
 import { logError } from "./errorHandler";
 
 const prisma = new PrismaClient();
 
-// Initialize SES client
-const sesClient = new SESClient({
-  region: process.env.AWS_REGION || "us-east-1",
-  credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
-    ? {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      }
-    : undefined, // Will use IAM role if running on AWS
-});
+// TODO: Replace with your email service provider (e.g., SendGrid, Resend, Nodemailer, etc.)
 
 const FROM_EMAIL = "notifications@partialsystems.com";
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -26,39 +16,31 @@ export interface EmailOptions {
 }
 
 /**
- * Send an email using Amazon SES
+ * Send an email - TODO: Replace with your email service provider implementation
+ * This is a placeholder that logs the email instead of sending it
  */
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
   try {
     const recipients = Array.isArray(options.to) ? options.to : [options.to];
 
-    const command = new SendEmailCommand({
-      Source: FROM_EMAIL,
-      Destination: {
-        ToAddresses: recipients,
-      },
-      Message: {
-        Subject: {
-          Data: options.subject,
-          Charset: "UTF-8",
-        },
-        Body: {
-          Html: {
-            Data: options.html,
-            Charset: "UTF-8",
-          },
-          ...(options.text && {
-            Text: {
-              Data: options.text,
-              Charset: "UTF-8",
-            },
-          }),
-        },
-      },
+    // TODO: Implement email sending with your chosen provider (SendGrid, Resend, Nodemailer, etc.)
+    // For now, just log the email to avoid breaking the application
+    console.log("Email would be sent:", {
+      to: recipients.join(", "),
+      subject: options.subject,
+      html: options.html.substring(0, 100) + "...", // Log first 100 chars
     });
-
-    await sesClient.send(command);
-    console.log(`Email sent successfully to ${recipients.join(", ")}`);
+    
+    // Uncomment and implement when you have your email service ready:
+    // await emailProvider.send({
+    //   to: recipients,
+    //   from: FROM_EMAIL,
+    //   subject: options.subject,
+    //   html: options.html,
+    //   text: options.text,
+    // });
+    
+    console.log(`Email logged (not sent) to ${recipients.join(", ")}`);
   } catch (error) {
     logError(error as Error, {
       component: "emailService",
@@ -118,7 +100,7 @@ const createEmailTemplate = (
  * Check if a user wants to receive a specific type of email notification
  */
 const shouldSendEmail = async (
-  userId: number | null,
+  userId: string | null,
   notificationType: 'assignment' | 'statusChange' | 'comment' | 'invitation' | 'approachingDeadline'
 ): Promise<boolean> => {
   if (!userId) {
@@ -128,7 +110,7 @@ const shouldSendEmail = async (
 
   try {
     const user = await prisma.user.findUnique({
-      where: { userId },
+      where: { id: userId },
       select: {
         emailNotificationsEnabled: true,
         emailWorkItemAssignment: true,
@@ -185,7 +167,7 @@ export const sendInvitationEmail = async (
   role: string,
   createdByName: string,
   expiresInDays: number,
-  recipientUserId?: number | null
+  recipientUserId?: string | null
 ): Promise<void> => {
   // Check preferences (for existing users only)
   if (recipientUserId) {
@@ -232,7 +214,7 @@ export const sendWorkItemAssignmentEmail = async (
   assignedByName: string,
   priority: string,
   dueDate: string,
-  assigneeUserId: number
+  assigneeUserId: string
 ): Promise<void> => {
   // Check user preferences
   const shouldSend = await shouldSendEmail(assigneeUserId, 'assignment');
@@ -279,7 +261,7 @@ export const sendWorkItemCommentEmail = async (
   workItemId: number,
   commenterName: string,
   commentText: string,
-  recipientUserId: number
+  recipientUserId: string
 ): Promise<void> => {
   // Check user preferences
   const shouldSend = await shouldSendEmail(recipientUserId, 'comment');
@@ -340,7 +322,7 @@ export const sendWorkItemStatusChangeEmail = async (
   oldStatus: string,
   newStatus: string,
   changedByName: string,
-  recipientUserId: number
+  recipientUserId: string
 ): Promise<void> => {
   // Check user preferences
   const shouldSend = await shouldSendEmail(recipientUserId, 'statusChange');
@@ -386,7 +368,7 @@ export const sendApproachingDeadlineEmail = async (
   workItemId: number,
   dueDate: string,
   daysUntilDue: number,
-  recipientUserId: number
+  recipientUserId: string
 ): Promise<void> => {
   // Check user preferences
   const shouldSend = await shouldSendEmail(recipientUserId, 'approachingDeadline');

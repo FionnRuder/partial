@@ -124,9 +124,9 @@ const Navbar = () => {
                 <div className="ml-2 mr-4 hidden min-h-[2em] w-[0.1rem] bg-gray-200 md:inline-block"></div>
                 
                 {/* User Profile Picture/Initials */}
-                {user?.userId && (
+                {user?.id && (
                     <Link
-                        href={`/users/${user.userId}`}
+                        href={`/users/${user.id}`}
                         className={
                             isDarkMode
                                 ? `h-min w-min rounded-full dark:hover:bg-gray-700`
@@ -137,7 +137,7 @@ const Navbar = () => {
                         {safeProfilePictureUrl ? (
                             <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600">
                                 <Image
-                                    src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${safeProfilePictureUrl}`}
+                                    src={safeProfilePictureUrl ? `/images/${safeProfilePictureUrl}` : '/placeholder.png'}
                                     alt={user.name || user.username}
                                     width={32}
                                     height={32}

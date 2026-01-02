@@ -18,12 +18,7 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'partial-s3-images.s3.us-east-1.amazonaws.com',
-        port: '',
-        pathname: '/**',
-      },
+      // TODO: Add your image hosting service remote patterns here (e.g., Railway, Cloudflare, etc.)
     ],
   },
 };

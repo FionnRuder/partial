@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
-import { validatePassword } from "@/lib/cognito";
+import { validatePassword } from "@/lib/passwordValidation";
 import type { Program, Milestone } from "@/state/api";
 import type { AuthUser } from "@/lib/auth";
 import { showApiError } from "@/lib/toast";
@@ -21,6 +21,31 @@ import {
 } from "@/state/api";
 import { addDays, formatISO } from "date-fns";
 
+// Helper function to convert role to display name
+// Handles both Prisma enum values (e.g., "ProgramManager") and display names (e.g., "Program Manager")
+const getRoleDisplayName = (role: string): string => {
+  // Handle Prisma enum values (no spaces)
+  if (role === "ProgramManager") return "Program Manager";
+  if (role === "Admin") return "Admin";
+  if (role === "Manager") return "Manager";
+  if (role === "Engineer") return "Engineer";
+  if (role === "Viewer") return "Viewer";
+  
+  // Handle display names (already formatted)
+  if (role === "Program Manager") return "Program Manager";
+  
+  // Handle lowercase variants
+  const roleLower = role.toLowerCase();
+  if (roleLower === "programmanager" || roleLower === "program_manager") return "Program Manager";
+  if (roleLower === "admin") return "Admin";
+  if (roleLower === "manager") return "Manager";
+  if (roleLower === "engineer") return "Engineer";
+  if (roleLower === "viewer") return "Viewer";
+  
+  // Default fallback - return the role as-is (capitalized)
+  return role.charAt(0).toUpperCase() + role.slice(1);
+};
+
 const STEP_STORAGE_KEY = "onboardingStep";
 
 // Onboarding Step Components
@@ -36,7 +61,7 @@ const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
           {/* Logo */}
           <div className="mb-8">
             <Image
-              src="https://partial-s3-images.s3.us-east-1.amazonaws.com/logo1.png"
+              src="/logo1.png"
               alt="Partial Logo"
               width={120}
               height={120}
@@ -213,7 +238,7 @@ const AuthScreen = ({ onBack, onNext, initialMode = "signup" }: {
           
           <div className="text-center">
             <Image
-              src="https://partial-s3-images.s3.us-east-1.amazonaws.com/logo1.png"
+              src="/logo1.png"
               alt="Partial Logo"
               width={80}
               height={80}
@@ -1007,7 +1032,7 @@ const ProfileCompletionScreen = ({ onBack, onNext }: {
 
                         try {
                           // During onboarding, automatically assign the current user as team manager
-                          const currentUserId = user?.userId;
+                          const currentUserId = user?.id;
                           if (!currentUserId) {
                             setCreateTeamError("User not found. Please refresh the page.");
                             return;
@@ -1116,7 +1141,7 @@ const ProgramSetupScreen = ({
       const payload = {
         name,
         description,
-        programManagerUserId: currentUser?.userId,
+        programManagerUserId: currentUser?.id,
         startDate: formatISO(new Date(startDate), { representation: "complete" }),
         endDate: formatISO(new Date(endDate), { representation: "complete" }),
       };
@@ -1577,7 +1602,7 @@ const PartSetupScreen = ({
       setFormError("Please provide a part code and name.");
       return;
     }
-    if (!currentUser?.userId) {
+    if (!currentUser?.id) {
       setFormError("An assigned user is required to create a part. Please sign in again.");
       return;
     }
@@ -1589,7 +1614,7 @@ const PartSetupScreen = ({
         level: Number(level || "0"),
         state,
         revisionLevel: revisionLevel || "-",
-        assignedUserId: currentUser.userId,
+        assignedUserId: currentUser.id,
         programId: program.id,
       }).unwrap();
 
@@ -1737,11 +1762,9 @@ const SuccessScreen = ({ role, onComplete }: {
   role: string;
   onComplete: () => void;
 }) => {
-  const roleTitle = role === "engineer" || role === "Engineer" 
-    ? "Engineer" 
-    : role === "Admin" || role === "admin"
-    ? "Admin"
-    : "Program Manager";
+  // Use the centralized role display name function
+  // This handles both Prisma enum values (e.g., "ProgramManager") and display names (e.g., "Program Manager")
+  const roleTitle = getRoleDisplayName(role);
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -1845,9 +1868,21 @@ const OnboardingPage = () => {
     }
   }, [invitationValidation]);
 
-  // Check Cognito session on mount
+  // Check Better Auth session on mount - only on landing step
+  // This prevents redirecting users who are actively going through onboarding
+  // Note: 401 responses are expected and normal for unauthenticated users
   useEffect(() => {
-    const checkCognitoSession = async () => {
+    // Only check session if we're on the landing step
+    // If user is already past landing (role-selection, organization-name, etc.),
+    // they're actively onboarding and shouldn't be redirected
+    if (step !== "landing") {
+      return;
+    }
+
+    // Prevent duplicate calls in React strict mode
+    let isMounted = true;
+
+    const checkAuthSession = async () => {
       setCheckingSession(true);
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       
@@ -1860,44 +1895,68 @@ const OnboardingPage = () => {
           method: 'GET',
           credentials: 'include', // Include session cookie
           signal: controller.signal,
+        }).catch((error) => {
+          // Silently handle network errors - expected during onboarding
+          if (error.name === 'AbortError') {
+            return null; // Request was aborted
+          }
+          throw error;
         });
 
         clearTimeout(timeoutId);
 
+        // If component unmounted or request was aborted, don't proceed
+        if (!isMounted || !response) {
+          return;
+        }
+
+        // Double-check step hasn't changed (user might have started onboarding)
+        if (step !== "landing") {
+          return;
+        }
+
         if (response.ok) {
           const data = await response.json();
           
-          if (data.isAuthenticated && data.userExistsInDb) {
-            // User has Cognito session AND exists in database - redirect to home
-            router.push('/home');
-            return;
-          } else if (data.isAuthenticated && !data.userExistsInDb) {
-            // User has Cognito session but NOT in database
-            // If invitation token exists, validate it first
-            if (invitationToken && !isValidatingInvitation) {
-              if (invitationError || !invitationValidation) {
-                // Invalid invitation - show error
-                setAuthError('Invalid or expired invitation. Please contact the organization administrator.');
-                setStep("landing");
-                setCheckingSession(false);
-                return;
-              }
-              // Valid invitation - show role selection with invitation data
-              setStep("role-selection");
-              setCheckingSession(false);
-              return;
-            } else if (!invitationToken) {
-              // No invitation - show role selection (new user creating org)
-              setStep("role-selection");
-              setCheckingSession(false);
+          // Better Auth /auth/me returns user object directly if authenticated
+          // Only redirect to home if user exists AND has completed onboarding
+          // IMPORTANT: Never redirect if we're not on the landing step (user is actively onboarding)
+          if (data && data.id && data.organizationId) {
+            const organizationName = data.organization?.name || '';
+            const userCreatedAt = data.createdAt ? new Date(data.createdAt) : null;
+            const now = new Date();
+            
+            // Check if user was just created (within last 5 minutes) - if so, they're likely still onboarding
+            const isRecentlyCreated = userCreatedAt && (now.getTime() - userCreatedAt.getTime()) < 5 * 60 * 1000;
+            
+            // Additional check: if organization data is missing, assume still in onboarding
+            // Also check if organization is the default one
+            // "Default Organization" is assigned during signup, so having it means onboarding isn't complete
+            const isDefaultOrganization = !organizationName || organizationName === "Default Organization";
+            
+            // Only redirect if:
+            // 1. They have a real organization (not "Default Organization")
+            // 2. User was NOT just created (not actively signing up)
+            // 3. We're still on the landing step (not actively onboarding)
+            // 4. Component is still mounted
+            if (!isDefaultOrganization && !isRecentlyCreated && step === "landing" && isMounted) {
+              // User is authenticated, exists in database, has a real organization, and wasn't just created
+              // This means they've completed onboarding - redirect to home
+              router.push('/home');
               return;
             }
-            // Still validating invitation
-            return;
+            // If organization is "Default Organization", missing, or user was just created, they're still in onboarding
+            // Continue with onboarding flow
           }
+          // If user exists but doesn't have organizationId, they're still in onboarding
+          // Continue with onboarding flow
+        } else if (response.status === 401) {
+          // Not authenticated - this is expected during onboarding, continue normally
+          // 401 is normal for unauthenticated users on the onboarding page
+          // The browser console will show this as an error, but it's expected behavior
         }
         
-        // No Cognito session - if invitation exists, user needs to login first
+        // No session or not authenticated - if invitation exists, user needs to login first
         if (invitationToken) {
           // Show landing page but indicate invitation is pending
           setStep("landing");
@@ -1915,23 +1974,29 @@ const OnboardingPage = () => {
             console.debug('Backend server appears to be unavailable');
           } else {
             // Other error - log it
-            console.error('Failed to check Cognito session:', error);
+            console.error('Failed to check auth session:', error);
           }
         } else {
-          console.error('Failed to check Cognito session:', error);
+          console.error('Failed to check auth session:', error);
         }
         // On error, show landing page
         setStep("landing");
       } finally {
-        setCheckingSession(false);
+        if (isMounted) {
+          setCheckingSession(false);
+        }
       }
     };
 
     // Only check session if not validating invitation
     if (!isValidatingInvitation) {
-      checkCognitoSession();
+      checkAuthSession();
     }
-  }, [router, invitationToken, isValidatingInvitation, invitationError, invitationValidation]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router, invitationToken, isValidatingInvitation, invitationError, invitationValidation, step]);
 
   // If user is authenticated (from local storage), skip to role selection
   useEffect(() => {
@@ -1940,18 +2005,17 @@ const OnboardingPage = () => {
     }
   }, [authUser, step, checkingSession]);
 
-  const redirectToLogin = () => {
+  const redirectToAuth = (mode: "signup" | "login" = "signup") => {
     // Clear any auth error when user tries to login again
     setAuthError(null);
-    // Preserve invitation token in the login redirect if present
-    const loginUrl = invitationToken 
-      ? `/auth/login?invitation=${invitationToken}`
-      : "/auth/login";
-    router.replace(loginUrl);
+    // Set the auth mode before going to auth step
+    setAuthMode(mode);
+    // Go to auth step instead of redirecting to login page
+    goToStep("auth");
   };
 
-  const handleGetStarted = redirectToLogin;
-  const handleLogin = redirectToLogin;
+  const handleGetStarted = () => redirectToAuth("signup");
+  const handleLogin = () => redirectToAuth("login");
 
   const handleLearnMore = () => {
     setShowLearnMore(true);
@@ -1996,98 +2060,123 @@ const OnboardingPage = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
-      const sessionCheck = await fetch(`${apiBaseUrl}/auth/me`, {
-        method: 'GET',
-        credentials: 'include',
-        signal: controller.signal,
-      });
+      // Check if user is authenticated via Better Auth
+      // Note: Better Auth uses cookies for session, so we check /auth/me
+      // If it returns 401, the user needs to sign in first (shouldn't happen during onboarding)
+      let userEmail = '';
+      let userName = '';
+      let userPhoneNumber = '';
+      
+      try {
+        const sessionCheck = await fetch(`${apiBaseUrl}/auth/me`, {
+          method: 'GET',
+          credentials: 'include',
+          signal: controller.signal,
+        });
 
-      clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
 
-      if (sessionCheck.ok) {
-        const sessionData = await sessionCheck.json();
-        
-        // If user has Cognito session but not in DB, create user
-        if (sessionData.isAuthenticated && !sessionData.userExistsInDb) {
-          const userInfo = sessionData.userInfo;
+        if (sessionCheck.ok) {
+          const sessionData = await sessionCheck.json();
           
-          // Extract username from email (before @)
-          const username = userInfo.email?.split('@')[0] || userInfo.username || 'user';
-          
-          // Call signup endpoint to create user in database
-          // Include invitationToken if present
-          // For new organization creation, backend will automatically assign Admin role
-          // For invitations, use the role from the invitation
-          let roleToSend = role;
-          if (!invitationData) {
-            // For new organization creation, backend will override role to Admin
-            // But we still need to pass a valid role format
-            if (role === "engineer") {
-              roleToSend = "Engineer";
-            } else if (role === "program-manager") {
-              roleToSend = "Program Manager";
-            } else if (role === "Admin") {
-              roleToSend = "Admin"; // Already correct - backend will accept and override
-            }
-            // If role is already in display format, keep it as is
-          } else {
-            // Use role from invitation (already in display format)
-            roleToSend = invitationData.role;
+          // Better Auth /auth/me returns user object directly if authenticated
+          if (sessionData && sessionData.id) {
+            userEmail = sessionData.email || '';
+            userName = sessionData.name || sessionData.username || '';
+            userPhoneNumber = sessionData.phoneNumber || '';
           }
-          
-          // Ensure phone number is provided (required by backend)
-          const phoneNumber = userInfo.phone_number || userInfo.phoneNumber || '+1234567890'; // Fallback if not provided
-          
-          const signupBody: any = {
-            username: username,
-            name: userInfo.name || '',
-            email: userInfo.email || '',
-            phoneNumber: phoneNumber,
-            role: roleToSend, // Backend will override to Admin for new orgs (no invitation token)
-          };
-          
-          // Include organization name for new organization creation
-          if (orgName && !invitationToken) {
-            signupBody.organizationName = orgName;
-          }
-          
-          if (invitationToken) {
-            signupBody.invitationToken = invitationToken;
-          }
-          
-          const signupResponse = await fetch(`${apiBaseUrl}/onboarding/signup`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include', // Include session cookie
-            body: JSON.stringify(signupBody),
-          });
-
-          if (signupResponse.ok) {
-            const result = await signupResponse.json();
-            console.log('User created in database:', result);
-            
-            // User is now created - the profile screen will refresh user on mount
-            // Small delay to ensure database is ready
-            await new Promise(resolve => setTimeout(resolve, 500));
-          } else {
-            let errorData;
-            try {
-              errorData = await signupResponse.json();
-            } catch (e) {
-              errorData = { message: `HTTP ${signupResponse.status}: ${signupResponse.statusText}` };
-            }
-            console.error('Failed to create user:', errorData);
-            console.error('Response status:', signupResponse.status);
-            console.error('Response headers:', Object.fromEntries(signupResponse.headers.entries()));
-            
-            // Show error to user
-            showApiError({ data: { message: errorData.message }, message: errorData.message }, `Failed to create user: ${signupResponse.status}`);
-            // Don't continue - show error instead
-            throw new Error(errorData.message || 'Failed to create user');
+        } else if (sessionCheck.status === 401) {
+          // Not authenticated - this may be expected during onboarding before signup
+          // Silently continue - the onboarding endpoint will handle user creation
+        }
+      } catch (error) {
+        // Silently handle errors - user might not be authenticated yet
+        // This is expected during onboarding before signup
+        if (error instanceof Error && error.name !== 'AbortError') {
+          // Only log non-abort errors in development
+          if (process.env.NODE_ENV === 'development') {
+            console.debug('Session check during onboarding:', error.message);
           }
         }
+      }
+      
+      // Proceed with creating/updating user in database
+      // Extract username from email (before @) if not provided
+      const username = userEmail?.split('@')[0] || 'user';
+      
+      // Call signup endpoint to update/create user in database
+      // Include invitationToken if present
+      // For new organization creation, backend will automatically assign Admin role
+      // For invitations, use the role from the invitation
+      let roleToSend = role;
+      if (!invitationData) {
+        // For new organization creation, backend will override role to Admin
+        // But we still need to pass a valid role format
+        if (role === "engineer") {
+          roleToSend = "Engineer";
+        } else if (role === "program-manager") {
+          roleToSend = "Program Manager";
+        } else if (role === "Admin") {
+          roleToSend = "Admin"; // Already correct - backend will accept and override
+        }
+        // If role is already in display format, keep it as is
+      } else {
+        // Use role from invitation (already in display format)
+        roleToSend = invitationData.role;
+      }
+      
+      // Use phone number from session data (set during Better Auth signup)
+      // If not available in session, use empty string (backend will handle validation)
+      const phoneNumber = userPhoneNumber || '';
+      
+      const signupBody: any = {
+        username: username,
+        name: userName,
+        email: userEmail,
+        phoneNumber: phoneNumber,
+        role: roleToSend, // Backend will override to Admin for new orgs (no invitation token)
+      };
+      
+      // Include organization name for new organization creation
+      if (orgName && !invitationToken) {
+        signupBody.organizationName = orgName;
+      }
+      
+      if (invitationToken) {
+        signupBody.invitationToken = invitationToken;
+      }
+      
+      const signupResponse = await fetch(`${apiBaseUrl}/onboarding/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Include session cookie
+        body: JSON.stringify(signupBody),
+      });
+
+      if (signupResponse.ok) {
+        const result = await signupResponse.json();
+        console.log('User created/updated in database:', result);
+        
+        // User is now created - the profile screen will refresh user on mount
+        // Small delay to ensure database is ready
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } else {
+        let errorData;
+        try {
+          errorData = await signupResponse.json();
+        } catch (e) {
+          errorData = { message: `HTTP ${signupResponse.status}: ${signupResponse.statusText}` };
+        }
+        console.error('Failed to create user:', errorData);
+        console.error('Response status:', signupResponse.status);
+        console.error('Response headers:', Object.fromEntries(signupResponse.headers.entries()));
+        
+        // Show error to user
+        showApiError({ data: { message: errorData.message }, message: errorData.message }, `Failed to create user: ${signupResponse.status}`);
+        // Don't continue - show error instead
+        throw new Error(errorData.message || 'Failed to create user');
       }
     } catch (error) {
       // Improve error logging with specific handling
@@ -2162,9 +2251,9 @@ const OnboardingPage = () => {
         previous = "landing";
         break;
       case "role-selection":
-        // If user came from Cognito (no auth step), go back to landing
+        // If user came from external auth (no auth step), go back to landing
         // Otherwise go back to auth
-        previous = "landing"; // Skip auth step for Cognito users
+        previous = "landing"; // Skip auth step for externally authenticated users
         break;
       case "organization-name":
         previous = "role-selection";
@@ -2193,7 +2282,7 @@ const OnboardingPage = () => {
     }
   };
 
-      // Show loading while checking Cognito session or validating invitation
+      // Show loading while checking auth session or validating invitation
       if (checkingSession || isValidatingInvitation) {
         return (
           <div className="min-h-screen flex items-center justify-center">

@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
  */
 export interface AuditLogData {
   organizationId: number;
-  userId: number;
+  userId: string;
   action: AuditAction;
   entityType: string;
   entityId?: number;
@@ -80,7 +80,7 @@ export async function auditLogFromRequest(
   data: {
     action: AuditAction;
     entityType: string;
-    entityId?: number;
+    entityId?: number | string;
     description: string;
     changes?: {
       before?: any;
@@ -104,7 +104,7 @@ export async function auditLogFromRequest(
     userId,
     action: data.action,
     entityType: data.entityType,
-    entityId: data.entityId,
+    entityId: typeof data.entityId === 'string' ? undefined : data.entityId, // User.id is string, skip entityId for User entities
     description: data.description,
     changes: data.changes,
     metadata: {
@@ -126,7 +126,7 @@ export async function auditLogFromRequest(
 export async function logCreate(
   req: Request,
   entityType: string,
-  entityId: number,
+  entityId: number | string,
   description: string,
   data?: any
 ): Promise<void> {
@@ -145,7 +145,7 @@ export async function logCreate(
 export async function logUpdate(
   req: Request,
   entityType: string,
-  entityId: number,
+  entityId: number | string,
   description: string,
   before: any,
   after: any,
@@ -170,7 +170,7 @@ export async function logUpdate(
 export async function logDelete(
   req: Request,
   entityType: string,
-  entityId: number,
+  entityId: number | string,
   description: string,
   data?: any
 ): Promise<void> {

@@ -11,20 +11,21 @@ export const createOrganizationAndUser = async (
   res: Response
 ): Promise<void> => {
   try {
-    // Get cognitoId from session (Cognito userInfo)
-    if (!req.cognitoUserInfo) {
+    // Get Better Auth session from middleware
+    const session = (req as any).betterAuthSession;
+    
+    if (!session || !session.user) {
       res.status(401).json({ 
-        message: "Authentication required. Please log in via Cognito." 
+        message: "Authentication required. Please log in." 
       });
       return;
     }
 
-    const cognitoId = req.cognitoUserInfo.sub;
     const { username, name, email, phoneNumber, role, organizationName, invitationToken } = req.body;
 
-    // Use email from Cognito session if not provided in body (more trustworthy)
-    const userEmail = req.cognitoUserInfo.email || email;
-    const userName = req.cognitoUserInfo.name || name;
+    // Use email and name from Better Auth session if not provided in body (more trustworthy)
+    const userEmail = session.user.email || email;
+    const userName = session.user.name || name;
 
     // Validate required fields
     if (!username || !userName || !userEmail || !phoneNumber || !role) {
@@ -49,23 +50,12 @@ export const createOrganizationAndUser = async (
       return;
     }
 
-    // Check if user with this cognitoId already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { cognitoId },
-    });
-
-    if (existingUser) {
-      res.status(409).json({ 
-        message: "User with this cognitoId already exists",
-        user: existingUser
-      });
-      return;
-    }
-
     let organization: { id: number; name: string; createdAt: Date; updatedAt: Date } | null = null;
     let userRole = role;
 
     // If invitation token provided, join existing organization
+    // IMPORTANT: Check invitation token FIRST before checking for existing user
+    // This ensures invitation flow takes precedence even if Better Auth created a user
     if (invitationToken) {
       // SECURITY: For invitation-based signup, validate the role from invitation
       // The role passed in the request should match the invitation role
@@ -119,65 +109,117 @@ export const createOrganizationAndUser = async (
 
       organization = invitationOrg;
 
-      // Check if email or username already exists in this organization
-      const existingEmail = await prisma.user.findFirst({
+      // Check if user with this email already exists (created by Better Auth)
+      const existingUser = await prisma.user.findFirst({
+        where: { email: userEmail },
+        include: {
+          organization: true,
+        },
+      });
+
+      // Check if email or username already exists in THIS organization
+      const existingEmailInOrg = await prisma.user.findFirst({
         where: {
           email: userEmail,
           organizationId: invitationOrg.id,
         },
       });
 
-      if (existingEmail) {
+      if (existingEmailInOrg) {
         res.status(409).json({ 
           message: "User with this email already exists in this organization" 
         });
         return;
       }
 
-      const existingUsername = await prisma.user.findFirst({
+      const existingUsernameInOrg = await prisma.user.findFirst({
         where: {
           username,
           organizationId: invitationOrg.id,
         },
       });
 
-      if (existingUsername) {
+      if (existingUsernameInOrg) {
         res.status(409).json({ 
           message: "User with this username already exists in this organization" 
         });
         return;
       }
 
-      // Create user and mark invitation as used in transaction
+      // Create or update user and mark invitation as used in transaction
       const result = await prisma.$transaction(async (tx) => {
         // Convert role to Prisma enum format (e.g., "Program Manager" -> "ProgramManager")
         const prismaRole: UserRole = roleToPrismaEnum(userRole);
         
-        const newUser = await tx.user.create({
-          data: {
-            cognitoId,
-            username,
-            name: userName,
-            email: userEmail,
-            phoneNumber,
-            role: prismaRole, // Use Prisma enum format
-            organizationId: invitationOrg.id,
-          },
-          include: {
-            disciplineTeam: true,
-          },
-        });
+        let user;
+        
+        if (existingUser) {
+          // User exists (created by Better Auth with default org) - update them to join the invitation organization
+          user = await tx.user.update({
+            where: { id: existingUser.id },
+            data: {
+              username,
+              name: userName,
+              phoneNumber,
+              role: prismaRole, // Use role from invitation
+              organizationId: invitationOrg.id, // Join the invitation organization
+            },
+            include: {
+              disciplineTeam: true,
+              organization: true,
+            },
+          });
+        } else {
+          // User doesn't exist - create new user
+          // Double-check that user doesn't exist (race condition protection)
+          const doubleCheckUser = await tx.user.findFirst({
+            where: { email: userEmail },
+          });
+          
+          if (doubleCheckUser) {
+            // User was created between our check and now - update them instead
+            user = await tx.user.update({
+              where: { id: doubleCheckUser.id },
+              data: {
+                username,
+                name: userName,
+                phoneNumber,
+                role: prismaRole, // Use role from invitation
+                organizationId: invitationOrg.id, // Join the invitation organization
+              },
+              include: {
+                disciplineTeam: true,
+                organization: true,
+              },
+            });
+          } else {
+            // User truly doesn't exist - create new user
+            user = await tx.user.create({
+              data: {
+                username,
+                name: userName,
+                email: userEmail,
+                phoneNumber,
+                role: prismaRole, // Use Prisma enum format
+                organizationId: invitationOrg.id,
+              },
+              include: {
+                disciplineTeam: true,
+              },
+            });
+          }
+        }
 
         await (tx as any).invitation.update({
           where: { id: invitation.id },
           data: {
             used: true,
             usedAt: new Date(),
-            usedByUserId: newUser.userId,
+            usedByUserId: user.id,
           },
         });
 
-        return newUser;
+        return user;
       });
 
       res.status(201).json({
@@ -194,6 +236,50 @@ export const createOrganizationAndUser = async (
     // This prevents privilege escalation attempts
     userRole = 'Admin'; // Override any role value passed in
     
+    // Check if user with this email already exists (created by Better Auth)
+    const existingUser = await prisma.user.findFirst({
+      where: { email: userEmail },
+      include: {
+        organization: true,
+      },
+    });
+    
+    // If user already exists (created by Better Auth), update them
+    if (existingUser) {
+      const orgName = organizationName || `${userName}'s Organization`;
+      
+      // Create new organization
+      organization = await prisma.organization.create({
+        data: {
+          name: orgName,
+        },
+      });
+
+      // Update existing user with new organization and details
+      const prismaRole: UserRole = 'Admin';
+      const updatedUser = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          username,
+          name: userName,
+          phoneNumber,
+          role: prismaRole,
+          organizationId: organization.id,
+        },
+        include: {
+          disciplineTeam: true,
+          organization: true,
+        },
+      });
+
+      res.status(200).json({
+        user: updatedUser,
+        organization,
+      });
+      return;
+    }
+
+    // User doesn't exist - create new organization and user
     const orgName = organizationName || `${userName}'s Organization`;
     organization = await prisma.organization.create({
       data: {
@@ -201,22 +287,7 @@ export const createOrganizationAndUser = async (
       },
     });
 
-    // Check if email or username already exists in any organization
-    const existingEmail = await prisma.user.findFirst({
-      where: { email: userEmail },
-    });
-
-    if (existingEmail) {
-      // Roll back organization creation
-      await prisma.organization.delete({
-        where: { id: organization.id },
-      });
-      res.status(409).json({ 
-        message: "User with this email already exists in another organization" 
-      });
-      return;
-    }
-
+    // Check if username already exists in any organization
     const existingUsername = await prisma.user.findFirst({
       where: { username },
     });
@@ -238,7 +309,6 @@ export const createOrganizationAndUser = async (
     
     const user = await prisma.user.create({
       data: {
-        cognitoId,
         username,
         name: userName,
         email: userEmail,
@@ -278,15 +348,15 @@ export const joinOrganization = async (
   res: Response
 ): Promise<void> => {
   try {
-    // Get cognitoId from session (Cognito userInfo)
-    if (!req.cognitoUserInfo) {
+    // TODO: Update when implementing better-auth.com
+    // Get auth ID from session (userInfo)
+    if (!req.session?.userInfo) {
       res.status(401).json({ 
-        message: "Authentication required. Please log in via Cognito." 
+        message: "Authentication required. Please log in." 
       });
       return;
     }
 
-    const cognitoId = req.cognitoUserInfo.sub;
     const { invitationToken } = req.body;
 
     // SECURITY: Require invitation token - no direct organizationId allowed
@@ -330,7 +400,17 @@ export const joinOrganization = async (
     }
 
     // Verify email matches if invitation has email restriction
-    const userEmail = req.cognitoUserInfo.email;
+    // Get Better Auth session from middleware
+    const session = (req as any).betterAuthSession;
+    
+    if (!session || !session.user) {
+      res.status(401).json({ 
+        message: "Authentication required. Please log in." 
+      });
+      return;
+    }
+
+    const userEmail = session.user.email;
     if (invitation.invitedEmail && invitation.invitedEmail.toLowerCase() !== userEmail?.toLowerCase()) {
       res.status(403).json({ 
         message: "This invitation is for a different email address. Please use the email address the invitation was sent to." 
@@ -338,9 +418,9 @@ export const joinOrganization = async (
       return;
     }
 
-    // Check if user with this cognitoId already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { cognitoId },
+    // Check if user with this email already exists
+    const existingUser = await prisma.user.findFirst({
+      where: { email: userEmail },
     });
 
     if (existingUser) {

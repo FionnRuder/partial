@@ -44,7 +44,7 @@ export const getAuditLogs = async (req: Request, res: Response): Promise<void> =
     }
 
     if (userId) {
-      where.userId = parseInt(userId as string, 10);
+      where.userId = userId as string;
     }
 
     if (startDate || endDate) {
@@ -71,7 +71,7 @@ export const getAuditLogs = async (req: Request, res: Response): Promise<void> =
         include: {
           user: {
             select: {
-              userId: true,
+              id: true,
               name: true,
               email: true,
               username: true,
@@ -118,7 +118,7 @@ export const getAuditLogById = async (req: Request, res: Response): Promise<void
       include: {
         user: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
             username: true,
@@ -155,7 +155,7 @@ export const getEntityAuditLogs = async (req: Request, res: Response): Promise<v
       include: {
         user: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
             username: true,
@@ -229,9 +229,9 @@ export const getAuditLogStats = async (req: Request, res: Response): Promise<voi
     const topUsersWithDetails = await Promise.all(
       topUsers.map(async (user) => {
         const userDetails = await prisma.user.findUnique({
-          where: { userId: user.userId },
+          where: { id: user.userId },
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
             username: true,

@@ -26,7 +26,7 @@ export const getTeams = async (req: Request, res: Response): Promise<void> => {
         if (team.teamManagerUserId) {
           teamManager = await prisma.user.findFirst({
             where: {
-              userId: team.teamManagerUserId,
+              id: team.teamManagerUserId,
               organizationId: req.auth.organizationId,
             },
             select: { username: true, name: true },
@@ -74,7 +74,7 @@ export const createTeam = async (
     if (finalTeamManagerUserId !== undefined && finalTeamManagerUserId !== null) {
       const teamManager = await prisma.user.findFirst({
         where: {
-          userId: Number(finalTeamManagerUserId),
+          id: finalTeamManagerUserId,
           organizationId: req.auth.organizationId,
         },
       });
@@ -108,10 +108,7 @@ export const createTeam = async (
           organizationId: req.auth.organizationId,
           name,
           description,
-          teamManagerUserId:
-            finalTeamManagerUserId !== undefined && finalTeamManagerUserId !== null
-              ? Number(finalTeamManagerUserId)
-              : null,
+          teamManagerUserId: finalTeamManagerUserId || null,
           programs: programIds && Array.isArray(programIds) && programIds.length > 0
             ? {
                 create: programIds.map((programId: any) => ({
@@ -133,7 +130,7 @@ export const createTeam = async (
       if (finalTeamManagerUserId !== undefined && finalTeamManagerUserId !== null) {
         await tx.user.update({
           where: {
-            userId: Number(finalTeamManagerUserId),
+            id: finalTeamManagerUserId,
           },
           data: {
             disciplineTeamId: team.id,
@@ -192,7 +189,7 @@ export const editTeam = async (
     if (teamManagerUserId !== undefined && teamManagerUserId !== null) {
       const teamManager = await prisma.user.findFirst({
         where: {
-          userId: Number(teamManagerUserId),
+          id: teamManagerUserId,
           organizationId: req.auth.organizationId,
         },
       });
@@ -228,7 +225,7 @@ export const editTeam = async (
           ...(name !== undefined && { name }),
           ...(description !== undefined && { description }),
           ...(teamManagerUserId !== undefined && {
-            teamManagerUserId: teamManagerUserId !== null ? Number(teamManagerUserId) : null,
+            teamManagerUserId: teamManagerUserId || null,
           }),
         },
       });
@@ -268,7 +265,7 @@ export const editTeam = async (
       if (teamWithPrograms?.teamManagerUserId) {
         teamManager = await tx.user.findFirst({
           where: {
-            userId: teamWithPrograms.teamManagerUserId,
+            id: teamWithPrograms.teamManagerUserId,
             organizationId: req.auth.organizationId,
           },
           select: { username: true, name: true },

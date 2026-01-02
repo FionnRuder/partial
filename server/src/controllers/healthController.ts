@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { getCognitoClient } from "../lib/cognitoClient";
 
 const prisma = new PrismaClient();
 
@@ -18,10 +17,11 @@ interface HealthCheckResult {
       responseTime?: number;
       error?: string;
     };
-    cognito: {
-      status: "up" | "down";
-      error?: string;
-    };
+    // TODO: Add authentication service health check when implementing better-auth.com
+    // auth: {
+    //   status: "up" | "down";
+    //   error?: string;
+    // };
   };
 }
 
@@ -51,46 +51,13 @@ async function checkDatabase(): Promise<{
   }
 }
 
-/**
- * Check Cognito connectivity
- */
-async function checkCognito(): Promise<{
-  status: "up" | "down";
-  error?: string;
-}> {
-  try {
-    // Try to get the Cognito client
-    const client = getCognitoClient();
-    
-    if (!client) {
-      return {
-        status: "down",
-        error: "Cognito client not initialized",
-      };
-    }
-
-    // Try to access the issuer metadata to verify connectivity
-    const issuer = (client as any).issuer;
-    if (!issuer || !issuer.issuer) {
-      return {
-        status: "down",
-        error: "Cognito issuer not available",
-      };
-    }
-
-    // Optionally, we could ping the issuer endpoint, but that's probably overkill
-    // Just verifying the client exists and has issuer info is sufficient
-    
-    return {
-      status: "up",
-    };
-  } catch (error: any) {
-    return {
-      status: "down",
-      error: error.message || "Cognito connectivity check failed",
-    };
-  }
-}
+// TODO: Add authentication service health check when implementing better-auth.com
+// async function checkAuth(): Promise<{
+//   status: "up" | "down";
+//   error?: string;
+// }> {
+//   // Implementation for better-auth.com health check
+// }
 
 /**
  * Health check endpoint handler
@@ -102,21 +69,19 @@ export const healthCheck = async (
 ): Promise<void> => {
   try {
     // Run all health checks in parallel
-    const [databaseCheck, cognitoCheck] = await Promise.all([
+    const [databaseCheck] = await Promise.all([
       checkDatabase(),
-      checkCognito(),
+      // TODO: Add auth check when implementing better-auth.com
+      // checkAuth(),
     ]);
 
     // Determine overall status
     let status: HealthStatus;
-    const allUp = databaseCheck.status === "up" && cognitoCheck.status === "up";
-    const allDown = databaseCheck.status === "down" && cognitoCheck.status === "down";
-    const someDown = !allUp && !allDown;
+    const allUp = databaseCheck.status === "up";
+    const allDown = databaseCheck.status === "down";
 
     if (allUp) {
       status = "healthy";
-    } else if (someDown) {
-      status = "degraded"; // Some services down but not all
     } else {
       status = "unhealthy"; // All critical services down
     }
@@ -126,12 +91,13 @@ export const healthCheck = async (
       timestamp: new Date().toISOString(),
       checks: {
         database: databaseCheck,
-        cognito: cognitoCheck,
+        // TODO: Add auth check when implementing better-auth.com
+        // auth: authCheck,
       },
     };
 
     // Return appropriate HTTP status code
-    const httpStatus = status === "healthy" ? 200 : status === "degraded" ? 200 : 503;
+    const httpStatus = status === "healthy" ? 200 : 503;
 
     res.status(httpStatus).json(result);
   } catch (error: any) {
@@ -144,10 +110,11 @@ export const healthCheck = async (
           status: "down",
           error: "Health check failed",
         },
-        cognito: {
-          status: "down",
-          error: "Health check failed",
-        },
+        // TODO: Add auth check when implementing better-auth.com
+        // auth: {
+        //   status: "down",
+        //   error: "Health check failed",
+        // },
       },
     };
 

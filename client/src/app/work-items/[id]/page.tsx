@@ -142,7 +142,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
       await createComment({
         workItemId,
         text: newCommentText.trim(),
-        commenterUserId: authUser.userId,
+        commenterUserId: authUser.id,
       }).unwrap();
       resetCommentState();
       await refetchComments();
@@ -169,7 +169,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
         workItemId,
         commentId: editingCommentId,
         text: editingCommentText.trim(),
-        requesterUserId: authUser.userId,
+        requesterUserId: authUser.id,
       }).unwrap();
       resetCommentState();
       await refetchComments();
@@ -186,7 +186,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
       await deleteComment({
         workItemId,
         commentId: comment.id,
-        requesterUserId: authUser.userId,
+        requesterUserId: authUser.id,
       }).unwrap();
       await refetchComments();
       refetchWorkItem();
@@ -201,7 +201,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
       await createStatusLog({
         workItemId,
         status: newStatusText.trim(),
-        engineerUserId: authUser.userId,
+        engineerUserId: authUser.id,
       }).unwrap();
       resetStatusLogState();
       await refetchStatusLogs();
@@ -228,7 +228,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
         workItemId,
         statusLogId: editingStatusLogId,
         status: editingStatusText.trim(),
-        requesterUserId: authUser.userId,
+        requesterUserId: authUser.id,
       }).unwrap();
       resetStatusLogState();
       await refetchStatusLogs();
@@ -245,7 +245,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
       await deleteStatusLog({
         workItemId,
         statusLogId: statusLog.id,
-        requesterUserId: authUser.userId,
+        requesterUserId: authUser.id,
       }).unwrap();
       await refetchStatusLogs();
       refetchWorkItem();
@@ -261,7 +261,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
         workItemId,
         fileUrl: newAttachmentFileUrl.trim(),
         fileName: newAttachmentFileName.trim(),
-        uploadedByUserId: authUser.userId,
+        uploadedByUserId: authUser.id,
       }).unwrap();
       setNewAttachmentFileUrl("");
       setNewAttachmentFileName("");
@@ -292,7 +292,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
         attachmentId: editingAttachmentId,
         fileName: editingAttachmentFileName.trim(),
         fileUrl: editingAttachmentFileUrl.trim(),
-        requesterUserId: authUser.userId,
+        requesterUserId: authUser.id,
       }).unwrap();
       setEditingAttachmentId(null);
       setEditingAttachmentFileName("");
@@ -311,7 +311,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
       await deleteAttachment({
         workItemId,
         attachmentId: attachment.id,
-        requesterUserId: authUser.userId,
+        requesterUserId: authUser.id,
       }).unwrap();
       await refetchAttachments();
       refetchWorkItem();
@@ -538,12 +538,12 @@ const WorkItemDetailPage = ({ params }: Props) => {
             <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Author:</span>
             {workItem.authorUser ? (
               <Link 
-                href={`/users/${workItem.authorUser.userId}`}
+                href={`/users/${workItem.authorUser.id}`}
                 className="flex items-center gap-3 mt-2 hover:opacity-80 transition-opacity cursor-pointer"
               >
                 {workItem.authorUser.profilePictureUrl ? (
                   <Image
-                    src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${workItem.authorUser.profilePictureUrl}`}
+                    src={workItem.authorUser.profilePictureUrl ? `/images/${workItem.authorUser.profilePictureUrl}` : '/placeholder.png'}
                     alt={workItem.authorUser.username}
                     width={40}
                     height={40}
@@ -580,12 +580,12 @@ const WorkItemDetailPage = ({ params }: Props) => {
             <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Assignee:</span>
             {workItem.assigneeUser ? (
               <Link 
-                href={`/users/${workItem.assigneeUser.userId}`}
+                href={`/users/${workItem.assigneeUser.id}`}
                 className="flex items-center gap-3 mt-2 hover:opacity-80 transition-opacity cursor-pointer"
               >
                 {workItem.assigneeUser.profilePictureUrl ? (
                   <Image
-                    src={`https://partial-s3-images.s3.us-east-1.amazonaws.com/${workItem.assigneeUser.profilePictureUrl}`}
+                    src={workItem.assigneeUser.profilePictureUrl ? `/images/${workItem.assigneeUser.profilePictureUrl}` : '/placeholder.png'}
                     alt={workItem.assigneeUser.username}
                     width={40}
                     height={40}
@@ -635,7 +635,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
         ) : (
           <div className="space-y-4">
             {statusLogs.map((statusLog) => {
-              const isOwnStatusLog = authUser?.userId === statusLog.engineerUserId;
+              const isOwnStatusLog = authUser?.id === statusLog.engineerUserId;
               const engineerName =
                 statusLog.engineerUser?.name ||
                 statusLog.engineerUser?.username ||
@@ -799,7 +799,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
         ) : (
           <div className="space-y-3">
             {attachments.map((attachment: Attachment) => {
-              const isOwnAttachment = authUser?.userId === attachment.uploadedByUserId;
+              const isOwnAttachment = authUser?.id === attachment.uploadedByUserId;
               const uploaderName =
                 attachment.uploadedByUser?.name ||
                 attachment.uploadedByUser?.username ||
@@ -807,7 +807,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
               const formattedDate = format(new Date(attachment.dateAttached), "PPpp");
               const fileUrl = attachment.fileUrl.startsWith('http') 
                 ? attachment.fileUrl 
-                : `https://partial-s3-images.s3.us-east-1.amazonaws.com/${attachment.fileUrl}`;
+                : `/images/${attachment.fileUrl}`;
 
               return (
                 <div
@@ -981,7 +981,7 @@ const WorkItemDetailPage = ({ params }: Props) => {
         ) : (
           <div className="space-y-4">
             {comments.map((comment) => {
-              const isOwnComment = authUser?.userId === comment.commenterUserId;
+              const isOwnComment = authUser?.id === comment.commenterUserId;
               const commenterName =
                 comment.commenterUser?.name ||
                 comment.commenterUser?.username ||

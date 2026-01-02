@@ -112,7 +112,7 @@ export const createInvitation = async (
         },
         createdBy: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
           },
@@ -130,7 +130,7 @@ export const createInvitation = async (
                 email: invitation.invitedEmail,
                 organizationId: invitation.organizationId,
               },
-              select: { userId: true },
+              select: { id: true },
             })
           : null;
 
@@ -141,7 +141,7 @@ export const createInvitation = async (
           role, // Use display role name
           invitation.createdBy.name,
           days,
-          existingUser?.userId || null
+          existingUser?.id || undefined
         );
       } catch (emailError) {
         // Log error but don't fail the invitation creation
@@ -272,23 +272,21 @@ export const acceptInvitation = async (
   res: Response
 ): Promise<void> => {
   try {
-    // User must be authenticated via Cognito
-    if (!req.cognitoUserInfo) {
+    // TODO: Update when implementing better-auth.com
+    // User must be authenticated
+    if (!req.session?.userInfo) {
       res.status(401).json({ 
-        message: "Authentication required. Please log in via Cognito first." 
+        message: "Authentication required. Please log in." 
       });
       return;
     }
 
     const { token } = req.body;
     const { username, name, email, phoneNumber } = req.body;
-    const cognitoId = req.cognitoUserInfo.sub;
-    const cognitoEmail = req.cognitoUserInfo.email;
-    const cognitoName = req.cognitoUserInfo.name;
-
-    // Use email from Cognito session (more trustworthy)
-    const userEmail = cognitoEmail || email;
-    const userName = cognitoName || name;
+    
+    // Use email from session (more trustworthy)
+    const userEmail = req.session.userInfo.email || email;
+    const userName = req.session.userInfo.name || name;
 
     if (!token) {
       res.status(400).json({ 
@@ -344,9 +342,9 @@ export const acceptInvitation = async (
       return;
     }
 
-    // Check if user with this cognitoId already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { cognitoId },
+    // Check if user with this email already exists
+    const existingUser = await prisma.user.findFirst({
+      where: { email: userEmail },
     });
 
     if (existingUser) {
@@ -393,7 +391,6 @@ export const acceptInvitation = async (
         // invitation.role is already in Prisma enum format (e.g., ProgramManager)
         const user = await tx.user.create({
           data: {
-            cognitoId,
             username,
             name: userName,
             email: userEmail,
@@ -412,12 +409,13 @@ export const acceptInvitation = async (
       });
 
       // Mark invitation as used
+      // Note: userId is now optional, so we use the id field instead
       await tx.invitation.update({
         where: { id: invitation.id },
         data: {
           used: true,
           usedAt: new Date(),
-          usedByUserId: user.userId,
+          usedByUserId: user.id,
         },
       });
 
@@ -426,7 +424,7 @@ export const acceptInvitation = async (
 
     res.status(201).json({
       user: result,
-      organization: result.organization,
+      organization: (result as any).organization,
       message: "Successfully joined organization",
     });
   } catch (error: any) {
@@ -464,14 +462,14 @@ export const getInvitations = async (
       include: {
         createdBy: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
           },
         },
         usedBy: {
           select: {
-            userId: true,
+            id: true,
             name: true,
             email: true,
           },

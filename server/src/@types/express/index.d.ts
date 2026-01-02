@@ -22,14 +22,15 @@ declare module "express-session" {
 declare global {
   namespace Express {
     interface AuthContext {
-      userId: number;
+      userId: string; // Changed from number to string (Better Auth uses cuid)
       organizationId: number;
       role: string;
     }
 
     interface Request {
       auth: AuthContext;
-      cognitoUserInfo?: {
+      // TODO: Update userInfo type when implementing better-auth.com
+      userInfo?: {
         sub: string;
         email?: string;
         email_verified?: boolean;

@@ -105,7 +105,7 @@ export interface Program {
   organizationId: number;
   name: string;
   description?: string;
-  programManagerUserId?: number;
+  programManagerUserId?: string;
   startDate: string;
   endDate: string;
 
@@ -116,9 +116,8 @@ export interface Program {
 }
 
 export interface User {
-  userId: number;
+  id: string;
   organizationId: number;
-  cognitoId: string;
   username: string;
   name: string;
   emailNotificationsEnabled?: boolean;
@@ -175,7 +174,7 @@ export interface Part {
   level: number;
   state: PartState;
   revisionLevel: string;
-  assignedUserId: number;
+  assignedUserId: string;
   programId: number;
   parentId?: number;
 
@@ -203,8 +202,8 @@ export interface WorkItem {
   inputStatus: string;
   programId: number;
   dueByMilestoneId: number;
-  authorUserId: number;
-  assignedUserId: number;
+  authorUserId: string;
+  assignedUserId: string;
 
   program: Program;
   dueByMilestone: Milestone;
@@ -246,7 +245,7 @@ export interface Attachment {
   fileUrl: string;
   fileName: string;
   dateAttached: string;
-  uploadedByUserId: number;
+  uploadedByUserId: string;
   workItemId?: number;
   uploadedByUser?: User;
 }
@@ -256,7 +255,7 @@ export interface Comment {
   organizationId: number;
   text: string;
   dateCommented: string;
-  commenterUserId: number;
+  commenterUserId: string;
   workItemId?: number;
   commenterUser?: User;
 }
@@ -266,7 +265,7 @@ export interface StatusLog {
   organizationId: number;
   status: string;
   dateLogged: string;
-  engineerUserId: number;
+  engineerUserId: string;
   workItemId: number;
   engineerUser?: User;
 }
@@ -276,7 +275,7 @@ export interface DisciplineTeam {
   organizationId: number;
   name: string;
   description: string;
-  teamManagerUserId?: number;
+  teamManagerUserId?: string;
   teamManagerUsername?: string;
   teamManagerName?: string;
 
@@ -301,20 +300,20 @@ export interface Invitation {
   expiresAt: string;
   used: boolean;
   usedAt?: string;
-  usedByUserId?: number;
-  createdByUserId: number;
+  usedByUserId?: string;
+  createdByUserId: string;
   createdAt: string;
   organization?: {
     id: number;
     name: string;
   };
   createdBy?: {
-    userId: number;
+    id: string;
     name: string;
     email: string;
   };
   usedBy?: {
-    userId: number;
+    id: string;
     name: string;
     email: string;
   };
@@ -360,19 +359,19 @@ export interface Feedback {
   description: string;
   status: "open" | "in_progress" | "resolved" | "closed";
   priority: Priority;
-  submittedByUserId: number;
+  submittedByUserId: string;
   createdAt: string;
   updatedAt: string;
   resolvedAt: string | null;
-  resolvedByUserId: number | null;
+  resolvedByUserId: string | null;
   adminNotes: string | null;
   submittedBy: {
-    userId: number;
+    id: string;
     name: string;
     email: string;
   };
   resolvedBy: {
-    userId: number;
+    id: string;
     name: string;
     email: string;
   } | null;
@@ -409,7 +408,7 @@ export enum AuditAction {
 export interface AuditLog {
   id: number;
   organizationId: number;
-  userId: number;
+  userId: string;
   action: AuditAction;
   entityType: string;
   entityId: number | null;
@@ -421,7 +420,7 @@ export interface AuditLog {
   requestId: string | null;
   createdAt: string;
   user: {
-    userId: number;
+    id: string;
     name: string;
     email: string;
     username: string;
@@ -461,8 +460,8 @@ export interface WorkItemCreateInput {
   inputStatus?: string;
   programId: number;
   dueByMilestoneId: number;
-  authorUserId: number;
-  assignedUserId: number;
+  authorUserId: string;
+  assignedUserId: string;
   issueDetail?: {
     issueType: IssueType;
     rootCause?: string;
@@ -489,8 +488,8 @@ export interface WorkItemEditInput {
   inputStatus?: string;
   programId?: number;
   dueByMilestoneId?: number;
-  authorUserId?: number;
-  assignedUserId?: number;
+  authorUserId?: string;
+  assignedUserId?: string;
   issueDetail?: {
     issueType?: IssueType;
     rootCause?: string;
@@ -518,19 +517,17 @@ export const api = createApi({
           if (storedUser) {
             try {
               const parsedUser = JSON.parse(storedUser);
-              if (parsedUser?.userId) {
-                const userId = String(parsedUser.userId);
+              if (parsedUser?.id) {
+                const userId = String(parsedUser.id);
                 headers.set("x-user-id", userId);
                 console.log("Setting x-user-id header:", userId, "from user:", parsedUser);
-              } else {
-                console.warn("authUser in localStorage missing userId:", parsedUser);
               }
             } catch (error) {
-              console.warn("Failed to parse authUser from localStorage", error);
+              // Silently handle parse errors - Better Auth uses cookies, not localStorage
             }
-          } else {
-            console.warn("No authUser found in localStorage");
           }
+          // Note: Better Auth uses cookies for session management, not localStorage
+          // If authUser is not in localStorage, the session cookie will be used by the server
         }
         return headers;
       },
@@ -609,8 +606,8 @@ export const api = createApi({
                 : [{ type: "WorkItems", id: "LIST" }],
     }),
 
-    getWorkItemsByUser: build.query<WorkItem[], number>({
-        query: (userId) => `workItems/user/${userId}`,
+    getWorkItemsByUser: build.query<WorkItem[], string>({
+        query: (id) => `workItems/user/${id}`,
         providesTags: (result) =>
             result
                 ? [
@@ -681,7 +678,7 @@ export const api = createApi({
 
     createComment: build.mutation<
         Comment,
-        { workItemId: number; text: string; commenterUserId: number }
+        { workItemId: number; text: string; commenterUserId: string }
     >({
         query: ({ workItemId, text, commenterUserId }) => ({
             url: `workItems/${workItemId}/comments`,
@@ -696,7 +693,7 @@ export const api = createApi({
 
     updateComment: build.mutation<
         Comment,
-        { workItemId: number; commentId: number; text: string; requesterUserId: number }
+        { workItemId: number; commentId: number; text: string; requesterUserId: string }
     >({
         query: ({ workItemId, commentId, text, requesterUserId }) => ({
             url: `workItems/${workItemId}/comments/${commentId}`,
@@ -712,7 +709,7 @@ export const api = createApi({
 
     deleteComment: build.mutation<
         void,
-        { workItemId: number; commentId: number; requesterUserId: number }
+        { workItemId: number; commentId: number; requesterUserId: string }
     >({
         query: ({ workItemId, commentId, requesterUserId }) => ({
             url: `workItems/${workItemId}/comments/${commentId}`,
@@ -739,7 +736,7 @@ export const api = createApi({
 
     createStatusLog: build.mutation<
         StatusLog,
-        { workItemId: number; status: string; engineerUserId: number }
+        { workItemId: number; status: string; engineerUserId: string }
     >({
         query: ({ workItemId, status, engineerUserId }) => ({
             url: `workItems/${workItemId}/statusLogs`,
@@ -754,7 +751,7 @@ export const api = createApi({
 
     updateStatusLog: build.mutation<
         StatusLog,
-        { workItemId: number; statusLogId: number; status: string; requesterUserId: number }
+        { workItemId: number; statusLogId: number; status: string; requesterUserId: string }
     >({
         query: ({ workItemId, statusLogId, status, requesterUserId }) => ({
             url: `workItems/${workItemId}/statusLogs/${statusLogId}`,
@@ -770,7 +767,7 @@ export const api = createApi({
 
     deleteStatusLog: build.mutation<
         void,
-        { workItemId: number; statusLogId: number; requesterUserId: number }
+        { workItemId: number; statusLogId: number; requesterUserId: string }
     >({
         query: ({ workItemId, statusLogId, requesterUserId }) => ({
             url: `workItems/${workItemId}/statusLogs/${statusLogId}`,
@@ -797,7 +794,7 @@ export const api = createApi({
 
     createAttachment: build.mutation<
         Attachment,
-        { workItemId: number; fileUrl: string; fileName: string; uploadedByUserId: number }
+        { workItemId: number; fileUrl: string; fileName: string; uploadedByUserId: string }
     >({
         query: ({ workItemId, fileUrl, fileName, uploadedByUserId }) => ({
             url: `workItems/${workItemId}/attachments`,
@@ -812,7 +809,7 @@ export const api = createApi({
 
     updateAttachment: build.mutation<
         Attachment,
-        { workItemId: number; attachmentId: number; fileName: string; fileUrl: string; requesterUserId: number }
+        { workItemId: number; attachmentId: number; fileName: string; fileUrl: string; requesterUserId: string }
     >({
         query: ({ workItemId, attachmentId, fileName, fileUrl, requesterUserId }) => ({
             url: `workItems/${workItemId}/attachments/${attachmentId}`,
@@ -828,7 +825,7 @@ export const api = createApi({
 
     deleteAttachment: build.mutation<
         void,
-        { workItemId: number; attachmentId: number; requesterUserId: number }
+        { workItemId: number; attachmentId: number; requesterUserId: string }
     >({
         query: ({ workItemId, attachmentId, requesterUserId }) => ({
             url: `workItems/${workItemId}/attachments/${attachmentId}`,
@@ -893,8 +890,8 @@ export const api = createApi({
             ]
           : [{ type: "Parts", id: "LIST" }],
     }),
-    getPartsByUser: build.query<Part[], number>({
-      query: (userId) => `parts/user/${userId}`,
+    getPartsByUser: build.query<Part[], string>({
+      query: (id) => `parts/user/${id}`,
       providesTags: (result) =>
         result
           ? [
@@ -989,9 +986,9 @@ export const api = createApi({
       providesTags: ["Users"],
     }),
 
-    getUserById: build.query<User, number>({
-      query: (userId) => `users/${userId}`,
-      providesTags: (result, error, userId) => [{ type: "Users", id: userId }],
+    getUserById: build.query<User, string>({
+      query: (id) => `users/${id}`,
+      providesTags: (result, error, id) => [{ type: "Users", id }],
     }),
 
     createUser: build.mutation<User, Partial<User> & { cognitoId: string; username: string; name: string; email: string; phoneNumber: string; role: string }>({
@@ -1003,33 +1000,33 @@ export const api = createApi({
       invalidatesTags: ["Users"],
     }),
 
-    updateUser: build.mutation<User, { userId: number; data: Partial<User> }>({
-      query: ({ userId, data }) => ({
-        url: `users/${userId}`,
+    updateUser: build.mutation<User, { id: string; data: Partial<User> }>({
+      query: ({ id, data }) => ({
+        url: `users/${id}`,
         method: "PUT",
         body: data,
       }),
-      invalidatesTags: (result, error, { userId }) => [
-        { type: "Users", id: userId },
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Users", id },
         "Users",
       ],
     }),
 
     getEmailPreferences: build.query<{
-      userId: number;
+      id: string;
       emailNotificationsEnabled: boolean;
       emailWorkItemAssignment: boolean;
       emailWorkItemStatusChange: boolean;
       emailWorkItemComment: boolean;
       emailInvitation: boolean;
       emailApproachingDeadline: boolean;
-    }, number>({
-      query: (userId) => `users/${userId}/email-preferences`,
-      providesTags: (result, error, userId) => [{ type: "Users", id: userId }],
+    }, string>({
+      query: (id) => `users/${id}/email-preferences`,
+      providesTags: (result, error, id) => [{ type: "Users", id }],
     }),
 
     updateEmailPreferences: build.mutation<{
-      userId: number;
+      id: string;
       emailNotificationsEnabled: boolean;
       emailWorkItemAssignment: boolean;
       emailWorkItemStatusChange: boolean;
@@ -1037,7 +1034,7 @@ export const api = createApi({
       emailInvitation: boolean;
       emailApproachingDeadline: boolean;
     }, {
-      userId: number;
+      id: string;
       preferences: {
         emailNotificationsEnabled?: boolean;
         emailWorkItemAssignment?: boolean;
@@ -1047,13 +1044,13 @@ export const api = createApi({
         emailApproachingDeadline?: boolean;
       };
     }>({
-      query: ({ userId, preferences }) => ({
-        url: `users/${userId}/email-preferences`,
+      query: ({ id, preferences }) => ({
+        url: `users/${id}/email-preferences`,
         method: "PUT",
         body: preferences,
       }),
-      invalidatesTags: (result, error, { userId }) => [
-        { type: "Users", id: userId },
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Users", id },
         "Users",
       ],
     }),
@@ -1191,7 +1188,7 @@ export const api = createApi({
         action?: string;
         entityType?: string;
         entityId?: number;
-        userId?: number;
+        userId?: string;
         startDate?: string;
         endDate?: string;
         search?: string;
@@ -1233,9 +1230,9 @@ export const api = createApi({
         actionsCount: Array<{ action: string; count: number }>;
         entityTypesCount: Array<{ entityType: string; count: number }>;
         topUsers: Array<{
-          userId: number;
+          id: string;
           count: number;
-          user: { userId: number; name: string; email: string; username: string } | null;
+          user: { id: string; name: string; email: string; username: string } | null;
         }>;
       },
       { startDate?: string; endDate?: string }

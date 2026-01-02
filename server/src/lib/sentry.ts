@@ -79,9 +79,9 @@ export function initSentry(): void {
 /**
  * Configure Sentry scope with user context
  */
-export function setUserContext(userId: number, organizationId: number, email?: string): void {
+export function setUserContext(userId: string, organizationId: number, email?: string): void {
   Sentry.setUser({
-    id: userId.toString(),
+    id: userId,
     email,
     organizationId: organizationId.toString(),
   });

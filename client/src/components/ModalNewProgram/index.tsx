@@ -31,7 +31,7 @@ const ModalNewProgram = ({
     const payload: Partial<Program> = {
       name,
       description,
-      programManagerUserId: parseInt(programManagerUserId),
+      programManagerUserId: programManagerUserId || undefined,
       startDate: formatISO(new Date(startDate), { representation: 'complete' }),
       endDate: formatISO(new Date(endDate), { representation: 'complete' }),
     };
@@ -86,7 +86,7 @@ const ModalNewProgram = ({
         >
           <option value="">Select Program Manager (Optional)</option>
           {users.map((user) => (
-            <option key={user.userId} value={user.userId}>
+            <option key={user.id} value={user.id}>
               {user.name} ({user.username})
             </option>
           ))}

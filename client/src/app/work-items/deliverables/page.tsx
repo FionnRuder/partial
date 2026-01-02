@@ -183,7 +183,7 @@ const DeliverablesPage = () => {
     const teamFilteredWorkItems = selectedTeamId === "all" 
         ? programFilteredWorkItems
         : programFilteredWorkItems?.filter((item) => {
-            const assignee = users?.find((u) => u.userId === item.assignedUserId);
+            const assignee = users?.find((u) => u.id === item.assignedUserId);
             return assignee?.disciplineTeamId === selectedTeamId;
         });
     

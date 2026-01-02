@@ -23,8 +23,8 @@ type WorkItemCreate = {
   inputStatus?: string;
   programId: number;
   dueByMilestoneId: number;
-  authorUserId: number;
-  assignedUserId: number;
+  authorUserId: string;
+  assignedUserId: string;
   issueDetail?: {
     issueTypeId?: number; // New: prefer ID
     issueType?: string; // Legacy: name (will be looked up)
@@ -54,8 +54,8 @@ type WorkItemUpdate = {
   inputStatus?: string;
   programId?: number;
   dueByMilestoneId?: number;
-  authorUserId?: number;
-  assignedUserId?: number;
+  authorUserId?: string;
+  assignedUserId?: string;
   issueDetail?: {
     issueTypeId?: number; // New: prefer ID
     issueType?: string; // Legacy: name (will be looked up)
@@ -294,16 +294,9 @@ export const getWorkItemsByUser = async (req: Request, res: Response): Promise<v
   const { userId } = req.params;
   try {
     const organizationId = req.auth.organizationId;
-    const userIdNumber = Number(userId);
-
-    if (!Number.isInteger(userIdNumber)) {
-      res.status(400).json({ message: "userId must be a valid integer" });
-      return;
-    }
-
     const user = await prisma.user.findFirst({
       where: {
-        userId: userIdNumber,
+        id: userId,
         organizationId,
       },
     });
@@ -317,8 +310,8 @@ export const getWorkItemsByUser = async (req: Request, res: Response): Promise<v
       where: {
         organizationId,
         OR: [
-          { authorUserId: userIdNumber },
-          { assignedUserId: userIdNumber },
+          { authorUserId: userId },
+          { assignedUserId: userId },
         ],
       },
       include: {
@@ -380,7 +373,7 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
 
       const author = await tx.user.findFirst({
         where: {
-          userId: Number(body.authorUserId),
+          id: body.authorUserId,
           organizationId,
         },
       });
@@ -391,7 +384,7 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
 
       const assignee = await tx.user.findFirst({
         where: {
-          userId: Number(body.assignedUserId),
+          id: body.assignedUserId,
           organizationId,
         },
       });
@@ -468,8 +461,8 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
         inputStatus: body.inputStatus,
         programId: Number(body.programId),
         dueByMilestoneId: Number(body.dueByMilestoneId),
-        authorUserId: Number(body.authorUserId),
-        assignedUserId: Number(body.assignedUserId),
+        authorUserId: body.authorUserId,
+        assignedUserId: body.assignedUserId,
         issueDetail: body.issueDetail && issueTypeId
           ? {
               create: {
@@ -530,7 +523,7 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
         await tx.statusLog.create({
           data: {
             status: body.inputStatus.trim(),
-            engineerUserId: Number(body.authorUserId),
+            engineerUserId: body.authorUserId,
             workItemId: createdWorkItem.id,
             organizationId: organizationId,
           },
@@ -551,7 +544,7 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
 
     // Send assignment email to assignee (if different from author)
     if (newWorkItem.assigneeUser && newWorkItem.authorUser) {
-      if (newWorkItem.assigneeUser.userId !== newWorkItem.authorUser.userId) {
+      if (newWorkItem.assigneeUser.id !== newWorkItem.authorUser.id) {
         try {
           await sendWorkItemAssignmentEmail(
             newWorkItem.assigneeUser.email,
@@ -561,7 +554,7 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
             newWorkItem.authorUser.name,
             newWorkItem.priority,
             newWorkItem.dueDate.toISOString(),
-            newWorkItem.assigneeUser.userId
+            newWorkItem.assigneeUser.id
           );
         } catch (emailError) {
           console.error("Failed to send assignment email:", emailError);
@@ -747,7 +740,7 @@ export const editWorkItem = async (req: Request, res: Response) => {
 
       if (updates.authorUserId !== undefined) {
         const author = await tx.user.findFirst({
-          where: { userId: Number(updates.authorUserId), organizationId },
+          where: { id: updates.authorUserId, organizationId },
         });
 
         if (!author) {
@@ -757,7 +750,7 @@ export const editWorkItem = async (req: Request, res: Response) => {
 
       if (updates.assignedUserId !== undefined) {
         const assignee = await tx.user.findFirst({
-          where: { userId: Number(updates.assignedUserId), organizationId },
+          where: { id: updates.assignedUserId, organizationId },
         });
 
         if (!assignee) {
@@ -791,9 +784,9 @@ export const editWorkItem = async (req: Request, res: Response) => {
       if (updates.dueByMilestoneId !== undefined)
         updateData.dueByMilestoneId = Number(updates.dueByMilestoneId);
       if (updates.authorUserId !== undefined)
-        updateData.authorUserId = Number(updates.authorUserId);
+        updateData.authorUserId = updates.authorUserId;
       if (updates.assignedUserId !== undefined)
-        updateData.assignedUserId = Number(updates.assignedUserId);
+        updateData.assignedUserId = updates.assignedUserId;
 
       const updatedWorkItem = await tx.workItem.update({
         where: { id: workItemIdNumber },
@@ -1008,7 +1001,7 @@ export const editWorkItem = async (req: Request, res: Response) => {
       // Send assignment email if assignee changed
       if (oldAssigneeId !== newAssigneeId && finalWorkItem.assigneeUser && finalWorkItem.authorUser) {
         // Only send if new assignee is different from the person making the change
-        if (finalWorkItem.assigneeUser.userId !== req.auth.userId) {
+        if (finalWorkItem.assigneeUser.id !== req.auth.userId) {
           await sendWorkItemAssignmentEmail(
             finalWorkItem.assigneeUser.email,
             finalWorkItem.assigneeUser.name,
@@ -1017,7 +1010,7 @@ export const editWorkItem = async (req: Request, res: Response) => {
             finalWorkItem.authorUser.name,
             finalWorkItem.priority,
             finalWorkItem.dueDate.toISOString(),
-            finalWorkItem.assigneeUser.userId
+            finalWorkItem.assigneeUser.id
           );
         }
       }
@@ -1026,29 +1019,29 @@ export const editWorkItem = async (req: Request, res: Response) => {
       if (oldStatus !== newStatus && finalWorkItem.assigneeUser) {
         // Get the user who made the change
         const changedByUser = await prisma.user.findUnique({
-          where: { userId: req.auth.userId },
+          where: { id: req.auth.userId },
           select: { name: true },
         });
         const changedByName = changedByUser?.name || "System";
 
         // Notify assignee and author (if different)
-        const recipients: Array<{ email: string; name: string; userId: number }> = [];
+        const recipients: Array<{ email: string; name: string; userId: string }> = [];
         
-        if (finalWorkItem.assigneeUser && finalWorkItem.assigneeUser.userId !== req.auth.userId) {
+        if (finalWorkItem.assigneeUser && finalWorkItem.assigneeUser.id !== req.auth.userId) {
           recipients.push({
             email: finalWorkItem.assigneeUser.email,
             name: finalWorkItem.assigneeUser.name,
-            userId: finalWorkItem.assigneeUser.userId,
+            userId: finalWorkItem.assigneeUser.id,
           });
         }
         
         if (finalWorkItem.authorUser && 
-            finalWorkItem.authorUser.userId !== req.auth.userId &&
-            finalWorkItem.authorUser.userId !== finalWorkItem.assigneeUser?.userId) {
+            finalWorkItem.authorUser.id !== req.auth.userId &&
+            finalWorkItem.authorUser.id !== finalWorkItem.assigneeUser?.id) {
           recipients.push({
             email: finalWorkItem.authorUser.email,
             name: finalWorkItem.authorUser.name,
-            userId: finalWorkItem.authorUser.userId,
+            userId: finalWorkItem.authorUser.id,
           });
         }
 
@@ -1178,14 +1171,13 @@ export const createCommentForWorkItem = async (req: Request, res: Response): Pro
 
   try {
     const workItemIdNumber = Number(workItemId);
-    const commenterIdNumber = Number(commenterUserId);
 
-    if (!Number.isInteger(workItemIdNumber) || !Number.isInteger(commenterIdNumber)) {
-      res.status(400).json({ message: "workItemId and commenterUserId must be valid integers." });
+    if (!Number.isInteger(workItemIdNumber)) {
+      res.status(400).json({ message: "workItemId must be a valid integer." });
       return;
     }
 
-    if (commenterIdNumber !== req.auth.userId) {
+    if (commenterUserId !== req.auth.userId) {
       res.status(403).json({ message: "You can only create comments as yourself." });
       return;
     }
@@ -1199,7 +1191,7 @@ export const createCommentForWorkItem = async (req: Request, res: Response): Pro
         },
       }),
       prisma.user.findFirst({
-        where: { userId: commenterIdNumber, organizationId: req.auth.organizationId },
+        where: { id: commenterUserId, organizationId: req.auth.organizationId },
       }),
     ]);
 
@@ -1216,7 +1208,7 @@ export const createCommentForWorkItem = async (req: Request, res: Response): Pro
     const newComment = await prisma.comment.create({
       data: {
         text: text.trim(),
-        commenterUserId: commenterIdNumber,
+        commenterUserId: commenterUserId,
         workItemId: workItemIdNumber,
         organizationId: req.auth.organizationId,
       },
@@ -1228,23 +1220,23 @@ export const createCommentForWorkItem = async (req: Request, res: Response): Pro
     // Send email notifications for new comment
     try {
       // Notify assignee and author (if different from commenter)
-      const recipients: Array<{ email: string; name: string; userId: number }> = [];
+      const recipients: Array<{ email: string; name: string; userId: string }> = [];
       
-      if (workItem.assigneeUser && workItem.assigneeUser.userId !== commenterIdNumber) {
+      if (workItem.assigneeUser && workItem.assigneeUser.id !== commenterUserId) {
         recipients.push({
           email: workItem.assigneeUser.email,
           name: workItem.assigneeUser.name,
-          userId: workItem.assigneeUser.userId,
+          userId: workItem.assigneeUser.id,
         });
       }
       
       if (workItem.authorUser && 
-          workItem.authorUser.userId !== commenterIdNumber &&
-          workItem.authorUser.userId !== workItem.assigneeUser?.userId) {
+          workItem.authorUser.id !== commenterUserId &&
+          workItem.authorUser.id !== workItem.assigneeUser?.id) {
         recipients.push({
           email: workItem.authorUser.email,
           name: workItem.authorUser.name,
-          userId: workItem.authorUser.userId,
+          userId: workItem.authorUser.id,
         });
       }
 
@@ -1288,18 +1280,16 @@ export const updateCommentForWorkItem = async (req: Request, res: Response): Pro
   try {
     const workItemIdNumber = Number(workItemId);
     const commentIdNumber = Number(commentId);
-    const requesterIdNumber = Number(requesterUserId);
 
     if (
       !Number.isInteger(workItemIdNumber) ||
-      !Number.isInteger(commentIdNumber) ||
-      !Number.isInteger(requesterIdNumber)
+      !Number.isInteger(commentIdNumber)
     ) {
-      res.status(400).json({ message: "Identifiers must be valid integers." });
+      res.status(400).json({ message: "workItemId and commentId must be valid integers." });
       return;
     }
 
-    if (requesterIdNumber !== req.auth.userId) {
+    if (requesterUserId !== req.auth.userId) {
       res.status(403).json({ message: "You can only edit your own comments." });
       return;
     }
@@ -1313,7 +1303,7 @@ export const updateCommentForWorkItem = async (req: Request, res: Response): Pro
       return;
     }
 
-    if (existingComment.commenterUserId !== requesterIdNumber) {
+    if (existingComment.commenterUserId !== requesterUserId) {
       res.status(403).json({ message: "You can only edit your own comments." });
       return;
     }
@@ -1345,18 +1335,16 @@ export const deleteCommentForWorkItem = async (req: Request, res: Response): Pro
   try {
     const workItemIdNumber = Number(workItemId);
     const commentIdNumber = Number(commentId);
-    const requesterIdNumber = Number(requesterUserId);
 
     if (
       !Number.isInteger(workItemIdNumber) ||
-      !Number.isInteger(commentIdNumber) ||
-      !Number.isInteger(requesterIdNumber)
+      !Number.isInteger(commentIdNumber)
     ) {
-      res.status(400).json({ message: "Identifiers must be valid integers." });
+      res.status(400).json({ message: "workItemId and commentId must be valid integers." });
       return;
     }
 
-    if (requesterIdNumber !== req.auth.userId) {
+    if (requesterUserId !== req.auth.userId) {
       res.status(403).json({ message: "You can only delete your own comments." });
       return;
     }
@@ -1370,7 +1358,7 @@ export const deleteCommentForWorkItem = async (req: Request, res: Response): Pro
       return;
     }
 
-    if (existingComment.commenterUserId !== requesterIdNumber) {
+    if (existingComment.commenterUserId !== requesterUserId) {
       res.status(403).json({ message: "You can only delete your own comments." });
       return;
     }
@@ -1537,14 +1525,13 @@ export const createStatusLogForWorkItem = async (req: Request, res: Response): P
 
   try {
     const workItemIdNumber = Number(workItemId);
-    const engineerIdNumber = Number(engineerUserId);
 
-    if (!Number.isInteger(workItemIdNumber) || !Number.isInteger(engineerIdNumber)) {
-      res.status(400).json({ message: "workItemId and engineerUserId must be valid integers." });
+    if (!Number.isInteger(workItemIdNumber)) {
+      res.status(400).json({ message: "workItemId must be a valid integer." });
       return;
     }
 
-    if (engineerIdNumber !== req.auth.userId) {
+    if (engineerUserId !== req.auth.userId) {
       res.status(403).json({ message: "You can only create status logs as yourself." });
       return;
     }
@@ -1554,7 +1541,7 @@ export const createStatusLogForWorkItem = async (req: Request, res: Response): P
         where: { id: workItemIdNumber, organizationId: req.auth.organizationId },
       }),
       prisma.user.findFirst({
-        where: { userId: engineerIdNumber, organizationId: req.auth.organizationId },
+        where: { id: engineerUserId, organizationId: req.auth.organizationId },
       }),
     ]);
 
@@ -1572,7 +1559,7 @@ export const createStatusLogForWorkItem = async (req: Request, res: Response): P
       const newStatusLog = await tx.statusLog.create({
         data: {
           status,
-          engineerUserId: engineerIdNumber,
+          engineerUserId: engineerUserId,
           workItemId: workItemIdNumber,
           organizationId: req.auth.organizationId,
         },
@@ -1623,14 +1610,13 @@ export const updateStatusLogForWorkItem = async (req: Request, res: Response): P
 
     if (
       !Number.isInteger(workItemIdNumber) ||
-      !Number.isInteger(statusLogIdNumber) ||
-      !Number.isInteger(requesterIdNumber)
+      !Number.isInteger(statusLogIdNumber)
     ) {
-      res.status(400).json({ message: "Identifiers must be valid integers." });
+      res.status(400).json({ message: "workItemId and statusLogId must be valid integers." });
       return;
     }
 
-    if (requesterIdNumber !== req.auth.userId) {
+    if (requesterUserId !== req.auth.userId) {
       res.status(403).json({ message: "You can only edit your own status logs." });
       return;
     }
@@ -1644,7 +1630,7 @@ export const updateStatusLogForWorkItem = async (req: Request, res: Response): P
       return;
     }
 
-    if (existingStatusLog.engineerUserId !== requesterIdNumber) {
+    if (existingStatusLog.engineerUserId !== requesterUserId) {
       res.status(403).json({ message: "You can only edit your own status logs." });
       return;
     }
@@ -1709,14 +1695,13 @@ export const deleteStatusLogForWorkItem = async (req: Request, res: Response): P
 
     if (
       !Number.isInteger(workItemIdNumber) ||
-      !Number.isInteger(statusLogIdNumber) ||
-      !Number.isInteger(requesterIdNumber)
+      !Number.isInteger(statusLogIdNumber)
     ) {
-      res.status(400).json({ message: "Identifiers must be valid integers." });
+      res.status(400).json({ message: "workItemId and statusLogId must be valid integers." });
       return;
     }
 
-    if (requesterIdNumber !== req.auth.userId) {
+    if (requesterUserId !== req.auth.userId) {
       res.status(403).json({ message: "You can only delete your own status logs." });
       return;
     }
@@ -1730,7 +1715,7 @@ export const deleteStatusLogForWorkItem = async (req: Request, res: Response): P
       return;
     }
 
-    if (existingStatusLog.engineerUserId !== requesterIdNumber) {
+    if (existingStatusLog.engineerUserId !== requesterUserId) {
       res.status(403).json({ message: "You can only delete your own status logs." });
       return;
     }
@@ -1845,14 +1830,12 @@ export const createAttachmentForWorkItem = async (req: Request, res: Response): 
 
   try {
     const workItemIdNumber = Number(workItemId);
-    const uploaderIdNumber = Number(uploadedByUserId);
-
-    if (!Number.isInteger(workItemIdNumber) || !Number.isInteger(uploaderIdNumber)) {
-      res.status(400).json({ message: "workItemId and uploadedByUserId must be valid integers." });
+    if (!Number.isInteger(workItemIdNumber)) {
+      res.status(400).json({ message: "workItemId must be a valid integer." });
       return;
     }
 
-    if (uploaderIdNumber !== req.auth.userId) {
+    if (uploadedByUserId !== req.auth.userId) {
       res.status(403).json({ message: "You can only create attachments as yourself." });
       return;
     }
@@ -1862,7 +1845,7 @@ export const createAttachmentForWorkItem = async (req: Request, res: Response): 
         where: { id: workItemIdNumber, organizationId: req.auth.organizationId },
       }),
       prisma.user.findFirst({
-        where: { userId: uploaderIdNumber, organizationId: req.auth.organizationId },
+        where: { id: uploadedByUserId, organizationId: req.auth.organizationId },
       }),
     ]);
 
@@ -1880,7 +1863,7 @@ export const createAttachmentForWorkItem = async (req: Request, res: Response): 
       data: {
         fileUrl,
         fileName,
-        uploadedByUserId: uploaderIdNumber,
+        uploadedByUserId: uploadedByUserId,
         workItemId: workItemIdNumber,
         organizationId: req.auth.organizationId,
       },
@@ -1919,18 +1902,15 @@ export const updateAttachmentForWorkItem = async (req: Request, res: Response): 
   try {
     const workItemIdNumber = Number(workItemId);
     const attachmentIdNumber = Number(attachmentId);
-    const requesterIdNumber = Number(requesterUserId);
-
     if (
       !Number.isInteger(workItemIdNumber) ||
-      !Number.isInteger(attachmentIdNumber) ||
-      !Number.isInteger(requesterIdNumber)
+      !Number.isInteger(attachmentIdNumber)
     ) {
-      res.status(400).json({ message: "Identifiers must be valid integers." });
+      res.status(400).json({ message: "workItemId and attachmentId must be valid integers." });
       return;
     }
 
-    if (requesterIdNumber !== req.auth.userId) {
+    if (requesterUserId !== req.auth.userId) {
       res.status(403).json({ message: "You can only edit your own attachments." });
       return;
     }
@@ -1944,7 +1924,7 @@ export const updateAttachmentForWorkItem = async (req: Request, res: Response): 
       return;
     }
 
-    if (existingAttachment.uploadedByUserId !== requesterIdNumber) {
+    if (existingAttachment.uploadedByUserId !== requesterUserId) {
       res.status(403).json({ message: "You can only edit your own attachments." });
       return;
     }
@@ -1979,18 +1959,15 @@ export const deleteAttachmentForWorkItem = async (req: Request, res: Response): 
   try {
     const workItemIdNumber = Number(workItemId);
     const attachmentIdNumber = Number(attachmentId);
-    const requesterIdNumber = Number(requesterUserId);
-
     if (
       !Number.isInteger(workItemIdNumber) ||
-      !Number.isInteger(attachmentIdNumber) ||
-      !Number.isInteger(requesterIdNumber)
+      !Number.isInteger(attachmentIdNumber)
     ) {
-      res.status(400).json({ message: "Identifiers must be valid integers." });
+      res.status(400).json({ message: "workItemId and attachmentId must be valid integers." });
       return;
     }
 
-    if (requesterIdNumber !== req.auth.userId) {
+    if (requesterUserId !== req.auth.userId) {
       res.status(403).json({ message: "You can only delete your own attachments." });
       return;
     }
@@ -2004,7 +1981,7 @@ export const deleteAttachmentForWorkItem = async (req: Request, res: Response): 
       return;
     }
 
-    if (existingAttachment.uploadedByUserId !== requesterIdNumber) {
+    if (existingAttachment.uploadedByUserId !== requesterUserId) {
       res.status(403).json({ message: "You can only delete your own attachments." });
       return;
     }
