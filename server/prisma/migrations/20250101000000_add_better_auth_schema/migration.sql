@@ -1,41 +1,71 @@
 -- Migration to add Better Auth support
 -- This migration adds the 'id' field as primary key while keeping 'userId' for backward compatibility
 -- This migration is idempotent - safe to run multiple times
+-- Note: This migration checks if the user table exists before modifying it, as it may run before
+-- the table is created on fresh databases
 
 -- Step 1: Add id column to user table (nullable first, if it doesn't exist)
 DO $$ 
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user' AND column_name = 'id') THEN
-        ALTER TABLE "user" ADD COLUMN "id" TEXT;
+    -- Check if table exists first
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'user'
+    ) THEN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user' AND column_name = 'id') THEN
+            ALTER TABLE "user" ADD COLUMN "id" TEXT;
+        END IF;
     END IF;
 END $$;
 
 -- Step 2: Generate IDs for existing users that don't have one
-UPDATE "user" SET "id" = gen_random_uuid()::text WHERE "id" IS NULL;
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'user'
+    ) THEN
+        UPDATE "user" SET "id" = gen_random_uuid()::text WHERE "id" IS NULL;
+    END IF;
+END $$;
 
 -- Step 3: Make id NOT NULL and add unique constraint
 DO $$ 
 BEGIN
-    -- Make NOT NULL if not already
-    ALTER TABLE "user" ALTER COLUMN "id" SET NOT NULL;
-    
-    -- Add unique constraint if it doesn't exist
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_id_key') THEN
-        ALTER TABLE "user" ADD CONSTRAINT "user_id_key" UNIQUE ("id");
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'user'
+    ) THEN
+        -- Make NOT NULL if not already
+        ALTER TABLE "user" ALTER COLUMN "id" SET NOT NULL;
+        
+        -- Add unique constraint if it doesn't exist
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_id_key') THEN
+            ALTER TABLE "user" ADD CONSTRAINT "user_id_key" UNIQUE ("id");
+        END IF;
     END IF;
 END $$;
 
 -- Step 4: Make cognitoId nullable (if it's not already)
 DO $$
 BEGIN
-    -- Check if column is currently NOT NULL
     IF EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'user' 
-        AND column_name = 'cognitoId' 
-        AND is_nullable = 'NO'
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'user'
     ) THEN
-        ALTER TABLE "user" ALTER COLUMN "cognitoId" DROP NOT NULL;
+        -- Check if column is currently NOT NULL
+        IF EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'user' 
+            AND column_name = 'cognitoId' 
+            AND is_nullable = 'NO'
+        ) THEN
+            ALTER TABLE "user" ALTER COLUMN "cognitoId" DROP NOT NULL;
+        END IF;
     END IF;
 END $$;
 
@@ -44,27 +74,39 @@ END $$;
 DO $$ 
 BEGIN
     IF EXISTS (
-        SELECT 1 FROM pg_constraint c
-        JOIN pg_class t ON c.conrelid = t.oid
-        WHERE t.relname = 'user' 
-        AND c.contype = 'p'
-        AND c.conname = 'user_pkey'
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'user'
     ) THEN
-        ALTER TABLE "user" DROP CONSTRAINT "user_pkey";
+        IF EXISTS (
+            SELECT 1 FROM pg_constraint c
+            JOIN pg_class t ON c.conrelid = t.oid
+            WHERE t.relname = 'user' 
+            AND c.contype = 'p'
+            AND c.conname = 'user_pkey'
+        ) THEN
+            ALTER TABLE "user" DROP CONSTRAINT "user_pkey";
+        END IF;
     END IF;
 END $$;
 
 -- Step 6: Create new primary key on id (if it doesn't exist)
 DO $$
 BEGIN
-    -- Check if any primary key constraint exists
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint c
-        JOIN pg_class t ON c.conrelid = t.oid
-        WHERE t.relname = 'user' 
-        AND c.contype = 'p'
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'user'
     ) THEN
-        ALTER TABLE "user" ADD PRIMARY KEY ("id");
+        -- Check if any primary key constraint exists
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint c
+            JOIN pg_class t ON c.conrelid = t.oid
+            WHERE t.relname = 'user' 
+            AND c.contype = 'p'
+        ) THEN
+            ALTER TABLE "user" ADD PRIMARY KEY ("id");
+        END IF;
     END IF;
 END $$;
 
@@ -72,22 +114,48 @@ END $$;
 -- Note: userId might already be unique from being the old primary key
 DO $$ 
 BEGIN
-    -- Only add constraint if it doesn't exist
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_userId_key') THEN
-        -- Check if userId is already unique via an index
-        IF NOT EXISTS (
-            SELECT 1 FROM pg_indexes 
-            WHERE tablename = 'user' 
-            AND indexname LIKE '%userId%' 
-            AND indexdef LIKE '%UNIQUE%'
-        ) THEN
-            ALTER TABLE "user" ADD CONSTRAINT "user_userId_key" UNIQUE ("userId");
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'user'
+    ) THEN
+        -- Only add constraint if it doesn't exist
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_userId_key') THEN
+            -- Check if userId is already unique via an index
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_indexes 
+                WHERE tablename = 'user' 
+                AND indexname LIKE '%userId%' 
+                AND indexdef LIKE '%UNIQUE%'
+            ) THEN
+                -- Check if userId column exists before adding constraint
+                IF EXISTS (
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_name = 'user' 
+                    AND column_name = 'userId'
+                ) THEN
+                    ALTER TABLE "user" ADD CONSTRAINT "user_userId_key" UNIQUE ("userId");
+                END IF;
+            END IF;
         END IF;
     END IF;
 END $$;
 
 -- Step 8: Add index on userId for backward compatibility (if it doesn't exist)
-CREATE INDEX IF NOT EXISTS "user_userId_idx" ON "user"("userId");
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'user'
+    ) AND EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'user' 
+        AND column_name = 'userId'
+    ) THEN
+        CREATE INDEX IF NOT EXISTS "user_userId_idx" ON "user"("userId");
+    END IF;
+END $$;
 
 -- Step 9: Create Better Auth tables (only if they don't exist)
 -- Session table
@@ -144,13 +212,20 @@ CREATE INDEX IF NOT EXISTS "verification_identifier_idx" ON "verification"("iden
 -- Step 11: Add foreign key constraints for Better Auth tables
 DO $$ 
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'session_userId_fkey') THEN
-        ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" 
-            FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-    END IF;
-    
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'account_userId_fkey') THEN
-        ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" 
-            FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    -- Only add foreign keys if user table exists
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'user'
+    ) THEN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'session_userId_fkey') THEN
+            ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" 
+                FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'account_userId_fkey') THEN
+            ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" 
+                FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
     END IF;
 END $$;
