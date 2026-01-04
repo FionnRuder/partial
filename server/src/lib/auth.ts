@@ -29,6 +29,13 @@ export async function getAuth() {
       basePath: "/api/auth",
       secret: process.env.BETTER_AUTH_SECRET || process.env.SESSION_SECRET || "change-this-secret-in-production",
       trustedOrigins: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : ["http://localhost:3000"],
+      advanced: {
+        defaultCookieAttributes: {
+          sameSite: "none",
+          secure: true,
+          partitioned: true, // Required for cross-domain cookies in newer browsers
+        },
+      },
       user: {
         additionalFields: {
           username: {
