@@ -158,10 +158,26 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 /* SERVER */
 const port = Number(process.env.PORT) || 3000;
 
-// Start server
-app.listen(port, "0.0.0.0", () => {
-  logger.info("Server started successfully", {
-    port,
-    environment: process.env.NODE_ENV || "development",
-  });
+// Handle uncaught errors
+process.on('uncaughtException', (error: Error) => {
+  logger.error('Uncaught Exception:', error);
+  process.exit(1);
 });
+
+process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Start server
+try {
+  app.listen(port, "0.0.0.0", () => {
+    logger.info("Server started successfully", {
+      port,
+      environment: process.env.NODE_ENV || "development",
+    });
+  });
+} catch (error: any) {
+  logger.error("Failed to start server:", error);
+  process.exit(1);
+}
