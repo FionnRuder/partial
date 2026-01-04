@@ -1,3 +1,28 @@
+-- Fix any existing user ID columns that are INTEGER instead of TEXT
+-- This handles cases where tables were created with wrong types from previous migrations
+DO $$ 
+BEGIN
+    -- Fix StatusLog.engineerUserId
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'StatusLog' 
+        AND column_name = 'engineerUserId' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE "StatusLog" ALTER COLUMN "engineerUserId" TYPE TEXT USING "engineerUserId"::TEXT;
+    END IF;
+    
+    -- Fix AuditLog.userId
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'AuditLog' 
+        AND column_name = 'userId' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE "AuditLog" ALTER COLUMN "userId" TYPE TEXT USING "userId"::TEXT;
+    END IF;
+END $$;
+
 -- CreateEnum (idempotent)
 DO $$ 
 BEGIN
@@ -403,7 +428,23 @@ DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Comment_
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Comment_commenterUserId_fkey') THEN ALTER TABLE "Comment" ADD CONSTRAINT "Comment_commenterUserId_fkey" FOREIGN KEY ("commenterUserId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE; END IF; END $$;
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Comment_workItemId_fkey') THEN ALTER TABLE "Comment" ADD CONSTRAINT "Comment_workItemId_fkey" FOREIGN KEY ("workItemId") REFERENCES "WorkItem"("id") ON DELETE SET NULL ON UPDATE CASCADE; END IF; END $$;
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'StatusLog_organizationId_fkey') THEN ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE; END IF; END $$;
-DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'StatusLog_engineerUserId_fkey') THEN ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_engineerUserId_fkey" FOREIGN KEY ("engineerUserId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE; END IF; END $$;
+DO $$ 
+BEGIN 
+    -- Fix column type if it's wrong (INTEGER instead of TEXT)
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'StatusLog' 
+        AND column_name = 'engineerUserId' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE "StatusLog" ALTER COLUMN "engineerUserId" TYPE TEXT USING "engineerUserId"::TEXT;
+    END IF;
+    
+    -- Add foreign key if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'StatusLog_engineerUserId_fkey') THEN 
+        ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_engineerUserId_fkey" FOREIGN KEY ("engineerUserId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE; 
+    END IF; 
+END $$;
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'StatusLog_workItemId_fkey') THEN ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_workItemId_fkey" FOREIGN KEY ("workItemId") REFERENCES "WorkItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE; END IF; END $$;
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Invitation_organizationId_fkey') THEN ALTER TABLE "Invitation" ADD CONSTRAINT "Invitation_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE; END IF; END $$;
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Invitation_createdByUserId_fkey') THEN ALTER TABLE "Invitation" ADD CONSTRAINT "Invitation_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE; END IF; END $$;
