@@ -30,13 +30,17 @@ export async function getAuth() {
       secret: process.env.BETTER_AUTH_SECRET || process.env.SESSION_SECRET || "change-this-secret-in-production",
       trustedOrigins: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : ["http://localhost:3000"],
       advanced: {
-        defaultCookieAttributes: {
-          // In development (HTTP), use "lax" and secure: false
-          // In production (HTTPS), use "none" and secure: true
-          sameSite: process.env.NODE_ENV === 'production' || (process.env.FRONTEND_URL && process.env.FRONTEND_URL.startsWith('https://')) ? "none" : "lax",
-          secure: process.env.NODE_ENV === 'production' || (process.env.FRONTEND_URL && process.env.FRONTEND_URL.startsWith('https://')) ? true : false,
-          partitioned: false, // Only needed for cross-domain cookies in production
-        },
+        defaultCookieAttributes: (() => {
+          const isProd = process.env.NODE_ENV === 'production' || (process.env.FRONTEND_URL && process.env.FRONTEND_URL.startsWith('https://'));
+          const attrs: any = {
+            sameSite: isProd ? "none" : "lax",
+            secure: isProd ? true : false,
+          };
+          if (isProd) {
+            attrs.partitioned = true;
+          }
+          return attrs;
+        })(),
       },
       user: {
         additionalFields: {
