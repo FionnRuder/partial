@@ -51,9 +51,13 @@ router.get("/me", async (req: Request, res: Response) => {
 router.all("*", async (req, res, next) => {
   try {
     const handler = await getAuthHandler();
-    return handler(req, res, next);
-  } catch (error) {
-    next(error);
+    handler(req, res, next);
+  } catch (error: any) {
+    console.error("Better Auth handler error:", error);
+    res.status(500).json({ 
+      message: "Authentication service error",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
