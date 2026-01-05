@@ -63,15 +63,22 @@ export class BetterAuthService implements AuthService {
 
   async signUp(data: SignUpData): Promise<AuthUser> {
     // Step 1: Sign up with Better Auth
+    // Note: phoneNumber is NOT passed here - Better Auth rejects additional fields that aren't properly configured
+    // The phoneNumber will be set in the onboarding flow via the /onboarding/signup endpoint
+    // The database hook will set phoneNumber to an empty string initially
     const { data: signUpData, error: signUpError } = await authClient.signUp.email({
       email: data.email,
       password: data.password,
       name: data.name,
-      phoneNumber: data.phoneNumber, // Pass phone number to Better Auth
     });
 
     if (signUpError) {
-      throw new Error(signUpError.message || "Failed to sign up");
+      // Log the full error for debugging
+      console.error("Better Auth sign-up error (full):", JSON.stringify(signUpError, null, 2));
+      console.error("Better Auth sign-up error message:", signUpError.message);
+      console.error("Better Auth sign-up error code:", signUpError.code);
+      console.error("Better Auth sign-up error status:", signUpError.status);
+      throw new Error(signUpError.message || signUpError.code || "Failed to sign up");
     }
 
     if (!signUpData?.user) {

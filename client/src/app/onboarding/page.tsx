@@ -20,6 +20,7 @@ import {
   PartStateLabels,
 } from "@/state/api";
 import { addDays, formatISO } from "date-fns";
+import Footer from "@/components/Footer";
 
 // Helper function to convert role to display name
 // Handles both Prisma enum values (e.g., "ProgramManager") and display names (e.g., "Program Manager")
@@ -55,101 +56,330 @@ const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
   onLearnMore: () => void;
 }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Logo */}
-          <div className="mb-8">
-            <Image
-              src="/logo1.png"
-              alt="Partial Logo"
-              width={120}
-              height={120}
-              className="mx-auto"
-            />
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      {/* Hero Section - Answers "What is this?" */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+        <div className="container mx-auto px-4 py-20 lg:py-28">
+          <div className="max-w-7xl mx-auto">
+            {/* Text Content Section */}
+            <div className="text-center mb-16">
+              <div className="mb-6 flex justify-center">
+                <Image
+                  src="/logo1.png"
+                  alt="Partial Logo"
+                  width={100}
+                  height={100}
+                  className="dark:brightness-0 dark:invert"
+                />
+              </div>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
+                Work Management
+                <span className="block text-blue-600 dark:text-blue-400">Built for Hardware</span>
+              </h1>
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed max-w-3xl mx-auto">
+                Track work items directly to physical parts. Monitor program health. 
+                Built specifically for hardware engineering teams who need more than software-focused tools.
+              </p>
+              
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                <button
+                  onClick={onGetStarted}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
+                  Get Started
+                </button>
+                <button
+                  onClick={onLogin}
+                  className="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-semibold py-4 px-8 rounded-lg text-lg border-2 border-gray-300 dark:border-gray-600 transition-colors duration-200"
+                >
+                  Sign In
+                </button>
+              </div>
+
+              {/* Trust Indicators */}
+              <div className="flex items-center justify-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Open Source</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Completely Free</span>
+                </div>
+              </div>
+            </div>
+
+            {/* GIF Section - Full Width */}
+            <div className="relative w-full">
+              <div className="relative rounded-lg shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <div className="aspect-[16/9] bg-white dark:bg-gray-800 w-full">
+                  <img
+                    src="/2026-01-04 partial overview.gif"
+                    alt="Partial Product Demo - Hardware Development Work Management Platform"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </div>
+              {/* Decorative elements */}
+              <div className="absolute -z-10 -top-4 -right-4 w-full h-full bg-blue-200 dark:bg-blue-900 rounded-lg opacity-20 blur-2xl"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 2 - "Who is it for?" */}
+      <section className="py-20 bg-white dark:bg-gray-900 border-y border-gray-200 dark:border-gray-800">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              Built for Hardware Teams
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">
+              Whether you're an engineer tracking parts or a program manager monitoring deliverables
+            </p>
           </div>
 
-          {/* Main Headline */}
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-            Streamline Your
-            <span className="text-blue-600 dark:text-blue-400"> Hardware Development</span>
-          </h1>
-
-          {/* Tagline */}
-          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Track work items, manage parts, and monitor program progress with the comprehensive 
-            work management platform built specifically for hardware engineering teams.
-          </p>
-
-          {/* Value Propositions */}
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Engineers Card */}
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-800 p-8 rounded-xl border border-blue-200 dark:border-gray-700">
+              <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mb-6">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Track Work Items</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Manage tasks, deliverables, and issues with comprehensive tracking and status updates.
-              </p>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">For Engineers</h3>
+              <ul className="space-y-3 text-gray-700 dark:text-gray-300">
+                <li className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Track work items directly linked to parts you own</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Manage hardware-specific deliverables (BOMs, drawings, test reports)</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>View part hierarchy and understand dependencies</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Collaborate with discipline teams (Mechanical, Electrical, Structural)</span>
+                </li>
+              </ul>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Part Management</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Organize parts hierarchically and track their development state and catalog of work items.
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {/* Program Managers Card */}
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-gray-800 dark:to-gray-800 p-8 rounded-xl border border-purple-200 dark:border-gray-700">
+              <div className="w-16 h-16 bg-purple-600 rounded-xl flex items-center justify-center mb-6">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Program Analytics</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Monitor program health, identify dependencies and bottlenecks, and track team performance.
-              </p>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">For Program Managers</h3>
+              <ul className="space-y-3 text-gray-700 dark:text-gray-300">
+                <li className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Monitor program health across all parts and work items</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Track team performance and workload distribution</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Identify bottlenecks and dependencies in real-time</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Manage milestones with automatic dependency tracing</span>
+                </li>
+              </ul>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={onGetStarted}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
-            >
-              Get Started
-            </button>
-            <button
-              onClick={onLogin}
-              className="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-semibold py-4 px-8 rounded-lg text-lg border-2 border-gray-300 dark:border-gray-600 transition-colors duration-200"
-            >
-              Login
-            </button>
-            <button
-              onClick={onLearnMore}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold py-4 px-8 text-lg transition-colors duration-200"
-            >
-              Learn More
-            </button>
+      {/* Section 3 - "Why is it better than JIRA?" */}
+      <section className="py-20 bg-gray-50 dark:bg-gray-800">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                Why Partial Over JIRA?
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                JIRA was built for software. Partial was built for hardware from the ground up.
+              </p>
+            </div>
+
+            {/* Comparison Table */}
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white w-1/3">
+                        Feature
+                      </th>
+                      <th className="px-6 py-4 text-center text-sm font-semibold text-gray-500 dark:text-gray-400 w-1/3">
+                        JIRA
+                      </th>
+                      <th className="px-6 py-4 text-center text-sm font-semibold text-blue-600 dark:text-blue-400 w-1/3">
+                        Partial
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Part Hierarchy & Management
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                        ❌ Not built-in
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
+                        ✅ Native support
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Hardware-Specific Deliverables
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                        ❌ Custom fields required
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
+                        ✅ Built-in (BOM, drawings, CoC, ATP, etc.)
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Part-Centric Work Tracking
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                        ❌ Story/epic focused
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
+                        ✅ Work linked to physical parts
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Revision Control for Parts
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                        ❌ Not designed for hardware
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
+                        ✅ Part states & revision tracking
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Discipline-Based Teams
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                        ❌ Feature/product teams
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
+                        ✅ Mechanical, Electrical, Structural, etc.
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Hardware Issue Types
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                        ❌ Generic bug tracking
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
+                        ✅ Manufacturing, supply chain, obsolescence issues
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Section 4 - "What should I do next?" */}
+      <section className="py-20 bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-gray-900 dark:to-gray-800 text-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Ready to Get Started?
+            </h2>
+            <p className="text-xl md:text-2xl mb-12 text-blue-100 dark:text-gray-300">
+              Join hardware teams who have moved beyond generic project management tools.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <button
+                onClick={onGetStarted}
+                className="bg-white text-blue-600 hover:bg-gray-100 font-semibold py-4 px-8 rounded-lg text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                Get Started
+              </button>
+              <button
+                onClick={onLearnMore}
+                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold py-4 px-8 rounded-lg text-lg transition-all duration-200"
+              >
+                Learn More
+              </button>
+            </div>
+
+            {/* Benefits list */}
+            <div className="grid md:grid-cols-3 gap-6 mt-16">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+                <div className="text-3xl mb-3">⚡</div>
+                <h3 className="font-semibold mb-2">Quick Setup</h3>
+                <p className="text-sm text-blue-100">Get started in minutes, not weeks</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+                <div className="text-3xl mb-3">🔓</div>
+                <h3 className="font-semibold mb-2">Open Source</h3>
+                <p className="text-sm text-blue-100">Free and transparent</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+                <div className="text-3xl mb-3">🎯</div>
+                <h3 className="font-semibold mb-2">Purpose-Built</h3>
+                <p className="text-sm text-blue-100">Designed specifically for hardware teams</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
 
-const AuthScreen = ({ onBack, onNext, initialMode = "signup" }: {
+const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" }: {
   onBack: () => void;
   onNext: () => void;
+  onSignUp?: (data: { email: string; name: string; phoneNumber: string }) => void;
   initialMode?: "signup" | "login";
 }) => {
   const router = useRouter();
@@ -212,6 +442,14 @@ const AuthScreen = ({ onBack, onNext, initialMode = "signup" }: {
           phoneNumber: formData.phoneNumber,
           role: "Engineer", // Default role, will be updated in role selection
         });
+        // Store sign-up data for use in createUserInDatabase
+        if (onSignUp) {
+          onSignUp({
+            email: formData.email,
+            name: formData.name,
+            phoneNumber: formData.phoneNumber,
+          });
+        }
         setIsLogin(true);
         onNext();
       }
@@ -1837,6 +2075,11 @@ const OnboardingPage = () => {
     role: string;
     invitedEmail?: string;
   } | null>(null);
+  const [signUpData, setSignUpData] = useState<{
+    email: string;
+    name: string;
+    phoneNumber: string;
+  } | null>(null);
 
   const goToStep = (next: OnboardingStep) => {
     setStep(next);
@@ -2067,15 +2310,14 @@ const OnboardingPage = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
-      // Check if user is authenticated via Better Auth
-      // Note: Better Auth uses cookies for session, so we check /auth/me
-      // If it returns 401, the user needs to sign in first (shouldn't happen during onboarding)
+      // Get Better Auth session directly (works even if user doesn't exist in our database yet)
+      // Note: Better Auth stores the user in its own database, so we can get session data
       let userEmail = '';
       let userName = '';
       let userPhoneNumber = '';
       
       try {
-        const sessionCheck = await fetch(`${apiBaseUrl}/auth/me`, {
+        const sessionCheck = await fetch(`${apiBaseUrl}/api/auth/get-session`, {
           method: 'GET',
           credentials: 'include',
           signal: controller.signal,
@@ -2086,11 +2328,12 @@ const OnboardingPage = () => {
         if (sessionCheck.ok) {
           const sessionData = await sessionCheck.json();
           
-          // Better Auth /auth/me returns user object directly if authenticated
-          if (sessionData && sessionData.id) {
-            userEmail = sessionData.email || '';
-            userName = sessionData.name || sessionData.username || '';
-            userPhoneNumber = sessionData.phoneNumber || '';
+          // Better Auth session returns { data: { user: {...}, session: {...} } } or { user: {...} }
+          const user = sessionData?.data?.user || sessionData?.user;
+          if (user && user.id) {
+            userEmail = user.email || '';
+            userName = user.name || '';
+            userPhoneNumber = user.phoneNumber || ''; // May not be in session if not passed during signup
           }
         } else if (sessionCheck.status === 401) {
           // Not authenticated - this may be expected during onboarding before signup
@@ -2132,9 +2375,10 @@ const OnboardingPage = () => {
         roleToSend = invitationData.role;
       }
       
-      // Use phone number from session data (set during Better Auth signup)
-      // If not available in session, use empty string (backend will handle validation)
-      const phoneNumber = userPhoneNumber || '';
+      // Use phone number from sign-up form data (primary source)
+      // Fall back to session data if sign-up data not available
+      // If neither available, use empty string (backend will handle validation)
+      const phoneNumber = signUpData?.phoneNumber || userPhoneNumber || '';
       
       const signupBody: any = {
         username: username,
@@ -2374,6 +2618,7 @@ const OnboardingPage = () => {
           <AuthScreen
             onBack={handleBack}
             onNext={handleAuthNext}
+            onSignUp={(data) => setSignUpData(data)}
             initialMode={authMode}
           />
         );
@@ -2443,8 +2688,13 @@ const OnboardingPage = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      {renderCurrentStep()}
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-grow">
+        {renderCurrentStep()}
+      </div>
+      
+      {/* Footer - only show on landing page */}
+      {step === "landing" && <Footer />}
       
       {/* Learn More Modal */}
       {showLearnMore && (
