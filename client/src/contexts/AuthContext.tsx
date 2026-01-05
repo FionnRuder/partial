@@ -50,6 +50,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Initialize auth state
     const initializeAuth = async () => {
       try {
+        // Only run on client side
+        if (typeof window === 'undefined') {
+          setIsLoading(false);
+          return;
+        }
         const currentUser = await authService.getCurrentUser();
         const sanitizedUser = sanitizeUser(currentUser);
         setUser(sanitizedUser);
