@@ -28,19 +28,23 @@ export const createOrganizationAndUser = async (
     const userName = session.user.name || name;
 
     // Validate required fields
-    if (!username || !userName || !userEmail || !phoneNumber || !role) {
+    // Note: phoneNumber can be an empty string (user can update it later)
+    if (!username || !userName || !userEmail || phoneNumber === undefined || !role) {
       res.status(400).json({ 
         message: "Missing required fields: username, name, email, phoneNumber, and role are required",
         details: {
           username: !username,
           name: !userName,
           email: !userEmail,
-          phoneNumber: !phoneNumber,
+          phoneNumber: phoneNumber === undefined,
           role: !role
         }
       });
       return;
     }
+    
+    // Normalize phoneNumber to empty string if not provided
+    const normalizedPhoneNumber = phoneNumber || '';
 
     // Validate role is valid
     if (!isValidRole(role)) {
@@ -160,7 +164,7 @@ export const createOrganizationAndUser = async (
             data: {
               username,
               name: userName,
-              phoneNumber,
+              phoneNumber: normalizedPhoneNumber,
               role: prismaRole, // Use role from invitation
               organizationId: invitationOrg.id, // Join the invitation organization
             },
@@ -199,7 +203,7 @@ export const createOrganizationAndUser = async (
                 username,
                 name: userName,
                 email: userEmail,
-                phoneNumber,
+                phoneNumber: normalizedPhoneNumber,
                 role: prismaRole, // Use Prisma enum format
                 organizationId: invitationOrg.id,
               },
@@ -262,7 +266,7 @@ export const createOrganizationAndUser = async (
         data: {
           username,
           name: userName,
-          phoneNumber,
+          phoneNumber: normalizedPhoneNumber,
           role: prismaRole,
           organizationId: organization.id,
         },
@@ -324,7 +328,7 @@ export const createOrganizationAndUser = async (
         username,
         name: userName,
         email: userEmail,
-        phoneNumber,
+        phoneNumber: normalizedPhoneNumber,
         role: prismaRole, // Use Prisma enum format
         organizationId: organization.id,
       },

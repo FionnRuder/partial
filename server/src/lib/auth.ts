@@ -31,9 +31,11 @@ export async function getAuth() {
       trustedOrigins: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : ["http://localhost:3000"],
       advanced: {
         defaultCookieAttributes: {
-          sameSite: "none",
-          secure: true,
-          partitioned: true, // Required for cross-domain cookies in newer browsers
+          // In development (HTTP), use "lax" and secure: false
+          // In production (HTTPS), use "none" and secure: true
+          sameSite: process.env.NODE_ENV === 'production' || (process.env.FRONTEND_URL && process.env.FRONTEND_URL.startsWith('https://')) ? "none" : "lax",
+          secure: process.env.NODE_ENV === 'production' || (process.env.FRONTEND_URL && process.env.FRONTEND_URL.startsWith('https://')) ? true : false,
+          partitioned: false, // Only needed for cross-domain cookies in production
         },
       },
       user: {
@@ -66,12 +68,6 @@ export async function getAuth() {
             before: async (userData: any, ctx: any) => {
               console.log("[Better Auth Hook] User create before hook called with data:", JSON.stringify(userData, null, 2));
               try {
-                // Generate username from email if not provided
-                const email = userData.email || "";
-                const username = email.split('@')[0] || `user_${Date.now()}`;
-                
-                console.log("[Better Auth Hook] Generated username:", username);
-                
                 // Get or create a default organization for new users
                 // This will be updated by the onboarding endpoint
                 let defaultOrg = await prisma.organization.findFirst({
@@ -89,6 +85,37 @@ export async function getAuth() {
                 }
                 
                 console.log("[Better Auth Hook] Using organization ID:", defaultOrg.id);
+                
+                // Generate unique username from email if not provided
+                const email = userData.email || "";
+                let baseUsername = email.split('@')[0] || `user_${Date.now()}`;
+                
+                // Check if username already exists in this organization and make it unique
+                let username = baseUsername;
+                let counter = 1;
+                let existingUser = await prisma.user.findFirst({
+                  where: {
+                    AND: [
+                      { organizationId: defaultOrg.id },
+                      { username: username },
+                    ],
+                  },
+                });
+                
+                while (existingUser) {
+                  username = `${baseUsername}${counter}`;
+                  counter++;
+                  existingUser = await prisma.user.findFirst({
+                    where: {
+                      AND: [
+                        { organizationId: defaultOrg.id },
+                        { username: username },
+                      ],
+                    },
+                  });
+                }
+                
+                console.log("[Better Auth Hook] Generated unique username:", username);
                 
                 // Return user data with required custom fields
                 // Note: These are Prisma schema field names, not Better Auth field names
