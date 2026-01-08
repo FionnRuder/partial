@@ -28,22 +28,21 @@ export const createOrganizationAndUser = async (
     const userName = session.user.name || name;
 
     // Validate required fields
-    // Note: phoneNumber can be an empty string (user can update it later)
-    if (!username || !userName || !userEmail || phoneNumber === undefined || !role) {
+    // Note: phoneNumber is optional (user can update it later)
+    if (!username || !userName || !userEmail || !role) {
       res.status(400).json({ 
-        message: "Missing required fields: username, name, email, phoneNumber, and role are required",
+        message: "Missing required fields: username, name, email, and role are required",
         details: {
           username: !username,
           name: !userName,
           email: !userEmail,
-          phoneNumber: phoneNumber === undefined,
           role: !role
         }
       });
       return;
     }
     
-    // Normalize phoneNumber to empty string if not provided
+    // Normalize phoneNumber to empty string if not provided (phoneNumber is optional)
     const normalizedPhoneNumber = phoneNumber || '';
 
     // Validate role is valid

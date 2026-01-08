@@ -21,6 +21,9 @@ import {
 } from "@/state/api";
 import { addDays, formatISO } from "date-fns";
 import Footer from "@/components/Footer";
+import { Moon, Sun } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/app/redux";
+import { setIsDarkMode } from "@/state";
 
 // Helper function to convert role to display name
 // Handles both Prisma enum values (e.g., "ProgramManager") and display names (e.g., "Program Manager")
@@ -55,8 +58,37 @@ const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
   onLogin: () => void;
   onLearnMore: () => void;
 }) => {
+  const dispatch = useAppDispatch();
+  const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+
+  // Apply dark mode to document element when it changes
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    dispatch(setIsDarkMode(!isDarkMode));
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      {/* Dark Mode Toggle - Fixed position in top right */}
+      <button
+        onClick={toggleDarkMode}
+        className="fixed top-4 right-4 z-50 rounded-full p-3 bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+        title={isDarkMode ? "Toggle Light Mode" : "Toggle Dark Mode"}
+        aria-label={isDarkMode ? "Toggle Light Mode" : "Toggle Dark Mode"}
+      >
+        {isDarkMode ? (
+          <Sun className="h-6 w-6 text-yellow-500" />
+        ) : (
+          <Moon className="h-6 w-6 text-gray-700" />
+        )}
+      </button>
       {/* Hero Section - Answers "What is this?" */}
       <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
         <div className="container mx-auto px-4 py-20 lg:py-28">
@@ -89,6 +121,14 @@ const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
                 >
                   Get Started
                 </button>
+                <a
+                  href="https://cal.com/fionn-ruder-k6lf9q/demo-call"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-center"
+                >
+                  Request a Demo
+                </a>
                 <button
                   onClick={onLogin}
                   className="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-semibold py-4 px-8 rounded-lg text-lg border-2 border-gray-300 dark:border-gray-600 transition-colors duration-200"
@@ -113,21 +153,6 @@ const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
                 </div>
               </div>
             </div>
-
-            {/* GIF Section - Full Width */}
-            <div className="relative w-full">
-              <div className="relative rounded-lg shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <div className="aspect-[16/9] bg-white dark:bg-gray-800 w-full">
-                  <img
-                    src="/2026-01-04 partial overview.gif"
-                    alt="Partial Product Demo - Hardware Development Work Management Platform"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              </div>
-              {/* Decorative elements */}
-              <div className="absolute -z-10 -top-4 -right-4 w-full h-full bg-blue-200 dark:bg-blue-900 rounded-lg opacity-20 blur-2xl"></div>
-            </div>
           </div>
         </div>
       </section>
@@ -135,101 +160,139 @@ const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
       {/* Section 2 - "Who is it for?" */}
       <section className="py-20 bg-white dark:bg-gray-900 border-y border-gray-200 dark:border-gray-800">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Built for Hardware Teams
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
-              Whether you're an engineer tracking parts or a program manager monitoring deliverables
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Engineers Card */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-800 p-8 rounded-xl border border-blue-200 dark:border-gray-700">
-              <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">For Engineers</h3>
-              <ul className="space-y-3 text-gray-700 dark:text-gray-300">
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Track work items directly linked to parts you own</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Manage hardware-specific deliverables (BOMs, drawings, test reports)</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>View part hierarchy and understand dependencies</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Collaborate with discipline teams (Mechanical, Electrical, Structural)</span>
-                </li>
-              </ul>
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                Made for Hardware Teams
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300">
+                Whether you're an engineer tracking parts or a program manager monitoring performance
+              </p>
             </div>
 
-            {/* Program Managers Card */}
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-gray-800 dark:to-gray-800 p-8 rounded-xl border border-purple-200 dark:border-gray-700">
-              <div className="w-16 h-16 bg-purple-600 rounded-xl flex items-center justify-center mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+            <div className="space-y-20">
+              {/* Engineers Section */}
+              <div className="max-w-7xl mx-auto">
+                <div className="grid lg:grid-cols-[2fr_1fr] gap-8 items-start">
+                  {/* Video Section - Larger */}
+                  <div className="relative">
+                    <div className="relative rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-900 dark:bg-gray-800">
+                      <img
+                        src="/2026-01-07 partial eng workflow.gif"
+                        alt="Partial Engineer Workflow Demo - Track work items, manage deliverables, and collaborate with teams"
+                        className="w-full h-auto"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Content Section */}
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-800 rounded-xl border border-blue-200 dark:border-gray-700 p-8">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">For Engineers</h3>
+                    </div>
+                    <ul className="space-y-3 text-gray-700 dark:text-gray-300">
+                      <li className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span>Track work items directly linked to parts you own</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span>Manage your hardware-specific deliverables, issues, and tasks (BOMs, data packages, reports, etc.)</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span>Plan your closure pace with interactive burndown and Gantt charts</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span>View part hierarchy and understand dependencies between parts</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">For Program Managers</h3>
-              <ul className="space-y-3 text-gray-700 dark:text-gray-300">
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Monitor program health across all parts and work items</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Track team performance and workload distribution</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Identify bottlenecks and dependencies in real-time</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Manage milestones with automatic dependency tracing</span>
-                </li>
-              </ul>
+
+              {/* Program Managers Section */}
+              <div className="max-w-7xl mx-auto">
+                <div className="grid lg:grid-cols-[1fr_2fr] gap-8 items-start">
+                  {/* Content Section */}
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-gray-800 dark:to-gray-800 rounded-xl border border-purple-200 dark:border-gray-700 p-8 order-2 lg:order-1">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-16 h-16 bg-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">For Program Managers</h3>
+                    </div>
+                    <ul className="space-y-3 text-gray-700 dark:text-gray-300">
+                      <li className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span>Monitor program health across all parts and work items</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span>Track team performance and workload distribution</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span>Identify bottlenecks and dependencies in real-time</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span>Manage milestones with automatic dependency tracing</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Video Section - Larger */}
+                  <div className="relative order-1 lg:order-2">
+                    <div className="relative rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-900 dark:bg-gray-800">
+                      <img
+                        src="/2026-01-07 partial pm workflow.gif"
+                        alt="Partial Program Manager Workflow Demo - Monitor program health, track team performance, and identify bottlenecks"
+                        className="w-full h-auto"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Section 3 - "Why is it better than JIRA?" */}
+      {/* Section 3 - "Partial vs JIRA Comparison" */}
       <section className="py-20 bg-gray-50 dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                Why Partial Over JIRA?
+                Partial vs. JIRA: Feature Comparison
               </h2>
               <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                JIRA was built for software. Partial was built for hardware from the ground up.
+                A transparent comparison to help you choose the right tool for your team.
               </p>
             </div>
 
@@ -239,86 +302,231 @@ const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
                 <table className="w-full">
                   <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <tr>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white w-1/3">
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white w-2/5">
                         Feature
                       </th>
-                      <th className="px-6 py-4 text-center text-sm font-semibold text-gray-500 dark:text-gray-400 w-1/3">
+                      <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700 dark:text-gray-300 w-3/10">
                         JIRA
                       </th>
-                      <th className="px-6 py-4 text-center text-sm font-semibold text-blue-600 dark:text-blue-400 w-1/3">
+                      <th className="px-6 py-4 text-center text-sm font-semibold text-blue-600 dark:text-blue-400 w-3/10">
                         Partial
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                        Part Hierarchy & Management
-                      </td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                        ❌ Not built-in
-                      </td>
-                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
-                        ✅ Native support
+                    {/* Common Features - Both Tools Offer */}
+                    <tr className="bg-blue-50/50 dark:bg-blue-900/10">
+                      <td colSpan={3} className="px-6 py-3 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                        Features Available in Both Tools
                       </td>
                     </tr>
                     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                        Hardware-Specific Deliverables
+                        Task & Issue Tracking
                       </td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                        ❌ Custom fields required
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Yes
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Yes
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Work Item Prioritization
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Yes
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Yes
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Team Collaboration & Comments
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Yes
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Yes
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Project & Milestone Management
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Yes
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Yes
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Reporting & Analytics
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Yes
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Yes
+                      </td>
+                    </tr>
+
+                    {/* Partial Unique Features */}
+                    <tr className="bg-blue-50 dark:bg-blue-900/20">
+                      <td colSpan={3} className="px-6 py-3 text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
+                        Partial Unique Features (Hardware-Specific)
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Hierarchical Part Management
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        ❌ Requires add-ons
                       </td>
                       <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
-                        ✅ Built-in (BOM, drawings, CoC, ATP, etc.)
+                        ✅ Native support (component → subsystem → system etc.)
                       </td>
                     </tr>
                     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                         Part-Centric Work Tracking
                       </td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                        ❌ Story/epic focused
+                      <td className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        ⚠️ Task/story/epic focused
                       </td>
                       <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
-                        ✅ Work linked to physical parts
+                        ✅ Physical product focused, Work Items assigned to parts
                       </td>
                     </tr>
                     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                        Revision Control for Parts
+                        Part Revision Control
                       </td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                        ❌ Not designed for hardware
+                      <td className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        ❌ Not designed for hardware revisions
                       </td>
                       <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
-                        ✅ Part states & revision tracking
+                        ✅ Built-in
                       </td>
                     </tr>
                     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                        Discipline-Based Teams
+                        HW-Specific Deliverable & Issue Types
                       </td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                        ❌ Feature/product teams
+                      <td className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        ⚠️ Custom fields required
                       </td>
                       <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
-                        ✅ Mechanical, Electrical, Structural, etc.
+                        ✅ Built-in (BOM, FMEA, NCR, etc.)
                       </td>
                     </tr>
                     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                        Hardware Issue Types
+                        Discipline-Based Team Organization
                       </td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                        ❌ Generic bug tracking
+                      <td className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        ⚠️ Feature/product teams
                       </td>
                       <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
-                        ✅ Manufacturing, supply chain, obsolescence issues
+                        ✅ Built-in (Mechanical, Electrical, etc.)
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Part Hierarchy Views
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        ❌ Not available
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
+                        ✅ Interactive tree view with Work Item aggregation
+                      </td>
+                    </tr>
+
+                    {/* JIRA Advantages */}
+                    <tr className="bg-gray-50/50 dark:bg-gray-800/50">
+                      <td colSpan={3} className="px-6 py-3 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                        JIRA Advantages
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        App Marketplace & Integrations
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Yes
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        ❌ Limited
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Enterprise Features (SSO, advanced permissions)
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Yes
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        ⚠️ Basic
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Custom Fields & Workflows
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400">
+                        ✅ Highly configurable
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        ⚠️ Basic
+                      </td>
+                    </tr>
+
+                    {/* Pricing & Licensing */}
+                    <tr className="bg-gray-50/50 dark:bg-gray-800/50">
+                      <td colSpan={3} className="px-6 py-3 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                        Pricing & Licensing
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Cost
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                        💰 Paid (per-user)
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
+                        ✅ Free & Open Source (MIT License)
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        Self-Hosting
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                        ⚠️ Server version available
+                      </td>
+                      <td className="px-6 py-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
+                        ✅ Yes (full source code available)
                       </td>
                     </tr>
                   </tbody>
                 </table>
+              </div>
+              
+              {/* Footer Note */}
+              <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
+                  This comparison is based on core features. JIRA offers extensive customization and integrations that may suit complex enterprise needs. 
+                  Partial focuses specifically on hardware development workflows out of the box.
+                </p>
               </div>
             </div>
           </div>
@@ -379,7 +587,7 @@ const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
 const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" }: {
   onBack: () => void;
   onNext: () => void;
-  onSignUp?: (data: { email: string; name: string; phoneNumber: string }) => void;
+  onSignUp?: (data: { email: string; name: string; phoneNumber?: string }) => void;
   initialMode?: "signup" | "login";
 }) => {
   const router = useRouter();
@@ -439,7 +647,7 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" }: {
           email: formData.email,
           password: formData.password,
           name: formData.name,
-          phoneNumber: formData.phoneNumber,
+          phoneNumber: "", // Phone number is optional, not collected during signup
           role: "Engineer", // Default role, will be updated in role selection
         });
         // Store sign-up data for use in createUserInDatabase
@@ -447,7 +655,7 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" }: {
           onSignUp({
             email: formData.email,
             name: formData.name,
-            phoneNumber: formData.phoneNumber,
+            // phoneNumber is optional, not collected during signup
           });
         }
         setIsLogin(true);
@@ -511,21 +719,6 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" }: {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
                     placeholder="Enter your full name"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Phone Number
-                  </label>
-                  <input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    type="tel"
-                    required={!isLogin}
-                    value={formData.phoneNumber}
-                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-                    placeholder="Enter your phone number"
                   />
                 </div>
               </>
@@ -2078,7 +2271,7 @@ const OnboardingPage = () => {
   const [signUpData, setSignUpData] = useState<{
     email: string;
     name: string;
-    phoneNumber: string;
+    phoneNumber?: string;
   } | null>(null);
 
   const goToStep = (next: OnboardingStep) => {
