@@ -541,7 +541,7 @@ const LandingScreen = ({ onGetStarted, onLogin, onLearnMore }: {
               Ready to Get Started?
             </h2>
             <p className="text-xl md:text-2xl mb-12 text-blue-100 dark:text-gray-300">
-              Join hardware teams who have moved beyond generic project management tools.
+              Join hardware teams who have moved beyond software-focused tools.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">

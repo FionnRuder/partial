@@ -13,7 +13,7 @@ const Footer = () => {
           <div className="col-span-2">
             <h3 className="text-white font-semibold mb-4">About Partial</h3>
             <p className="text-sm text-gray-400 mb-4">
-              Built by a systems engineer frustrated with using software tools to track hardware development.
+              Built by a systems engineer frustrated with using software tracking tools for hardware.
             </p>
             <div className="flex items-center gap-4">
               <a
