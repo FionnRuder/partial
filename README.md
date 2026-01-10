@@ -20,10 +20,10 @@ Partial is a purpose-built work management platform for hardware development. It
 * Program analytics, team workload visualizations, and dynamic burndown charts
 * Engineering discipline-based team organization (mechanical, electrical, structural, etc.) rather than feature/product-based
 ## Technology Stack
-**Frontend:** Next.js, Tailwind CSS, Redux Toolkit, Redux Toolkit Query, Material UI Data Grid
-**Backend:** Node.js with Express, Prisma (PostgreSQL ORM), better-auth
-**Database:** PostgreSQL
-**Cloud:** Railway
+* **Frontend:** Next.js, Tailwind CSS, Redux Toolkit, Redux Toolkit Query, Material UI Data Grid
+* **Backend:** Node.js with Express, Prisma (PostgreSQL ORM), better-auth
+* **Database:** PostgreSQL
+* **Cloud:** Railway
 
 ## Getting Started
 
