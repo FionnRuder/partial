@@ -45,19 +45,18 @@ export default function DebugSentryPage() {
         // Check if Sentry client is initialized
         const client = Sentry.getClient();
         console.log("[Sentry] Client initialized:", !!client);
-        console.log("[Sentry] DSN:", client?.getDsn()?.toString());
-        console.log("[Sentry] Transport:", client?.getTransport());
-        
-        // Check transport status
-        if (client?.getTransport()) {
+        if (client) {
+          console.log("[Sentry] DSN:", client.getDsn()?.toString());
+          console.log("[Sentry] Transport:", client.getTransport() ? "Available" : "Not available");
+          
+          // Check transport status
           const transport = client.getTransport();
-          console.log("[Sentry] Transport type:", transport.constructor.name);
+          if (transport) {
+            console.log("[Sentry] Transport type:", transport.constructor.name);
+          }
+        } else {
+          console.error("[Sentry] Client is not initialized!");
         }
-        
-        // Try to get the current hub/scope
-        const hub = Sentry.getCurrentHub();
-        console.log("[Sentry] Hub:", !!hub);
-        console.log("[Sentry] Hub client:", !!hub.getClient());
         
         alert(
           `Test error sent to Sentry!\n` +
