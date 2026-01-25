@@ -55,7 +55,9 @@ export default withSentryConfig(nextConfig, {
   },
 
   // Automatically annotate React components to show their full name in breadcrumbs and error responses
-  reactComponentAnnotation: {
-    enabled: true,
+  webpack: {
+    reactComponentAnnotation: {
+      enabled: true,
+    },
   },
 });
