@@ -48,6 +48,17 @@ export default function DebugSentryPage() {
         console.log("[Sentry] DSN:", client?.getDsn()?.toString());
         console.log("[Sentry] Transport:", client?.getTransport());
         
+        // Check transport status
+        if (client?.getTransport()) {
+          const transport = client.getTransport();
+          console.log("[Sentry] Transport type:", transport.constructor.name);
+        }
+        
+        // Try to get the current hub/scope
+        const hub = Sentry.getCurrentHub();
+        console.log("[Sentry] Hub:", !!hub);
+        console.log("[Sentry] Hub client:", !!hub.getClient());
+        
         alert(
           `Test error sent to Sentry!\n` +
           `Event ID: ${eventId}\n` +
