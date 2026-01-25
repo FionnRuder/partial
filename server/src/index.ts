@@ -44,6 +44,7 @@ import { logger } from "./lib/logger";
 import {
   setUserContext,
   setupSentryErrorHandler,
+  captureException,
 } from "./lib/sentry";
 
 
@@ -106,24 +107,32 @@ if (process.env.NODE_ENV === "development") {
   });
 }
 
-// Production-safe Sentry test endpoint
-// This endpoint safely captures an error without crashing the server
-// Remove or restrict this after verifying Sentry is working
-app.get("/api/test-sentry", (req, res) => {
-  try {
-    throw new Error("Production Sentry test - safe error (intentional)");
-  } catch (error: any) {
-    // Error will be automatically captured by Sentry error handler
-    res.status(200).json({ 
-      message: "Test error sent to Sentry. Check your Sentry dashboard.",
-      timestamp: new Date().toISOString(),
-    });
-  }
-});
-
 // Health check routes (public, no authentication required, no rate limiting)
 // These should be accessible without restrictions for monitoring systems
 app.use(healthRoutes);
+
+// Production-safe Sentry test endpoint (public, no auth/rate limiting)
+// This endpoint safely captures an error without crashing the server
+// Remove or restrict this after verifying Sentry is working
+// Available at both /api/test-sentry and /test-sentry for flexibility
+const handleSentryTest = (req: Request, res: Response) => {
+  const testError = new Error("Production Sentry test - safe error (intentional)");
+  
+  // Manually capture the error with Sentry
+  captureException(testError, {
+    component: "test-endpoint",
+    action: "sentry-verification",
+  });
+  
+  // Return success response (error was captured, server continues running)
+  res.status(200).json({ 
+    message: "Test error sent to Sentry. Check your Sentry dashboard.",
+    timestamp: new Date().toISOString(),
+  });
+};
+
+app.get("/api/test-sentry", handleSentryTest);
+app.get("/test-sentry", handleSentryTest);
 
 // Apply global IP rate limiting to all other routes
 app.use(ipRateLimiter);
