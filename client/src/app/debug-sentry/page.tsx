@@ -9,23 +9,13 @@ import { useEffect } from "react";
  * Only accessible in development environment.
  */
 export default function DebugSentryPage() {
-  // Check Sentry initialization on mount
+  // Check Sentry initialization on mount (only in development)
   useEffect(() => {
-    console.log("[Debug Page] Component mounted, checking Sentry...");
-    console.log("[Debug Page] process.env.NEXT_PUBLIC_SENTRY_DSN:", process.env.NEXT_PUBLIC_SENTRY_DSN ? "Set" : "NOT SET");
-    
-    const client = Sentry.getClient();
-    console.log("[Debug Page] Sentry.getClient():", client ? "Found" : "NULL/UNDEFINED");
-    
-    if (client) {
-      console.log("[Debug Page] Client DSN:", client.getDsn()?.toString());
-      console.log("[Debug Page] Client options:", client.getOptions());
-    } else {
-      console.error("[Debug Page] Sentry client is NOT initialized!");
-      console.error("[Debug Page] This means sentry.client.config.ts either:");
-      console.error("[Debug Page] 1. Didn't execute");
-      console.error("[Debug Page] 2. DSN was missing when it executed");
-      console.error("[Debug Page] 3. Sentry.init() failed silently");
+    if (process.env.NODE_ENV === "development") {
+      const client = Sentry.getClient();
+      if (!client) {
+        console.warn("[Debug Page] Sentry client is not initialized");
+      }
     }
   }, []);
   const triggerCapturedError = () => {
@@ -53,29 +43,17 @@ export default function DebugSentryPage() {
           url: window.location.href,
         });
         const eventId = Sentry.captureException(testError);
-        console.log("Sentry event ID:", eventId);
         
         // Force flush to ensure event is sent immediately
-        Sentry.flush(2000).then(() => {
-          console.log("[Sentry] Event flushed successfully");
-        }).catch((err) => {
+        Sentry.flush(2000).catch((err) => {
           console.error("[Sentry] Flush error:", err);
         });
         
-        // Check if Sentry client is initialized
+        // Check if Sentry client is initialized (only log in development)
         const client = Sentry.getClient();
-        console.log("[Sentry] Client initialized:", !!client);
-        if (client) {
-          console.log("[Sentry] DSN:", client.getDsn()?.toString());
-          console.log("[Sentry] Transport:", client.getTransport() ? "Available" : "Not available");
-          
-          // Check transport status
-          const transport = client.getTransport();
-          if (transport) {
-            console.log("[Sentry] Transport type:", transport.constructor.name);
-          }
-        } else {
-          console.error("[Sentry] Client is not initialized!");
+        if (process.env.NODE_ENV === "development") {
+          console.log("[Sentry] Event ID:", eventId);
+          console.log("[Sentry] Client initialized:", !!client);
         }
         
         alert(
@@ -105,14 +83,6 @@ export default function DebugSentryPage() {
       : process.env.NEXT_PUBLIC_SENTRY_DSN;
     const isConfigured = !!dsn;
     
-    // Log DSN status for debugging
-    if (typeof window !== "undefined") {
-      console.log("[Debug Page] DSN check:", {
-        fromProcessEnv: !!process.env.NEXT_PUBLIC_SENTRY_DSN,
-        fromNextData: !!(window as any).__NEXT_DATA__?.env?.NEXT_PUBLIC_SENTRY_DSN,
-        dsnValue: dsn ? `${dsn.substring(0, 30)}...` : "undefined",
-      });
-    }
     
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 dark:bg-gray-900">
