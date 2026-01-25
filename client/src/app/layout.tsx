@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "react-hot-toast";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { GlobalErrorHandlerSetup } from "@/components/ErrorBoundary/GlobalErrorHandler";
+import { SentryInit } from "@/components/SentryInit";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <SentryInit />
         <ErrorBoundary>
           <GlobalErrorHandlerSetup />
           <AuthProvider>
