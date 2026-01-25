@@ -4,37 +4,14 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-// Log Sentry initialization (for debugging) - ALWAYS log, even in production
-console.log("[Sentry Config] File loaded");
-console.log("[Sentry Config] NODE_ENV:", process.env.NODE_ENV);
-console.log("[Sentry Config] Window available:", typeof window !== "undefined");
-
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
-console.log("[Sentry Config] DSN check:", dsn ? "Found" : "MISSING");
-if (dsn) {
-  console.log("[Sentry Config] DSN value:", dsn.substring(0, 50) + "...");
-}
-
-if (typeof window !== "undefined") {
-  console.log("[Sentry] Initializing client SDK in browser...");
-  console.log("[Sentry] DSN:", dsn ? "Configured" : "MISSING");
-  console.log("[Sentry] DSN value:", dsn ? `${dsn.substring(0, 30)}...` : "undefined");
-  console.log("[Sentry] Environment:", process.env.NODE_ENV);
-  
-  if (!dsn) {
-    console.error("[Sentry] ERROR: NEXT_PUBLIC_SENTRY_DSN is not set! Sentry will not work.");
-    console.error("[Sentry] Make sure NEXT_PUBLIC_SENTRY_DSN is set in Railway environment variables.");
-  }
-}
 
 // Only initialize if DSN is provided
 if (!dsn) {
-  console.warn("[Sentry] Skipping initialization - DSN not provided");
-  if (typeof window !== "undefined") {
-    console.error("[Sentry] CRITICAL: DSN is missing at initialization time!");
+  if (process.env.NODE_ENV === "development") {
+    console.warn("[Sentry] Skipping initialization - DSN not provided");
   }
 } else {
-  console.log("[Sentry] Starting Sentry.init() with DSN");
   Sentry.init({
     dsn: dsn,
 
@@ -105,38 +82,6 @@ if (!dsn) {
     },
   });
 
-  console.log("[Sentry] Sentry.init() called");
-  
-  // Log after initialization - use multiple timeouts to catch it
-  if (typeof window !== "undefined") {
-    // Immediate check
-    setTimeout(() => {
-      const client = Sentry.getClient();
-      console.log("[Sentry] Immediate check - Client:", client ? "Found" : "NOT FOUND");
-      if (client) {
-        console.log("[Sentry] Client initialized successfully");
-        const clientDsn = client.getDsn();
-        console.log("[Sentry] Client DSN:", clientDsn ? clientDsn.toString() : "Not available");
-        console.log("[Sentry] Client options:", {
-          environment: client.getOptions()?.environment,
-          release: client.getOptions()?.release,
-        });
-      } else {
-        console.error("[Sentry] Client NOT initialized after init() call!");
-        console.error("[Sentry] This usually means the DSN is invalid or Sentry.init() failed silently");
-      }
-    }, 100);
-    
-    // Delayed check (in case initialization is async)
-    setTimeout(() => {
-      const client = Sentry.getClient();
-      if (client) {
-        console.log("[Sentry] Delayed check - Client initialized");
-      } else {
-        console.error("[Sentry] Delayed check - Client STILL not initialized!");
-      }
-    }, 1000);
-  }
 }
 
 

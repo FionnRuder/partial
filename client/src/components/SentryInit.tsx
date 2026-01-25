@@ -13,7 +13,7 @@ export function SentryInit() {
     const existingClient = Sentry.getClient();
     
     if (existingClient) {
-      console.log("[SentryInit] Sentry already initialized");
+      // Sentry already initialized by sentry.client.config.ts
       return;
     }
 
@@ -21,12 +21,11 @@ export function SentryInit() {
     const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
     
     if (!dsn) {
-      console.error("[SentryInit] DSN not available, cannot initialize Sentry");
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[SentryInit] DSN not available, cannot initialize Sentry");
+      }
       return;
     }
-
-    console.log("[SentryInit] Initializing Sentry manually...");
-    console.log("[SentryInit] DSN:", dsn.substring(0, 50) + "...");
 
     try {
       Sentry.init({
@@ -62,16 +61,17 @@ export function SentryInit() {
         },
       });
 
-      // Verify initialization
-      setTimeout(() => {
-        const client = Sentry.getClient();
-        if (client) {
-          console.log("[SentryInit] ✅ Sentry initialized successfully!");
-          console.log("[SentryInit] Client DSN:", client.getDsn()?.toString());
-        } else {
-          console.error("[SentryInit] ❌ Sentry initialization failed!");
-        }
-      }, 100);
+      // Verify initialization (only log in development)
+      if (process.env.NODE_ENV === "development") {
+        setTimeout(() => {
+          const client = Sentry.getClient();
+          if (client) {
+            console.log("[SentryInit] ✅ Sentry initialized successfully");
+          } else {
+            console.error("[SentryInit] ❌ Sentry initialization failed");
+          }
+        }, 100);
+      }
     } catch (error) {
       console.error("[SentryInit] Error initializing Sentry:", error);
     }
