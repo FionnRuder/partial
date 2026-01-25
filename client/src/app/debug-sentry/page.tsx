@@ -1,6 +1,7 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
+import { useEffect } from "react";
 
 /**
  * Dev-only page to verify client Sentry monitoring.
@@ -8,6 +9,25 @@ import * as Sentry from "@sentry/nextjs";
  * Only accessible in development environment.
  */
 export default function DebugSentryPage() {
+  // Check Sentry initialization on mount
+  useEffect(() => {
+    console.log("[Debug Page] Component mounted, checking Sentry...");
+    console.log("[Debug Page] process.env.NEXT_PUBLIC_SENTRY_DSN:", process.env.NEXT_PUBLIC_SENTRY_DSN ? "Set" : "NOT SET");
+    
+    const client = Sentry.getClient();
+    console.log("[Debug Page] Sentry.getClient():", client ? "Found" : "NULL/UNDEFINED");
+    
+    if (client) {
+      console.log("[Debug Page] Client DSN:", client.getDsn()?.toString());
+      console.log("[Debug Page] Client options:", client.getOptions());
+    } else {
+      console.error("[Debug Page] Sentry client is NOT initialized!");
+      console.error("[Debug Page] This means sentry.client.config.ts either:");
+      console.error("[Debug Page] 1. Didn't execute");
+      console.error("[Debug Page] 2. DSN was missing when it executed");
+      console.error("[Debug Page] 3. Sentry.init() failed silently");
+    }
+  }, []);
   const triggerCapturedError = () => {
     try {
       // Check if Sentry is initialized
@@ -79,8 +99,20 @@ export default function DebugSentryPage() {
 
   // In production, show a simple test button
   if (process.env.NODE_ENV === "production") {
-    const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+    // Check DSN at runtime (client-side)
+    const dsn = typeof window !== "undefined" 
+      ? (window as any).__NEXT_DATA__?.env?.NEXT_PUBLIC_SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
+      : process.env.NEXT_PUBLIC_SENTRY_DSN;
     const isConfigured = !!dsn;
+    
+    // Log DSN status for debugging
+    if (typeof window !== "undefined") {
+      console.log("[Debug Page] DSN check:", {
+        fromProcessEnv: !!process.env.NEXT_PUBLIC_SENTRY_DSN,
+        fromNextData: !!(window as any).__NEXT_DATA__?.env?.NEXT_PUBLIC_SENTRY_DSN,
+        dsnValue: dsn ? `${dsn.substring(0, 30)}...` : "undefined",
+      });
+    }
     
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 dark:bg-gray-900">
@@ -101,14 +133,30 @@ export default function DebugSentryPage() {
             <li>Environment: <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">{process.env.NODE_ENV || "unknown"}</code></li>
             {dsn && (
               <li className="text-xs text-gray-500 dark:text-gray-400 break-all">
-                DSN: {dsn.substring(0, 30)}...
+                DSN: {dsn.substring(0, 50)}...
+              </li>
+            )}
+            {typeof window !== "undefined" && (
+              <li className="text-xs text-gray-500 dark:text-gray-400">
+                Client initialized: {Sentry.getClient() ? "✓ Yes" : "✗ No"}
               </li>
             )}
           </ul>
           {!isConfigured && (
-            <p className="text-xs text-red-600 dark:text-red-400 mt-2">
-              ⚠️ Add NEXT_PUBLIC_SENTRY_DSN to your Railway environment variables!
-            </p>
+            <div className="text-xs text-red-600 dark:text-red-400 mt-2 space-y-1">
+              <p>⚠️ NEXT_PUBLIC_SENTRY_DSN is missing!</p>
+              <p className="mt-1">Steps to fix:</p>
+              <ol className="list-decimal list-inside ml-2 space-y-1">
+                <li>Go to Railway → Client Service → Variables</li>
+                <li>Add: NEXT_PUBLIC_SENTRY_DSN = your-dsn-here</li>
+                <li>Redeploy the service</li>
+              </ol>
+            </div>
+          )}
+          {isConfigured && !Sentry.getClient() && (
+            <div className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+              ⚠️ DSN is set but client not initialized. Check browser console for errors.
+            </div>
           )}
         </div>
         
