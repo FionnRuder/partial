@@ -38,6 +38,7 @@ import { logger } from "./lib/logger";
 import {
   initSentry,
   setUserContext,
+  setupSentryErrorHandler,
 } from "./lib/sentry";
 
 
@@ -96,6 +97,13 @@ app.get("/", (req, res) => {
   res.send("This is home route");
 });
 
+// Debug endpoint to test Sentry (only in development)
+if (process.env.NODE_ENV === "development") {
+  app.get("/debug-sentry", (req, res) => {
+    throw new Error("Sentry test error - this is intentional!");
+  });
+}
+
 // Health check routes (public, no authentication required, no rate limiting)
 // These should be accessible without restrictions for monitoring systems
 app.use(healthRoutes);
@@ -141,6 +149,9 @@ app.use("/auditLogs", auditLogRoutes);
 app.use((req: Request, res: Response) => {
   res.status(404).json({ message: "Route not found" });
 });
+
+/* SENTRY ERROR HANDLER (must come before other error handlers) */
+setupSentryErrorHandler(app);
 
 /* ERROR HANDLING MIDDLEWARE (must come last) */
 // Error logging middleware (logs errors with context and Sentry)

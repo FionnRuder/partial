@@ -50,7 +50,7 @@ const DashboardWrapper = ({ children }: { children: React.ReactNode }) => {
   }, [pathname]);
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/onboarding", "/auth/login"];
+  const publicRoutes = ["/onboarding", "/auth/login", "/debug-sentry"];
   const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith("/auth/");
 
   // Redirect unauthenticated users to onboarding (except for public routes)
