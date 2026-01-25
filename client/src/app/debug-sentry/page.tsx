@@ -8,24 +8,39 @@ import * as Sentry from "@sentry/nextjs";
  * Only accessible in development environment.
  */
 export default function DebugSentryPage() {
-  // Only allow in development
+  const triggerCapturedError = () => {
+    try {
+      throw new Error("Production client Sentry test – captured error (intentional)");
+    } catch (e) {
+      Sentry.captureException(e);
+      alert("Test error sent to Sentry! Check your client-javascript-nextjs project in the Sentry dashboard.");
+    }
+  };
+
+  // In production, show a simple test button
   if (process.env.NODE_ENV === "production") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 dark:bg-gray-900">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Not available in production
+          Sentry Production Test
         </h1>
         <p className="text-gray-600 dark:text-gray-400 text-center max-w-md">
-          This debug page is only available in development.
+          Click the button below to send a test error to Sentry. This will verify your client-side monitoring is working.
         </p>
+        <button
+          type="button"
+          onClick={triggerCapturedError}
+          className="px-6 py-3 rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition font-medium"
+        >
+          Send Test Error to Sentry
+        </button>
         <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg max-w-md">
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-            <strong>To test Sentry in production:</strong>
+            <strong>Other test options:</strong>
           </p>
           <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
             <li>Server: Visit <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">/api/test-sentry</code></li>
-            <li>Client: Use browser console: <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">Sentry.captureException(new Error("test"))</code></li>
-            <li>Or check Sentry dashboard for real errors from your app</li>
+            <li>Check Sentry dashboard for real errors from your app</li>
           </ul>
         </div>
       </div>
