@@ -4,6 +4,13 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+// Log Sentry initialization (for debugging)
+if (typeof window !== "undefined") {
+  console.log("[Sentry] Initializing client SDK...");
+  console.log("[Sentry] DSN:", process.env.NEXT_PUBLIC_SENTRY_DSN ? "Configured" : "MISSING");
+  console.log("[Sentry] Environment:", process.env.NODE_ENV);
+}
+
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
@@ -13,6 +20,12 @@ Sentry.init({
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   // Enable debug in production temporarily to troubleshoot
   debug: process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SENTRY_DEBUG === "true",
+  
+  // Enable automatic session tracking
+  autoSessionTracking: true,
+  
+  // Send default PII (Personally Identifiable Information) - be careful with this
+  sendDefaultPii: false,
 
   replaysOnErrorSampleRate: 1.0,
 
@@ -60,7 +73,24 @@ Sentry.init({
 
   environment: process.env.NODE_ENV || "development",
   release: process.env.NEXT_PUBLIC_SENTRY_RELEASE || undefined,
+  
+  // Transport options - ensure events are sent
+  transportOptions: {
+    // Increase timeout for sending events
+    timeout: 10000,
+  },
 });
+
+// Log after initialization
+if (typeof window !== "undefined") {
+  const client = Sentry.getClient();
+  if (client) {
+    console.log("[Sentry] Client initialized successfully");
+    console.log("[Sentry] DSN:", client.getDsn()?.toString());
+  } else {
+    console.error("[Sentry] Client NOT initialized!");
+  }
+}
 
 
 

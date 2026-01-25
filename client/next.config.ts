@@ -42,7 +42,8 @@ export default withSentryConfig(nextConfig, {
 
   // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
   // This can increase your server load as well as your Sentry bill.
-  tunnelRoute: "/monitoring",
+  // Temporarily disabled to test direct sending - re-enable after verification
+  // tunnelRoute: "/monitoring",
 
   // Hides source maps from visitors
   sourcemaps: {
