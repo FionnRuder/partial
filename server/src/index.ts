@@ -1,3 +1,9 @@
+/**
+ * IMPORTANT: Import instrument.ts FIRST before any other imports
+ * This ensures Sentry initializes before Express, allowing proper instrumentation
+ */
+import "./instrument";
+
 import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
@@ -36,7 +42,6 @@ import {
 import { errorLogger } from "./middleware/errorLogger";
 import { logger } from "./lib/logger";
 import {
-  initSentry,
   setUserContext,
   setupSentryErrorHandler,
 } from "./lib/sentry";
@@ -44,9 +49,6 @@ import {
 
 /* CONFIGURATIONS */
 dotenv.config();
-
-// Initialize Sentry BEFORE creating Express app
-initSentry();
 
 const app = express();
 
@@ -103,6 +105,21 @@ if (process.env.NODE_ENV === "development") {
     throw new Error("Sentry test error - this is intentional!");
   });
 }
+
+// Production-safe Sentry test endpoint
+// This endpoint safely captures an error without crashing the server
+// Remove or restrict this after verifying Sentry is working
+app.get("/api/test-sentry", (req, res) => {
+  try {
+    throw new Error("Production Sentry test - safe error (intentional)");
+  } catch (error: any) {
+    // Error will be automatically captured by Sentry error handler
+    res.status(200).json({ 
+      message: "Test error sent to Sentry. Check your Sentry dashboard.",
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
 
 // Health check routes (public, no authentication required, no rate limiting)
 // These should be accessible without restrictions for monitoring systems

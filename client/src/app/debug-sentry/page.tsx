@@ -11,11 +11,23 @@ export default function DebugSentryPage() {
   // Only allow in development
   if (process.env.NODE_ENV === "production") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8">
-        <h1 className="text-2xl font-bold">Not available in production</h1>
-        <p className="text-gray-600 dark:text-gray-400">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 dark:bg-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Not available in production
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 text-center max-w-md">
           This debug page is only available in development.
         </p>
+        <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg max-w-md">
+          <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+            <strong>To test Sentry in production:</strong>
+          </p>
+          <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
+            <li>Server: Visit <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">/api/test-sentry</code></li>
+            <li>Client: Use browser console: <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">Sentry.captureException(new Error("test"))</code></li>
+            <li>Or check Sentry dashboard for real errors from your app</li>
+          </ul>
+        </div>
       </div>
     );
   }
