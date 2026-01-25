@@ -10,11 +10,22 @@ import * as Sentry from "@sentry/nextjs";
 export default function DebugSentryPage() {
   const triggerCapturedError = () => {
     try {
-      throw new Error("Production client Sentry test – captured error (intentional)");
+      const errorMessage = process.env.NODE_ENV === "production"
+        ? "Production client Sentry test – captured error (intentional)"
+        : "Sentry client test – captured error (intentional)";
+      throw new Error(errorMessage);
     } catch (e) {
       Sentry.captureException(e);
-      alert("Test error sent to Sentry! Check your client-javascript-nextjs project in the Sentry dashboard.");
+      alert(
+        process.env.NODE_ENV === "production"
+          ? "Test error sent to Sentry! Check your client-javascript-nextjs project in the Sentry dashboard."
+          : "Error sent to Sentry. Check your client project in the dashboard."
+      );
     }
+  };
+
+  const triggerUnhandledError = () => {
+    throw new Error("Sentry client test – unhandled error (intentional)");
   };
 
   // In production, show a simple test button
@@ -46,18 +57,6 @@ export default function DebugSentryPage() {
       </div>
     );
   }
-  const triggerUnhandledError = () => {
-    throw new Error("Sentry client test – unhandled error (intentional)");
-  };
-
-  const triggerCapturedError = () => {
-    try {
-      throw new Error("Sentry client test – captured error (intentional)");
-    } catch (e) {
-      Sentry.captureException(e);
-    }
-    alert("Error sent to Sentry. Check your client project in the dashboard.");
-  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8 bg-gray-50 dark:bg-gray-900">
