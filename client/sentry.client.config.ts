@@ -11,7 +11,8 @@ Sentry.init({
   tracesSampleRate: parseFloat(process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE || "0.1"),
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: process.env.NODE_ENV === "development",
+  // Enable debug in production temporarily to troubleshoot
+  debug: process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_SENTRY_DEBUG === "true",
 
   replaysOnErrorSampleRate: 1.0,
 
@@ -30,6 +31,11 @@ Sentry.init({
 
   // Filter out certain errors
   beforeSend(event, hint) {
+    // Log when beforeSend is called (for debugging)
+    if (process.env.NEXT_PUBLIC_SENTRY_DEBUG === "true") {
+      console.log("[Sentry] beforeSend called", { event, hint });
+    }
+
     // Don't send client-side validation errors
     if (event.exception?.values?.[0]?.type === "ValidationError") {
       return null;

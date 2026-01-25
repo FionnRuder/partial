@@ -35,11 +35,26 @@ export default function DebugSentryPage() {
         const eventId = Sentry.captureException(testError);
         console.log("Sentry event ID:", eventId);
         
+        // Force flush to ensure event is sent immediately
+        Sentry.flush(2000).then(() => {
+          console.log("[Sentry] Event flushed successfully");
+        }).catch((err) => {
+          console.error("[Sentry] Flush error:", err);
+        });
+        
+        // Check if Sentry client is initialized
+        const client = Sentry.getClient();
+        console.log("[Sentry] Client initialized:", !!client);
+        console.log("[Sentry] DSN:", client?.getDsn()?.toString());
+        console.log("[Sentry] Transport:", client?.getTransport());
+        
         alert(
           `Test error sent to Sentry!\n` +
           `Event ID: ${eventId}\n` +
-          `DSN configured: ${dsn ? "Yes" : "No"}\n\n` +
-          `Check your client-javascript-nextjs project in the Sentry dashboard.`
+          `DSN configured: ${dsn ? "Yes" : "No"}\n` +
+          `Client initialized: ${client ? "Yes" : "No"}\n\n` +
+          `Check your client-javascript-nextjs project in the Sentry dashboard.\n` +
+          `Also check browser console for detailed logs.`
         );
       });
     } catch (e) {
@@ -108,6 +123,19 @@ export default function DebugSentryPage() {
             <li>Server: Visit <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">/api/test-sentry</code></li>
             <li>Check Sentry dashboard for real errors from your app</li>
             <li>Open browser console (F12) to see Sentry debug logs</li>
+            <li>Check Network tab for requests to <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">/monitoring</code> (tunnel route)</li>
+          </ul>
+        </div>
+        
+        <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg max-w-md">
+          <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+            <strong>⚠️ Troubleshooting:</strong>
+          </p>
+          <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
+            <li>If no network requests appear, check if tunnel route <code>/monitoring</code> is working</li>
+            <li>Try disabling ad blockers or test in incognito mode</li>
+            <li>Add <code>NEXT_PUBLIC_SENTRY_DEBUG=true</code> to Railway env vars for detailed logs</li>
+            <li>Check browser console for Sentry initialization errors</li>
           </ul>
         </div>
       </div>
