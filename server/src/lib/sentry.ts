@@ -77,6 +77,14 @@ export function initSentry(): void {
 }
 
 /**
+ * Set up Sentry error handler for Express
+ * Call this after all routes but before other error handlers
+ */
+export function setupSentryErrorHandler(app: any): void {
+  Sentry.setupExpressErrorHandler(app);
+}
+
+/**
  * Configure Sentry scope with user context
  */
 export function setUserContext(userId: string, organizationId: number, email?: string): void {

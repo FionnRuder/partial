@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { AuthUser, authService } from '@/lib/auth';
+import * as Sentry from "@sentry/nextjs";
 
 // Authentication context
 interface AuthContextType {
@@ -58,6 +59,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const currentUser = await authService.getCurrentUser();
         const sanitizedUser = sanitizeUser(currentUser);
         setUser(sanitizedUser);
+        
+        // Set Sentry user context
+        if (sanitizedUser) {
+          Sentry.setUser({
+            id: sanitizedUser.id.toString(),
+            email: sanitizedUser.email,
+          });
+        }
       } catch (error) {
         console.error('Failed to initialize auth:', error);
         setUser(null);
@@ -83,6 +92,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const newUser = await authService.signUp(data);
       const sanitized = sanitizeUser(newUser);
       setUser(sanitized);
+      
+      // Set Sentry user context
+      if (sanitized) {
+        Sentry.setUser({
+          id: sanitized.id.toString(),
+          email: sanitized.email,
+        });
+      }
+      
       return sanitized as AuthUser;
     } catch (error) {
       setUser(null);
@@ -112,6 +130,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       await authService.signOut();
       setUser(null);
+      
+      // Clear Sentry user context
+      Sentry.setUser(null);
     } catch (error) {
       console.error('Sign out error:', error);
       throw error;
