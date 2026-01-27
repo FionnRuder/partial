@@ -32,13 +32,15 @@ jobs:
         env:
           NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
       
-      - name: Upload test results
+      - name: Upload coverage reports
         if: always()
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
-          name: client-test-results
-          path: client/.vitest/
+          name: client-coverage
+          path: client/coverage/
           retention-days: 7
+          if-no-files-found: ignore
 
   test-server:
     name: Test Server
@@ -106,13 +108,15 @@ jobs:
           BETTER_AUTH_URL: http://localhost:8000
           PORT: 8000
       
-      - name: Upload test results
+      - name: Upload coverage reports
         if: always()
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
-          name: server-test-results
-          path: server/.vitest/
+          name: server-coverage
+          path: server/coverage/
           retention-days: 7
+          if-no-files-found: ignore
 
   test-all:
     name: All Tests Status
