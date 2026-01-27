@@ -22,6 +22,9 @@ export function useRouteGuard(requiredProtection: RouteProtection) {
   };
 
   const getRedirectPath = () => {
+    // PUBLIC routes don't need redirects
+    if (requiredProtection === RouteProtection.PUBLIC) return null;
+    
     if (!isAuthenticated) return '/onboarding';
     
     // If user doesn't have required role, redirect to home

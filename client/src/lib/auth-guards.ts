@@ -27,11 +27,15 @@ export const routeConfig: Record<string, RouteProtection> = {
 
 // Helper function to check if user has required role
 export function hasRequiredRole(user: AuthUser | null, protection: RouteProtection): boolean {
+  // PUBLIC routes should allow access regardless of authentication status
+  if (protection === RouteProtection.PUBLIC) {
+    return true;
+  }
+
+  // All other routes require a user
   if (!user) return false;
 
   switch (protection) {
-    case RouteProtection.PUBLIC:
-      return true;
     case RouteProtection.AUTHENTICATED:
       return true;
     case RouteProtection.ENGINEER_ONLY:
