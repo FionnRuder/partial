@@ -24,6 +24,13 @@ Partial is a purpose-built work management platform for hardware development. It
 * **Backend:** Node.js with Express, Prisma (PostgreSQL ORM), better-auth
 * **Database:** PostgreSQL
 * **Cloud:** Railway
+* **CI/CD:** GitHub Actions (tests run automatically on every commit)
+
+## CI/CD
+
+This project uses GitHub Actions to automatically run tests on every commit and pull request. See [CI_CD.md](./CI_CD.md) for detailed information.
+
+**Status:** ![CI](https://github.com/FionnRuder/partial/workflows/CI/badge.svg)
 
 ## Getting Started
 

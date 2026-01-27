@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
     "build": "rimraf dist && npx prisma generate && npx tsc || (echo 'TypeScript compilation failed!' && exit 1) && test -f dist/index.js || (echo 'ERROR: dist/index.js not found! Check if rootDir is correct.' && exit 1)",
     "start": "npm run build && node dist/index.js",
     "dev": "npm run build && concurrently \"npx tsc -w\" \"nodemon --exec ts-node src/index.ts\"",
@@ -22,11 +25,16 @@
     "@types/express-session": "^1.18.2",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.4.0",
+    "@types/supertest": "^6.0.2",
+    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/ui": "^4.0.18",
     "concurrently": "^8.2.2",
     "nodemon": "^3.1.4",
     "rimraf": "^6.0.1",
+    "supertest": "^7.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
