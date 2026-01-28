@@ -8,12 +8,13 @@ import UserCard from "@/components/UserCard";
 import WorkItemCard from "@/components/WorkItemCard";
 import { useSearchQuery } from "@/state/api";
 import { debounce } from "lodash";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 const Search = () => {
   const searchParams = useSearchParams();
   const queryParam = searchParams.get("q") || "";
+  const [inputValue, setInputValue] = useState(queryParam);
   const [searchTerm, setSearchTerm] = useState(queryParam);
   const {
     data: searchResults,
@@ -23,21 +24,32 @@ const Search = () => {
     skip: searchTerm.length < 3,
   });
 
-  const handleSearch = debounce(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchTerm(event.target.value);
-    },
-    500,
+  // Create a stable debounced function using useMemo
+  const debouncedSetSearchTerm = useMemo(
+    () => debounce((value: string) => {
+      setSearchTerm(value);
+    }, 500),
+    []
   );
 
+  // Update search term when input value changes (debounced)
   useEffect(() => {
-    return handleSearch.cancel;
-  }, [handleSearch.cancel]);
+    debouncedSetSearchTerm(inputValue);
+    
+    return () => {
+      debouncedSetSearchTerm.cancel();
+    };
+  }, [inputValue, debouncedSetSearchTerm]);
 
-  // Initialize search term from URL query parameter
+  // Initialize input value from URL query parameter
   useEffect(() => {
+    setInputValue(queryParam);
     setSearchTerm(queryParam);
   }, [queryParam]);
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.target.value);
+  };
 
   const hasResults = searchResults && (
     (searchResults.workItems && searchResults.workItems.length > 0) ||
@@ -55,8 +67,8 @@ const Search = () => {
           type="text"
           placeholder="Search..."
           className="w-1/2 rounded border border-gray-300 p-3 shadow focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-dark-secondary dark:text-white"
-          value={searchTerm}
-          onChange={handleSearch}
+          value={inputValue}
+          onChange={handleInputChange}
         />
       </div>
       <div className="p-5">

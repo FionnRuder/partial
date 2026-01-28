@@ -567,7 +567,7 @@ export const api = createApi({
     return result;
   },
       reducerPath: "api",
-      tagTypes: ["WorkItems", "Milestones", "Parts", "Programs", "Teams", "Users", "Comments", "StatusLogs", "Attachments", "Invitations", "DeliverableTypes", "IssueTypes", "Feedback", "AuditLogs"],
+      tagTypes: ["WorkItems", "Milestones", "Parts", "Programs", "Teams", "Users", "Comments", "StatusLogs", "Attachments", "Invitations", "DeliverableTypes", "IssueTypes", "Feedback", "AuditLogs", "Organization"],
   endpoints: (build) => ({
     /* ---------- WORK ITEMS ---------- */
     getWorkItems: build.query<WorkItem[], void>({
@@ -1063,6 +1063,21 @@ export const api = createApi({
       ],
     }),
 
+    /* ---------- ORGANIZATIONS ---------- */
+    getOrganization: build.query<{ id: number; name: string; createdAt: string; updatedAt: string }, void>({
+      query: () => "organizations",
+      providesTags: ["Organization"],
+    }),
+
+    updateOrganization: build.mutation<{ id: number; name: string; createdAt: string; updatedAt: string }, { name: string }>({
+      query: (data) => ({
+        url: "organizations",
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Organization", "Users"],
+    }),
+
     /* ---------- SEARCH ---------- */
     search: build.query<SearchResults, string>({
       query: (query) => `search?query=${query}`,
@@ -1324,6 +1339,9 @@ export const {
   useUpdateUserMutation,
   useGetEmailPreferencesQuery,
   useUpdateEmailPreferencesMutation,
+
+  useGetOrganizationQuery,
+  useUpdateOrganizationMutation,
 
   useSearchQuery,
 

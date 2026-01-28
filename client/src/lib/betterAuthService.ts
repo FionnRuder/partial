@@ -116,6 +116,60 @@ export class BetterAuthService implements AuthService {
     });
 
     if (signInError) {
+      // Check for specific error codes/messages to distinguish between user not found and incorrect password
+      const errorMessage = signInError.message?.toLowerCase() || "";
+      const errorCode = (signInError as any)?.code?.toLowerCase() || "";
+      
+      // Check if user not found (email doesn't exist)
+      // Better Auth may use various formats, so we check multiple patterns
+      if (
+        errorMessage.includes("user not found") ||
+        errorMessage.includes("email not found") ||
+        errorMessage.includes("no user found") ||
+        errorMessage.includes("account not found") ||
+        errorMessage.includes("user does not exist") ||
+        errorCode === "user_not_found" ||
+        errorCode === "email_not_found" ||
+        errorCode === "account_not_found" ||
+        (signInError as any)?.status === 404
+      ) {
+        const error = new Error("USER_NOT_FOUND");
+        (error as any).code = "USER_NOT_FOUND";
+        throw error;
+      }
+      
+      // Check if password is incorrect (user exists but password is wrong)
+      if (
+        errorMessage.includes("invalid password") ||
+        errorMessage.includes("incorrect password") ||
+        errorMessage.includes("wrong password") ||
+        errorMessage.includes("password mismatch") ||
+        errorMessage.includes("password is incorrect") ||
+        errorCode === "invalid_password" ||
+        errorCode === "incorrect_password" ||
+        errorCode === "wrong_password"
+      ) {
+        const error = new Error("INVALID_PASSWORD");
+        (error as any).code = "INVALID_PASSWORD";
+        throw error;
+      }
+      
+      // For generic "invalid credentials" errors, Better Auth might not distinguish
+      // between user not found and wrong password for security reasons.
+      // However, we'll check the error structure to see if we can infer more.
+      // If the error suggests it's specifically about credentials, we'll show a generic message.
+      if (
+        errorMessage.includes("invalid credentials") ||
+        errorMessage.includes("authentication failed") ||
+        errorCode === "invalid_credentials" ||
+        errorCode === "authentication_failed"
+      ) {
+        // Better Auth might not distinguish, but we'll throw a generic error
+        // The UI can show a generic message
+        throw new Error(signInError.message || "Invalid email or password");
+      }
+      
+      // If we can't determine the specific error, throw the original error message
       throw new Error(signInError.message || "Failed to sign in");
     }
 

@@ -2010,7 +2010,29 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                 onNext();
             }
         } catch (error) {
-            setError(error.message || "An error occurred. Please try again.");
+            // Check for specific error codes for user-friendly notifications
+            if (isLogin) {
+                const errorCode = error.code || error.message;
+                if (errorCode === "USER_NOT_FOUND" || error.message === "USER_NOT_FOUND") {
+                    // User not found - email doesn't exist in database
+                    const message = "No account found with this email address. Please sign up first.";
+                    setError(message);
+                    __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["showToast"].error(message);
+                } else if (errorCode === "INVALID_PASSWORD" || error.message === "INVALID_PASSWORD") {
+                    // Password is incorrect
+                    const message = "Incorrect password. Please try again.";
+                    setError(message);
+                    __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["showToast"].error(message);
+                } else {
+                    // Generic error - show both inline and toast
+                    const message = error.message || "An error occurred. Please try again.";
+                    setError(message);
+                    __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["showToast"].error(message);
+                }
+            } else {
+                // For signup, just show the error inline
+                setError(error.message || "An error occurred. Please try again.");
+            }
         } finally{
             setIsLoading(false);
         }
@@ -2038,19 +2060,19 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                         d: "M15 19l-7-7 7-7"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 680,
+                                        lineNumber: 703,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 679,
+                                    lineNumber: 702,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 "Back"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 675,
+                            lineNumber: 698,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2064,7 +2086,7 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                     className: "mx-auto mb-4"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 686,
+                                    lineNumber: 709,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -2072,7 +2094,7 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                     children: isLogin ? "Welcome Back" : "Create Account"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 693,
+                                    lineNumber: 716,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2080,19 +2102,19 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                     children: isLogin ? "Sign in to your account to continue" : "Join the platform to start managing your hardware development work"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 696,
+                                    lineNumber: 719,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 685,
+                            lineNumber: 708,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 674,
+                    lineNumber: 697,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -2111,7 +2133,7 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                                 children: "Full Name"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 710,
+                                                lineNumber: 733,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2128,13 +2150,13 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                                 placeholder: "Enter your full name"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 713,
+                                                lineNumber: 736,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 709,
+                                        lineNumber: 732,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false),
@@ -2146,7 +2168,7 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                             children: "Email Address"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 728,
+                                            lineNumber: 751,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2163,13 +2185,13 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                             placeholder: "Enter your email"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 731,
+                                            lineNumber: 754,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 727,
+                                    lineNumber: 750,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2180,7 +2202,7 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                             children: "Password"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 744,
+                                            lineNumber: 767,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2194,7 +2216,7 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                             placeholder: "Enter your password"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 747,
+                                            lineNumber: 770,
                                             columnNumber: 19
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         !isLogin && passwordErrors.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2205,23 +2227,23 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                                         children: error
                                                     }, index, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 761,
+                                                        lineNumber: 784,
                                                         columnNumber: 27
                                                     }, ("TURBOPACK compile-time value", void 0)))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 759,
+                                                lineNumber: 782,
                                                 columnNumber: 23
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 758,
+                                            lineNumber: 781,
                                             columnNumber: 21
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 743,
+                                    lineNumber: 766,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 !isLogin && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2232,7 +2254,7 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                             children: "Confirm Password"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 770,
+                                            lineNumber: 793,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2249,19 +2271,19 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                             placeholder: "Confirm your password"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 773,
+                                            lineNumber: 796,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 769,
+                                    lineNumber: 792,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 706,
+                            lineNumber: 729,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2271,12 +2293,12 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                 children: error
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 789,
+                                lineNumber: 812,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 788,
+                            lineNumber: 811,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2291,24 +2313,24 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                             className: "animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 803,
+                                            lineNumber: 826,
                                             columnNumber: 19
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         isLogin ? "Signing In..." : "Creating Account..."
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 802,
+                                    lineNumber: 825,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0)) : isLogin ? "Sign In" : "Create Account"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 796,
+                                lineNumber: 819,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 795,
+                            lineNumber: 818,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2320,29 +2342,29 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" })=>{
                                 children: isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 813,
+                                lineNumber: 836,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 812,
+                            lineNumber: 835,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 705,
+                    lineNumber: 728,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 673,
+            lineNumber: 696,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/app/onboarding/page.tsx",
-        lineNumber: 672,
+        lineNumber: 695,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -2368,12 +2390,12 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                     d: "M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 853,
+                    lineNumber: 876,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/app/onboarding/page.tsx",
-                lineNumber: 852,
+                lineNumber: 875,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0)),
             features: [
@@ -2399,12 +2421,12 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                     d: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 869,
+                    lineNumber: 892,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/app/onboarding/page.tsx",
-                lineNumber: 868,
+                lineNumber: 891,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0)),
             features: [
@@ -2430,7 +2452,7 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                 children: "Setting Up Your Organization"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 887,
+                                lineNumber: 910,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2438,13 +2460,13 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                 children: "As the first user, you'll be automatically assigned the Admin role"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 890,
+                                lineNumber: 913,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 886,
+                        lineNumber: 909,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2468,17 +2490,17 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                                 d: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 900,
+                                                lineNumber: 923,
                                                 columnNumber: 21
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 899,
+                                            lineNumber: 922,
                                             columnNumber: 19
                                         }, ("TURBOPACK compile-time value", void 0))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 898,
+                                        lineNumber: 921,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2489,7 +2511,7 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                                 children: "Admin Role"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 904,
+                                                lineNumber: 927,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2497,7 +2519,7 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                                 children: "As the organization administrator, you'll have full access to manage users, teams, programs, and invite new members."
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 907,
+                                                lineNumber: 930,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -2518,19 +2540,19 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                                                     d: "M5 13l4 4L19 7"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                    lineNumber: 913,
+                                                                    lineNumber: 936,
                                                                     columnNumber: 25
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                lineNumber: 912,
+                                                                lineNumber: 935,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             "Manage users and assign roles"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 911,
+                                                        lineNumber: 934,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -2548,19 +2570,19 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                                                     d: "M5 13l4 4L19 7"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                    lineNumber: 919,
+                                                                    lineNumber: 942,
                                                                     columnNumber: 25
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                lineNumber: 918,
+                                                                lineNumber: 941,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             "Create and manage teams"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 917,
+                                                        lineNumber: 940,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -2578,19 +2600,19 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                                                     d: "M5 13l4 4L19 7"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                    lineNumber: 925,
+                                                                    lineNumber: 948,
                                                                     columnNumber: 25
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                lineNumber: 924,
+                                                                lineNumber: 947,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             "Invite new members to your organization"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 923,
+                                                        lineNumber: 946,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -2608,47 +2630,47 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                                                     d: "M5 13l4 4L19 7"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                    lineNumber: 931,
+                                                                    lineNumber: 954,
                                                                     columnNumber: 25
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                lineNumber: 930,
+                                                                lineNumber: 953,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             "Full access to all programs and work items"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 929,
+                                                        lineNumber: 952,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 910,
+                                                lineNumber: 933,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 903,
+                                        lineNumber: 926,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 897,
+                                lineNumber: 920,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 896,
+                            lineNumber: 919,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 895,
+                        lineNumber: 918,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2664,35 +2686,35 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                         className: "animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 949,
+                                        lineNumber: 972,
                                         columnNumber: 19
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     "Setting up..."
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 948,
+                                lineNumber: 971,
                                 columnNumber: 17
                             }, ("TURBOPACK compile-time value", void 0)) : "Continue"
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 942,
+                            lineNumber: 965,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 941,
+                        lineNumber: 964,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/onboarding/page.tsx",
-                lineNumber: 885,
+                lineNumber: 908,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0))
         }, void 0, false, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 884,
+            lineNumber: 907,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0));
     }
@@ -2720,19 +2742,19 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                         d: "M15 19l-7-7 7-7"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 971,
+                                        lineNumber: 994,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 970,
+                                    lineNumber: 993,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 "Back"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 966,
+                            lineNumber: 989,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -2740,7 +2762,7 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                             children: invitationData ? 'Join Organization' : 'Choose Your Role'
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 976,
+                            lineNumber: 999,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         invitationData && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2751,7 +2773,7 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                     children: "You've been invited to join:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 981,
+                                    lineNumber: 1004,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2759,7 +2781,7 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                     children: invitationData.organization.name
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 984,
+                                    lineNumber: 1007,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 invitationData.invitedEmail && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2770,7 +2792,7 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 988,
+                                    lineNumber: 1011,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2782,19 +2804,19 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                             children: invitationData.role
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 993,
+                                            lineNumber: 1016,
                                             columnNumber: 23
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 992,
+                                    lineNumber: 1015,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 980,
+                            lineNumber: 1003,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2802,13 +2824,13 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                             children: invitationData ? 'Your role has been pre-selected. Click continue to proceed.' : 'Select your primary role to customize your experience'
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 997,
+                            lineNumber: 1020,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 965,
+                    lineNumber: 988,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2826,7 +2848,7 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                             children: invitationData.role
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 1010,
+                                            lineNumber: 1033,
                                             columnNumber: 19
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2834,13 +2856,13 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                             children: "This role was assigned by the organization administrator."
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 1013,
+                                            lineNumber: 1036,
                                             columnNumber: 19
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 1009,
+                                    lineNumber: 1032,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
@@ -2855,23 +2877,23 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                         d: "M9 5l7 7-7 7"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1023,
+                                        lineNumber: 1046,
                                         columnNumber: 19
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 1017,
+                                    lineNumber: 1040,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1008,
+                            lineNumber: 1031,
                             columnNumber: 15
                         }, ("TURBOPACK compile-time value", void 0))
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 1007,
+                        lineNumber: 1030,
                         columnNumber: 13
                     }, ("TURBOPACK compile-time value", void 0)) : // Normal role selection
                     roles.map((role)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2885,7 +2907,7 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                         children: role.icon
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1045,
+                                        lineNumber: 1068,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2896,7 +2918,7 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                                 children: role.title
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1053,
+                                                lineNumber: 1076,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2904,7 +2926,7 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                                 children: role.description
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1056,
+                                                lineNumber: 1079,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -2924,46 +2946,46 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                                                     d: "M5 13l4 4L19 7"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                    lineNumber: 1063,
+                                                                    lineNumber: 1086,
                                                                     columnNumber: 27
                                                                 }, ("TURBOPACK compile-time value", void 0))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                lineNumber: 1062,
+                                                                lineNumber: 1085,
                                                                 columnNumber: 25
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             feature
                                                         ]
                                                     }, index, true, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 1061,
+                                                        lineNumber: 1084,
                                                         columnNumber: 23
                                                     }, ("TURBOPACK compile-time value", void 0)))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1059,
+                                                lineNumber: 1082,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1052,
+                                        lineNumber: 1075,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1044,
+                                lineNumber: 1067,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0))
                         }, role.id, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1035,
+                            lineNumber: 1058,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)))
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 1004,
+                    lineNumber: 1027,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2995,35 +3017,35 @@ const RoleSelectionScreen = ({ onBack, onNext, invitationData, isNewOrganization
                                     className: "animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 1104,
+                                    lineNumber: 1127,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 "Updating..."
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1103,
+                            lineNumber: 1126,
                             columnNumber: 15
                         }, ("TURBOPACK compile-time value", void 0)) : invitationData ? "Continue" : "Continue"
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 1077,
+                        lineNumber: 1100,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 1076,
+                    lineNumber: 1099,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 964,
+            lineNumber: 987,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/app/onboarding/page.tsx",
-        lineNumber: 963,
+        lineNumber: 986,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -3075,19 +3097,19 @@ const OrganizationNameScreen = ({ onBack, onNext, invitationData })=>{
                                         d: "M15 19l-7-7 7-7"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1163,
+                                        lineNumber: 1186,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 1162,
+                                    lineNumber: 1185,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 "Back"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1158,
+                            lineNumber: 1181,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3095,7 +3117,7 @@ const OrganizationNameScreen = ({ onBack, onNext, invitationData })=>{
                             children: "Name Your Organization"
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1168,
+                            lineNumber: 1191,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3103,13 +3125,13 @@ const OrganizationNameScreen = ({ onBack, onNext, invitationData })=>{
                             children: "Give your organization a name. You can change this later in settings."
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1171,
+                            lineNumber: 1194,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 1157,
+                    lineNumber: 1180,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -3126,7 +3148,7 @@ const OrganizationNameScreen = ({ onBack, onNext, invitationData })=>{
                                         children: "Organization Name"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1179,
+                                        lineNumber: 1202,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -3140,7 +3162,7 @@ const OrganizationNameScreen = ({ onBack, onNext, invitationData })=>{
                                         autoFocus: true
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1182,
+                                        lineNumber: 1205,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3148,13 +3170,13 @@ const OrganizationNameScreen = ({ onBack, onNext, invitationData })=>{
                                         children: "This will be the name of your organization. All users you invite will be part of this organization."
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1192,
+                                        lineNumber: 1215,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1178,
+                                lineNumber: 1201,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3167,7 +3189,7 @@ const OrganizationNameScreen = ({ onBack, onNext, invitationData })=>{
                                         children: "Back"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1198,
+                                        lineNumber: 1221,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3177,35 +3199,35 @@ const OrganizationNameScreen = ({ onBack, onNext, invitationData })=>{
                                         children: isLoading ? "Creating..." : "Continue"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1205,
+                                        lineNumber: 1228,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1197,
+                                lineNumber: 1220,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 1177,
+                        lineNumber: 1200,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 1176,
+                    lineNumber: 1199,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 1156,
+            lineNumber: 1179,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/app/onboarding/page.tsx",
-        lineNumber: 1155,
+        lineNumber: 1178,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -3328,19 +3350,19 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                         d: "M15 19l-7-7 7-7"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1333,
+                                        lineNumber: 1356,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 1332,
+                                    lineNumber: 1355,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 "Back"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1328,
+                            lineNumber: 1351,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3348,7 +3370,7 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                             children: "Complete Your Profile"
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1338,
+                            lineNumber: 1361,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3356,13 +3378,13 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                             children: "Add optional information to personalize your experience"
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1341,
+                            lineNumber: 1364,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 1327,
+                    lineNumber: 1350,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -3379,7 +3401,7 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                         children: "Profile Picture URL (Optional)"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1350,
+                                        lineNumber: 1373,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -3392,7 +3414,7 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                         placeholder: "/images/profile.jpg"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1353,
+                                        lineNumber: 1376,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     profilePictureUrl && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3403,7 +3425,7 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                 children: "Preview:"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1364,
+                                                lineNumber: 1387,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3417,18 +3439,18 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                     }
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                                    lineNumber: 1366,
+                                                    lineNumber: 1389,
                                                     columnNumber: 21
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1365,
+                                                lineNumber: 1388,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1363,
+                                        lineNumber: 1386,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3436,13 +3458,13 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                         children: "Use a local media path (e.g. /images/profile.jpg). You can add a profile picture later in settings."
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1377,
+                                        lineNumber: 1400,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1349,
+                                lineNumber: 1372,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3457,13 +3479,13 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                 children: "*"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1385,
+                                                lineNumber: 1408,
                                                 columnNumber: 33
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1384,
+                                        lineNumber: 1407,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     teamsLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3473,7 +3495,7 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                 className: "animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1389,
+                                                lineNumber: 1412,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3481,13 +3503,13 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                 children: "Loading teams..."
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1390,
+                                                lineNumber: 1413,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1388,
+                                        lineNumber: 1411,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
                                         id: "disciplineTeam",
@@ -3501,7 +3523,7 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                 children: "No team selected"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1400,
+                                                lineNumber: 1423,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             teams?.map((team)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -3513,13 +3535,13 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                     ]
                                                 }, team.id, true, {
                                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                                    lineNumber: 1402,
+                                                    lineNumber: 1425,
                                                     columnNumber: 21
                                                 }, ("TURBOPACK compile-time value", void 0)))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1393,
+                                        lineNumber: 1416,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3527,7 +3549,7 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                         children: "Select your team to connect with colleagues and collaborate on projects. You can create a new team if needed."
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1408,
+                                        lineNumber: 1431,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3542,12 +3564,12 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                             children: showCreateTeam ? "Cancel new team" : "Create a new discipline team"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 1413,
+                                            lineNumber: 1436,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1412,
+                                        lineNumber: 1435,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     showCreateTeam && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3561,7 +3583,7 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                         children: "Team Name"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 1428,
+                                                        lineNumber: 1451,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -3573,13 +3595,13 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                         placeholder: "Enter the new team name"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 1431,
+                                                        lineNumber: 1454,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1427,
+                                                lineNumber: 1450,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3590,7 +3612,7 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                         children: "Team Description"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 1441,
+                                                        lineNumber: 1464,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -3602,13 +3624,13 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                         placeholder: "Describe the purpose of this team"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 1444,
+                                                        lineNumber: 1467,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1440,
+                                                lineNumber: 1463,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             createTeamError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3616,7 +3638,7 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                 children: createTeamError
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1455,
+                                                lineNumber: 1478,
                                                 columnNumber: 21
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3660,24 +3682,24 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                     children: isCreatingTeam ? "Creating..." : "Create Team"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                                    lineNumber: 1461,
+                                                    lineNumber: 1484,
                                                     columnNumber: 21
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1460,
+                                                lineNumber: 1483,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1426,
+                                        lineNumber: 1449,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1383,
+                                lineNumber: 1406,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3687,12 +3709,12 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                     children: error
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 1512,
+                                    lineNumber: 1535,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0))
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1511,
+                                lineNumber: 1534,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3705,7 +3727,7 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                         children: "Back"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1519,
+                                        lineNumber: 1542,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3719,47 +3741,47 @@ const ProfileCompletionScreen = ({ onBack, onNext })=>{
                                                     className: "animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                                    lineNumber: 1533,
+                                                    lineNumber: 1556,
                                                     columnNumber: 21
                                                 }, ("TURBOPACK compile-time value", void 0)),
                                                 "Saving..."
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 1532,
+                                            lineNumber: 1555,
                                             columnNumber: 19
                                         }, ("TURBOPACK compile-time value", void 0)) : "Continue"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1526,
+                                        lineNumber: 1549,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1518,
+                                lineNumber: 1541,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 1347,
+                        lineNumber: 1370,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 1346,
+                    lineNumber: 1369,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 1326,
+            lineNumber: 1349,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/app/onboarding/page.tsx",
-        lineNumber: 1325,
+        lineNumber: 1348,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -3838,19 +3860,19 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                         d: "M15 19l-7-7 7-7"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1621,
+                                        lineNumber: 1644,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 1620,
+                                    lineNumber: 1643,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 "Back"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1616,
+                            lineNumber: 1639,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3858,7 +3880,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                             children: mode === "create" ? "Create Your First Program" : "Join an Existing Program"
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1626,
+                            lineNumber: 1649,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3866,13 +3888,13 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                             children: mode === "create" ? "Program Managers use programs to organize milestones, parts, and work items. Let's create your first program to get your team started." : "Already have programs running? Choose one below so your team can plug into its milestones, parts, and work items right away."
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1629,
+                            lineNumber: 1652,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 1615,
+                    lineNumber: 1638,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3888,7 +3910,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                     children: "Create New Program"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 1638,
+                                    lineNumber: 1661,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3898,13 +3920,13 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                     children: "Join Existing Program"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 1649,
+                                    lineNumber: 1672,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1637,
+                            lineNumber: 1660,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3918,7 +3940,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                 children: "Program Name"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1666,
+                                                lineNumber: 1689,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -3928,13 +3950,13 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                 placeholder: "e.g. Alpha Device Launch"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1669,
+                                                lineNumber: 1692,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1665,
+                                        lineNumber: 1688,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3944,7 +3966,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                 children: "Description (Optional)"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1678,
+                                                lineNumber: 1701,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -3955,13 +3977,13 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                 placeholder: "Provide context for this program"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1681,
+                                                lineNumber: 1704,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1677,
+                                        lineNumber: 1700,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3974,7 +3996,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                         children: "Start Date"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 1692,
+                                                        lineNumber: 1715,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -3984,13 +4006,13 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                         onChange: (e)=>setStartDate(e.target.value)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 1695,
+                                                        lineNumber: 1718,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1691,
+                                                lineNumber: 1714,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4000,7 +4022,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                         children: "Target Completion Date"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 1703,
+                                                        lineNumber: 1726,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -4010,19 +4032,19 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                         onChange: (e)=>setEndDate(e.target.value)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 1706,
+                                                        lineNumber: 1729,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1702,
+                                                lineNumber: 1725,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1690,
+                                        lineNumber: 1713,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     formError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4030,7 +4052,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                         children: formError
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1716,
+                                        lineNumber: 1739,
                                         columnNumber: 19
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4038,7 +4060,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                         children: "Failed to create program. Please try again."
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1722,
+                                        lineNumber: 1745,
                                         columnNumber: 19
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4049,7 +4071,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                         children: isLoading ? "Creating Program..." : createdProgram ? "Program Created" : "Create Program"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1727,
+                                        lineNumber: 1750,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     createdProgram && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4061,7 +4083,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1737,
+                                        lineNumber: 1760,
                                         columnNumber: 19
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4072,7 +4094,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                         children: "Continue to Milestones"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1742,
+                                        lineNumber: 1765,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
@@ -4085,7 +4107,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                 children: "Select a Program to Join"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1754,
+                                                lineNumber: 1777,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             programsLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4093,14 +4115,14 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                 children: "Loading programs..."
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1758,
+                                                lineNumber: 1781,
                                                 columnNumber: 21
                                             }, ("TURBOPACK compile-time value", void 0)) : programs.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
                                                 children: "No programs are available yet. Create a new program to get started."
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1760,
+                                                lineNumber: 1783,
                                                 columnNumber: 21
                                             }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
                                                 value: selectedProgramId === "" ? "" : selectedProgramId,
@@ -4115,7 +4137,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                         children: "Choose a program"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 1772,
+                                                        lineNumber: 1795,
                                                         columnNumber: 23
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     programs.map((program)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4123,19 +4145,19 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                             children: program.name
                                                         }, program.id, false, {
                                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                                            lineNumber: 1774,
+                                                            lineNumber: 1797,
                                                             columnNumber: 25
                                                         }, ("TURBOPACK compile-time value", void 0)))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1764,
+                                                lineNumber: 1787,
                                                 columnNumber: 21
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1753,
+                                        lineNumber: 1776,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     typeof selectedProgramId === "number" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4146,7 +4168,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                 children: programs.find((program)=>program.id === selectedProgramId)?.name
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1784,
+                                                lineNumber: 1807,
                                                 columnNumber: 21
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4154,13 +4176,13 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                                 children: "Joining this program will give your team access to its milestones, parts, and work items."
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 1787,
+                                                lineNumber: 1810,
                                                 columnNumber: 21
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1783,
+                                        lineNumber: 1806,
                                         columnNumber: 19
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     joinError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4168,7 +4190,7 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                         children: joinError
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1794,
+                                        lineNumber: 1817,
                                         columnNumber: 19
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4179,31 +4201,31 @@ const ProgramSetupScreen = ({ onBack, onComplete, onJoinExisting, currentUser })
                                         children: "Join Program"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1799,
+                                        lineNumber: 1822,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true)
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1662,
+                            lineNumber: 1685,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 1636,
+                    lineNumber: 1659,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 1614,
+            lineNumber: 1637,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/app/onboarding/page.tsx",
-        lineNumber: 1613,
+        lineNumber: 1636,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -4225,7 +4247,7 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                         children: "Program not found"
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 1836,
+                        lineNumber: 1859,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4233,7 +4255,7 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                         children: "We couldn't find the program you just created. Please go back and create a program first."
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 1837,
+                        lineNumber: 1860,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4242,18 +4264,18 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                         children: "Back to Program Setup"
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 1840,
+                        lineNumber: 1863,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/onboarding/page.tsx",
-                lineNumber: 1835,
+                lineNumber: 1858,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0))
         }, void 0, false, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 1834,
+            lineNumber: 1857,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0));
     }
@@ -4304,19 +4326,19 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                                         d: "M15 19l-7-7 7-7"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1884,
+                                        lineNumber: 1907,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 1883,
+                                    lineNumber: 1906,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 "Back"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1879,
+                            lineNumber: 1902,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -4328,7 +4350,7 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1889,
+                            lineNumber: 1912,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4336,13 +4358,13 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                             children: "Milestones help track major events or deliverables in your program timeline."
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 1892,
+                            lineNumber: 1915,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 1878,
+                    lineNumber: 1901,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4357,7 +4379,7 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                                         children: "Milestone Name"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1900,
+                                        lineNumber: 1923,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -4367,13 +4389,13 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                                         placeholder: "e.g. Prototype Complete"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1903,
+                                        lineNumber: 1926,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1899,
+                                lineNumber: 1922,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4383,7 +4405,7 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                                         children: "Description (Optional)"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1912,
+                                        lineNumber: 1935,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -4393,13 +4415,13 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                                         rows: 3
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1915,
+                                        lineNumber: 1938,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1911,
+                                lineNumber: 1934,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4409,7 +4431,7 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                                         children: "Milestone Date"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1924,
+                                        lineNumber: 1947,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -4419,13 +4441,13 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                                         onChange: (e)=>setDate(e.target.value)
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 1927,
+                                        lineNumber: 1950,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1923,
+                                lineNumber: 1946,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             formError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4433,7 +4455,7 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                                 children: formError
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1936,
+                                lineNumber: 1959,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)),
                             error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4441,7 +4463,7 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                                 children: "Failed to create milestone. Please try again."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1942,
+                                lineNumber: 1965,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4452,7 +4474,7 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                                 children: isLoading ? "Creating Milestone..." : createdMilestone ? "Milestone Created" : "Create Milestone"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1947,
+                                lineNumber: 1970,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             createdMilestone && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4464,7 +4486,7 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1957,
+                                lineNumber: 1980,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4475,29 +4497,29 @@ const MilestoneSetupScreen = ({ onBack, program, onComplete })=>{
                                 children: "Continue to Parts"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 1962,
+                                lineNumber: 1985,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 1898,
+                        lineNumber: 1921,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 1897,
+                    lineNumber: 1920,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 1877,
+            lineNumber: 1900,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/app/onboarding/page.tsx",
-        lineNumber: 1876,
+        lineNumber: 1899,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -4521,7 +4543,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                         children: "Program not found"
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2003,
+                        lineNumber: 2026,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4529,7 +4551,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                         children: "We couldn't find the program you just created. Please go back and create a program first."
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2004,
+                        lineNumber: 2027,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4538,18 +4560,18 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                         children: "Back to Program Setup"
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2007,
+                        lineNumber: 2030,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/onboarding/page.tsx",
-                lineNumber: 2002,
+                lineNumber: 2025,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0))
         }, void 0, false, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 2001,
+            lineNumber: 2024,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0));
     }
@@ -4564,7 +4586,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                         children: "Milestone required"
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2022,
+                        lineNumber: 2045,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4576,7 +4598,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2023,
+                        lineNumber: 2046,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4585,18 +4607,18 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                         children: "Back to Milestone Setup"
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2026,
+                        lineNumber: 2049,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/onboarding/page.tsx",
-                lineNumber: 2021,
+                lineNumber: 2044,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0))
         }, void 0, false, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 2020,
+            lineNumber: 2043,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0));
     }
@@ -4651,19 +4673,19 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                         d: "M15 19l-7-7 7-7"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2076,
+                                        lineNumber: 2099,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 2075,
+                                    lineNumber: 2098,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 "Back"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 2071,
+                            lineNumber: 2094,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -4675,7 +4697,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 2081,
+                            lineNumber: 2104,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4683,13 +4705,13 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                             children: "Every program starts with at least one part assigned to an engineer. Create the first part so your team can begin collaborating."
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 2084,
+                            lineNumber: 2107,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2070,
+                    lineNumber: 2093,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4704,7 +4726,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                         children: "Part Code"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2092,
+                                        lineNumber: 2115,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -4715,13 +4737,13 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                         placeholder: "e.g. 1001"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2095,
+                                        lineNumber: 2118,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2091,
+                                lineNumber: 2114,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4731,7 +4753,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                         children: "Part Name"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2105,
+                                        lineNumber: 2128,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -4741,13 +4763,13 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                         placeholder: "e.g. Main Control Board"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2108,
+                                        lineNumber: 2131,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2104,
+                                lineNumber: 2127,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4760,7 +4782,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                                 children: "Level"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2118,
+                                                lineNumber: 2141,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -4771,13 +4793,13 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                                 min: 1
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2121,
+                                                lineNumber: 2144,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2117,
+                                        lineNumber: 2140,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4787,7 +4809,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                                 children: "Revision"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2130,
+                                                lineNumber: 2153,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -4796,13 +4818,13 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                                 onChange: (e)=>setRevisionLevel(e.target.value)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2133,
+                                                lineNumber: 2156,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2129,
+                                        lineNumber: 2152,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4812,7 +4834,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                                 children: "State"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2140,
+                                                lineNumber: 2163,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -4824,24 +4846,24 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                                         children: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PartStateLabels"][stateValue]
                                                     }, stateValue, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 2149,
+                                                        lineNumber: 2172,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2143,
+                                                lineNumber: 2166,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2139,
+                                        lineNumber: 2162,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2116,
+                                lineNumber: 2139,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             formError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4849,7 +4871,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                 children: formError
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2158,
+                                lineNumber: 2181,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)),
                             error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4857,7 +4879,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                 children: "Failed to create part. Please try again."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2164,
+                                lineNumber: 2187,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4868,7 +4890,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                 children: isLoading ? "Creating Part..." : createdPart ? "Part Created" : "Create Part"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2169,
+                                lineNumber: 2192,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)),
                             createdPart && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4876,7 +4898,7 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                 children: "Part created successfully."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2179,
+                                lineNumber: 2202,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4887,29 +4909,29 @@ const PartSetupScreen = ({ onBack, onComplete, program, currentUser, milestoneCr
                                 children: "Finish Setup"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2184,
+                                lineNumber: 2207,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2090,
+                        lineNumber: 2113,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2089,
+                    lineNumber: 2112,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 2069,
+            lineNumber: 2092,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/app/onboarding/page.tsx",
-        lineNumber: 2068,
+        lineNumber: 2091,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -4939,17 +4961,17 @@ const SuccessScreen = ({ role, onComplete })=>{
                                     d: "M5 13l4 4L19 7"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 2213,
+                                    lineNumber: 2236,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0))
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2212,
+                                lineNumber: 2235,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 2211,
+                            lineNumber: 2234,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -4957,7 +4979,7 @@ const SuccessScreen = ({ role, onComplete })=>{
                             children: "Welcome to Partial!"
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 2217,
+                            lineNumber: 2240,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4969,14 +4991,14 @@ const SuccessScreen = ({ role, onComplete })=>{
                                     children: roleTitle
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 2221,
+                                    lineNumber: 2244,
                                     columnNumber: 60
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 "."
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 2220,
+                            lineNumber: 2243,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4984,13 +5006,13 @@ const SuccessScreen = ({ role, onComplete })=>{
                             children: "You're all set! Start tracking your work items and managing your hardware development projects."
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 2223,
+                            lineNumber: 2246,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2210,
+                    lineNumber: 2233,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4999,18 +5021,18 @@ const SuccessScreen = ({ role, onComplete })=>{
                     children: "Go to Dashboard"
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2228,
+                    lineNumber: 2251,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 2209,
+            lineNumber: 2232,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/app/onboarding/page.tsx",
-        lineNumber: 2208,
+        lineNumber: 2231,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -5464,7 +5486,7 @@ const OnboardingPage = ()=>{
                         className: "animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2734,
+                        lineNumber: 2757,
                         columnNumber: 15
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5472,18 +5494,18 @@ const OnboardingPage = ()=>{
                         children: isValidatingInvitation ? 'Validating invitation...' : 'Checking authentication...'
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2735,
+                        lineNumber: 2758,
                         columnNumber: 15
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/onboarding/page.tsx",
-                lineNumber: 2733,
+                lineNumber: 2756,
                 columnNumber: 13
             }, ("TURBOPACK compile-time value", void 0))
         }, void 0, false, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 2732,
+            lineNumber: 2755,
             columnNumber: 11
         }, ("TURBOPACK compile-time value", void 0));
     }
@@ -5508,17 +5530,17 @@ const OnboardingPage = ()=>{
                                 d: "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2750,
+                                lineNumber: 2773,
                                 columnNumber: 19
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 2749,
+                            lineNumber: 2772,
                             columnNumber: 17
                         }, ("TURBOPACK compile-time value", void 0))
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2748,
+                        lineNumber: 2771,
                         columnNumber: 15
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -5526,7 +5548,7 @@ const OnboardingPage = ()=>{
                         children: "Invalid Invitation"
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2753,
+                        lineNumber: 2776,
                         columnNumber: 15
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5534,7 +5556,7 @@ const OnboardingPage = ()=>{
                         children: "This invitation link is invalid, expired, or has already been used. Please contact the organization administrator for a new invitation."
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2754,
+                        lineNumber: 2777,
                         columnNumber: 15
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -5546,18 +5568,18 @@ const OnboardingPage = ()=>{
                         children: "Go to Home"
                     }, void 0, false, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2757,
+                        lineNumber: 2780,
                         columnNumber: 15
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/onboarding/page.tsx",
-                lineNumber: 2747,
+                lineNumber: 2770,
                 columnNumber: 13
             }, ("TURBOPACK compile-time value", void 0))
         }, void 0, false, {
             fileName: "[project]/src/app/onboarding/page.tsx",
-            lineNumber: 2746,
+            lineNumber: 2769,
             columnNumber: 11
         }, ("TURBOPACK compile-time value", void 0));
     }
@@ -5585,17 +5607,17 @@ const OnboardingPage = ()=>{
                                                     clipRule: "evenodd"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                                    lineNumber: 2782,
+                                                    lineNumber: 2805,
                                                     columnNumber: 25
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2781,
+                                                lineNumber: 2804,
                                                 columnNumber: 23
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 2780,
+                                            lineNumber: 2803,
                                             columnNumber: 21
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5605,12 +5627,12 @@ const OnboardingPage = ()=>{
                                                 children: authError
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2786,
+                                                lineNumber: 2809,
                                                 columnNumber: 23
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 2785,
+                                            lineNumber: 2808,
                                             columnNumber: 21
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5628,38 +5650,38 @@ const OnboardingPage = ()=>{
                                                         clipRule: "evenodd"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 2794,
+                                                        lineNumber: 2817,
                                                         columnNumber: 27
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                                    lineNumber: 2793,
+                                                    lineNumber: 2816,
                                                     columnNumber: 25
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2789,
+                                                lineNumber: 2812,
                                                 columnNumber: 23
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 2788,
+                                            lineNumber: 2811,
                                             columnNumber: 21
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 2779,
+                                    lineNumber: 2802,
                                     columnNumber: 19
                                 }, ("TURBOPACK compile-time value", void 0))
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2778,
+                                lineNumber: 2801,
                                 columnNumber: 17
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 2777,
+                            lineNumber: 2800,
                             columnNumber: 15
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(LandingScreen, {
@@ -5668,7 +5690,7 @@ const OnboardingPage = ()=>{
                             onLearnMore: handleLearnMore
                         }, void 0, false, {
                             fileName: "[project]/src/app/onboarding/page.tsx",
-                            lineNumber: 2802,
+                            lineNumber: 2825,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
@@ -5681,7 +5703,7 @@ const OnboardingPage = ()=>{
                     initialMode: authMode
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2811,
+                    lineNumber: 2834,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0));
             case "role-selection":
@@ -5692,7 +5714,7 @@ const OnboardingPage = ()=>{
                     isNewOrganization: !invitationToken
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2820,
+                    lineNumber: 2843,
                     columnNumber: 15
                 }, ("TURBOPACK compile-time value", void 0));
             case "organization-name":
@@ -5702,7 +5724,7 @@ const OnboardingPage = ()=>{
                     invitationData: invitationData
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2829,
+                    lineNumber: 2852,
                     columnNumber: 15
                 }, ("TURBOPACK compile-time value", void 0));
             case "profile":
@@ -5711,7 +5733,7 @@ const OnboardingPage = ()=>{
                     onNext: handleProfileNext
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2837,
+                    lineNumber: 2860,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0));
             case "program-setup":
@@ -5722,7 +5744,7 @@ const OnboardingPage = ()=>{
                     onJoinExisting: handleProgramJoin
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2844,
+                    lineNumber: 2867,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0));
             case "milestone-setup":
@@ -5732,7 +5754,7 @@ const OnboardingPage = ()=>{
                     onComplete: handleMilestoneComplete
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2853,
+                    lineNumber: 2876,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0));
             case "part-setup":
@@ -5744,7 +5766,7 @@ const OnboardingPage = ()=>{
                     onComplete: handlePartComplete
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2861,
+                    lineNumber: 2884,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0));
             case "success":
@@ -5755,7 +5777,7 @@ const OnboardingPage = ()=>{
                     onComplete: handleComplete
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2873,
+                    lineNumber: 2896,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0));
             default:
@@ -5770,12 +5792,12 @@ const OnboardingPage = ()=>{
                 children: renderCurrentStep()
             }, void 0, false, {
                 fileName: "[project]/src/app/onboarding/page.tsx",
-                lineNumber: 2885,
+                lineNumber: 2908,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             step === "landing" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Footer$2f$index$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                 fileName: "[project]/src/app/onboarding/page.tsx",
-                lineNumber: 2890,
+                lineNumber: 2913,
                 columnNumber: 30
             }, ("TURBOPACK compile-time value", void 0)),
             showLearnMore && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5793,7 +5815,7 @@ const OnboardingPage = ()=>{
                                         children: "About Partial"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2898,
+                                        lineNumber: 2921,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -5811,23 +5833,23 @@ const OnboardingPage = ()=>{
                                                 d: "M6 18L18 6M6 6l12 12"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2906,
+                                                lineNumber: 2929,
                                                 columnNumber: 21
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/onboarding/page.tsx",
-                                            lineNumber: 2905,
+                                            lineNumber: 2928,
                                             columnNumber: 19
                                         }, ("TURBOPACK compile-time value", void 0))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2901,
+                                        lineNumber: 2924,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2897,
+                                lineNumber: 2920,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5840,7 +5862,7 @@ const OnboardingPage = ()=>{
                                                 children: "What is Partial?"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2913,
+                                                lineNumber: 2936,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5848,13 +5870,13 @@ const OnboardingPage = ()=>{
                                                 children: "Partial is a comprehensive work management platform designed specifically for hardware development teams. It helps engineers track their work items, manage parts, and enables program managers to monitor program health and team performance."
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2916,
+                                                lineNumber: 2939,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2912,
+                                        lineNumber: 2935,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5864,7 +5886,7 @@ const OnboardingPage = ()=>{
                                                 children: "Key Features"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2924,
+                                                lineNumber: 2947,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5878,7 +5900,7 @@ const OnboardingPage = ()=>{
                                                                 children: "For Engineers:"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                lineNumber: 2929,
+                                                                lineNumber: 2952,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -5888,40 +5910,40 @@ const OnboardingPage = ()=>{
                                                                         children: "• Track work items for parts they own"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                        lineNumber: 2931,
+                                                                        lineNumber: 2954,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                                         children: "• Manage tasks, deliverables, and issues"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                        lineNumber: 2932,
+                                                                        lineNumber: 2955,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                                         children: "• Collaborate with team members"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                        lineNumber: 2933,
+                                                                        lineNumber: 2956,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                                         children: "• Update progress and status against program milestones"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                        lineNumber: 2934,
+                                                                        lineNumber: 2957,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0))
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                lineNumber: 2930,
+                                                                lineNumber: 2953,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 2928,
+                                                        lineNumber: 2951,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5932,7 +5954,7 @@ const OnboardingPage = ()=>{
                                                                 children: "For Program Managers:"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                lineNumber: 2938,
+                                                                lineNumber: 2961,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -5942,52 +5964,52 @@ const OnboardingPage = ()=>{
                                                                         children: "• Monitor program status"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                        lineNumber: 2940,
+                                                                        lineNumber: 2963,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                                         children: "• Track team performance and workload"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                        lineNumber: 2941,
+                                                                        lineNumber: 2964,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                                         children: "• Identify bottlenecks and blockers"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                        lineNumber: 2942,
+                                                                        lineNumber: 2965,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                                         children: "• Manage milestones and trace their dependencies"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                        lineNumber: 2943,
+                                                                        lineNumber: 2966,
                                                                         columnNumber: 25
                                                                     }, ("TURBOPACK compile-time value", void 0))
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                                lineNumber: 2939,
+                                                                lineNumber: 2962,
                                                                 columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 2937,
+                                                        lineNumber: 2960,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2927,
+                                                lineNumber: 2950,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2923,
+                                        lineNumber: 2946,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5997,7 +6019,7 @@ const OnboardingPage = ()=>{
                                                 children: "Hardware-Specific Features"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2950,
+                                                lineNumber: 2973,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -6007,67 +6029,67 @@ const OnboardingPage = ()=>{
                                                         children: "• Hierarchical part management to reflect the actual hardware assembly (component → subsystem → system)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 2954,
+                                                        lineNumber: 2977,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                         children: "• Work items (tasks, deliverables, issues) link to specific parts, enabling part-centric views rather than people-centric stories/epics"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 2955,
+                                                        lineNumber: 2978,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                         children: "• Hardware-specific deliverable types (drawing, BOM, CoC, ATP, etc.)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 2956,
+                                                        lineNumber: 2979,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                         children: "• Hardware-specific issue types (defect, failure, requirement waiver, etc.)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 2957,
+                                                        lineNumber: 2980,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                         children: "• Cradle to grave ownership of parts and work items through required user assignments"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 2958,
+                                                        lineNumber: 2981,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                         children: "• Program analytics, team workload visualizations, and dynamic burndown charts"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 2959,
+                                                        lineNumber: 2982,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                         children: "• Engineering discipline-based team organization (mechanical, electrical, structural, etc.) rather than feature/product-based"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                                        lineNumber: 2960,
+                                                        lineNumber: 2983,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                                lineNumber: 2953,
+                                                lineNumber: 2976,
                                                 columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/onboarding/page.tsx",
-                                        lineNumber: 2949,
+                                        lineNumber: 2972,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2911,
+                                lineNumber: 2934,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6078,34 +6100,34 @@ const OnboardingPage = ()=>{
                                     children: "Got it!"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/onboarding/page.tsx",
-                                    lineNumber: 2966,
+                                    lineNumber: 2989,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0))
                             }, void 0, false, {
                                 fileName: "[project]/src/app/onboarding/page.tsx",
-                                lineNumber: 2965,
+                                lineNumber: 2988,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/onboarding/page.tsx",
-                        lineNumber: 2896,
+                        lineNumber: 2919,
                         columnNumber: 13
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/src/app/onboarding/page.tsx",
-                    lineNumber: 2895,
+                    lineNumber: 2918,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/app/onboarding/page.tsx",
-                lineNumber: 2894,
+                lineNumber: 2917,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/onboarding/page.tsx",
-        lineNumber: 2884,
+        lineNumber: 2907,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };

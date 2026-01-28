@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { validatePassword } from "@/lib/passwordValidation";
 import type { Program, Milestone } from "@/state/api";
 import type { AuthUser } from "@/lib/auth";
-import { showApiError } from "@/lib/toast";
+import { showApiError, showToast } from "@/lib/toast";
 import {
   useGetTeamsQuery,
   useCreateTeamMutation,
@@ -662,7 +662,30 @@ const AuthScreen = ({ onBack, onNext, onSignUp, initialMode = "signup" }: {
         onNext();
       }
     } catch (error: any) {
-      setError(error.message || "An error occurred. Please try again.");
+      // Check for specific error codes for user-friendly notifications
+      if (isLogin) {
+        const errorCode = error.code || error.message;
+        
+        if (errorCode === "USER_NOT_FOUND" || error.message === "USER_NOT_FOUND") {
+          // User not found - email doesn't exist in database
+          const message = "No account found with this email address. Please sign up first.";
+          setError(message);
+          showToast.error(message);
+        } else if (errorCode === "INVALID_PASSWORD" || error.message === "INVALID_PASSWORD") {
+          // Password is incorrect
+          const message = "Incorrect password. Please try again.";
+          setError(message);
+          showToast.error(message);
+        } else {
+          // Generic error - show both inline and toast
+          const message = error.message || "An error occurred. Please try again.";
+          setError(message);
+          showToast.error(message);
+        }
+      } else {
+        // For signup, just show the error inline
+        setError(error.message || "An error occurred. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
