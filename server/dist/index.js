@@ -3,6 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * IMPORTANT: Import instrument.ts FIRST before any other imports
+ * This ensures Sentry initializes before Express, allowing proper instrumentation
+ */
+require("./instrument");
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const body_parser_1 = __importDefault(require("body-parser"));
@@ -26,6 +31,7 @@ const feedbackRoutes_1 = __importDefault(require("./routes/feedbackRoutes"));
 const healthRoutes_1 = __importDefault(require("./routes/healthRoutes"));
 const auditLogRoutes_1 = __importDefault(require("./routes/auditLogRoutes"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
+const organizationRoutes_1 = __importDefault(require("./routes/organizationRoutes"));
 const authenticate_1 = require("./middleware/authenticate");
 const rateLimiter_1 = require("./middleware/rateLimiter");
 const requestLogger_1 = require("./middleware/requestLogger");
@@ -34,8 +40,6 @@ const logger_1 = require("./lib/logger");
 const sentry_1 = require("./lib/sentry");
 /* CONFIGURATIONS */
 dotenv_1.default.config();
-// Initialize Sentry BEFORE creating Express app
-(0, sentry_1.initSentry)();
 const app = (0, express_1.default)();
 // Sentry integrations handle request/tracing automatically
 // No need for separate middleware with expressIntegration()
@@ -85,6 +89,25 @@ if (process.env.NODE_ENV === "development") {
 // Health check routes (public, no authentication required, no rate limiting)
 // These should be accessible without restrictions for monitoring systems
 app.use(healthRoutes_1.default);
+// Production-safe Sentry test endpoint (public, no auth/rate limiting)
+// This endpoint safely captures an error without crashing the server
+// Remove or restrict this after verifying Sentry is working
+// Available at both /api/test-sentry and /test-sentry for flexibility
+const handleSentryTest = (req, res) => {
+    const testError = new Error("Production Sentry test - safe error (intentional)");
+    // Manually capture the error with Sentry
+    (0, sentry_1.captureException)(testError, {
+        component: "test-endpoint",
+        action: "sentry-verification",
+    });
+    // Return success response (error was captured, server continues running)
+    res.status(200).json({
+        message: "Test error sent to Sentry. Check your Sentry dashboard.",
+        timestamp: new Date().toISOString(),
+    });
+};
+app.get("/api/test-sentry", handleSentryTest);
+app.get("/test-sentry", handleSentryTest);
 // Apply global IP rate limiting to all other routes
 app.use(rateLimiter_1.ipRateLimiter);
 // Better Auth routes - public endpoints for authentication
@@ -113,6 +136,7 @@ app.use("/deliverableTypes", deliverableTypeRoutes_1.default);
 app.use("/issueTypes", issueTypeRoutes_1.default);
 app.use("/feedback", feedbackRoutes_1.default);
 app.use("/auditLogs", auditLogRoutes_1.default);
+app.use("/organizations", organizationRoutes_1.default);
 // Note: /invitations routes are above the authenticate middleware
 // Some routes are public (validate), others require auth (create, get, revoke)
 /* 404 HANDLER (must come after routes) */

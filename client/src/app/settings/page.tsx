@@ -3,7 +3,7 @@
 import Header from '@/components/Header';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useGetUserByIdQuery, useGetTeamsQuery, useUpdateUserMutation, useGetEmailPreferencesQuery, useUpdateEmailPreferencesMutation } from '@/state/api';
+import { useGetUserByIdQuery, useGetTeamsQuery, useUpdateUserMutation, useGetEmailPreferencesQuery, useUpdateEmailPreferencesMutation, useGetOrganizationQuery, useUpdateOrganizationMutation } from '@/state/api';
 import { showApiSuccess, showApiError } from '@/lib/toast';
 
 const Settings = () => {
@@ -13,6 +13,8 @@ const Settings = () => {
     const [updateUser] = useUpdateUserMutation();
     const { data: emailPreferences, isLoading: isEmailPreferencesLoading } = useGetEmailPreferencesQuery(authUser?.id || "", { skip: !authUser?.id });
     const [updateEmailPreferences] = useUpdateEmailPreferencesMutation();
+    const { data: organization, isLoading: isOrganizationLoading } = useGetOrganizationQuery();
+    const [updateOrganization] = useUpdateOrganizationMutation();
 
     const sanitizeProfilePictureUrl = (value?: string | null) => {
         if (!value) return '';
@@ -41,8 +43,11 @@ const Settings = () => {
     });
     const [isSaving, setIsSaving] = useState(false);
     const [isSavingEmailPrefs, setIsSavingEmailPrefs] = useState(false);
+    const [isSavingOrganization, setIsSavingOrganization] = useState(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [emailPrefsSaveStatus, setEmailPrefsSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [organizationSaveStatus, setOrganizationSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [organizationName, setOrganizationName] = useState('');
 
     // Initialize form data when user data loads
     useEffect(() => {
@@ -69,6 +74,13 @@ const Settings = () => {
             });
         }
     }, [emailPreferences]);
+
+    // Initialize organization name when it loads
+    useEffect(() => {
+        if (organization) {
+            setOrganizationName(organization.name || '');
+        }
+    }, [organization]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -133,6 +145,36 @@ const Settings = () => {
             setTimeout(() => setEmailPrefsSaveStatus('idle'), 3000);
         } finally {
             setIsSavingEmailPrefs(false);
+        }
+    };
+
+    const handleOrganizationSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!organizationName.trim()) {
+            setOrganizationSaveStatus('error');
+            showApiError(new Error('Organization name cannot be empty'), 'Organization name is required');
+            setTimeout(() => setOrganizationSaveStatus('idle'), 3000);
+            return;
+        }
+
+        setIsSavingOrganization(true);
+        setOrganizationSaveStatus('idle');
+
+        try {
+            await updateOrganization({
+                name: organizationName.trim(),
+            }).unwrap();
+
+            setOrganizationSaveStatus('success');
+            showApiSuccess('Organization name updated successfully');
+            setTimeout(() => setOrganizationSaveStatus('idle'), 3000);
+        } catch (error) {
+            console.error('Failed to update organization:', error);
+            setOrganizationSaveStatus('error');
+            showApiError(error, 'Failed to save organization name');
+            setTimeout(() => setOrganizationSaveStatus('idle'), 3000);
+        } finally {
+            setIsSavingOrganization(false);
         }
     };
 
@@ -290,6 +332,71 @@ const Settings = () => {
                     </button>
                 </div>
             </form>
+
+            {/* Organization Settings Section (Admin Only) */}
+            {authUser?.role === 'Admin' && (
+                <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Organization Settings</h2>
+                    <form onSubmit={handleOrganizationSubmit} className="space-y-6">
+                        {/* Organization Name (Editable for Admins) */}
+                        <div>
+                            <label htmlFor="organizationName" className={labelStyles}>Organization Name</label>
+                            {isOrganizationLoading ? (
+                                <div className="flex items-center py-2">
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-2"></div>
+                                    <span className="text-gray-600 dark:text-gray-400">Loading organization...</span>
+                                </div>
+                            ) : (
+                                <input
+                                    id="organizationName"
+                                    type="text"
+                                    value={organizationName}
+                                    onChange={(e) => setOrganizationName(e.target.value)}
+                                    className={inputStyles}
+                                    required
+                                    placeholder="Enter organization name"
+                                />
+                            )}
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Only admins can edit the organization name</p>
+                        </div>
+
+                        {/* Organization Save Status */}
+                        {organizationSaveStatus === 'success' && (
+                            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4">
+                                <div className="text-sm text-green-600 dark:text-green-400">
+                                    Organization name updated successfully!
+                                </div>
+                            </div>
+                        )}
+
+                        {organizationSaveStatus === 'error' && (
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+                                <div className="text-sm text-red-600 dark:text-red-400">
+                                    Failed to update organization name. Please try again.
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Save Button */}
+                        <div className="flex justify-end pt-4">
+                            <button
+                                type="submit"
+                                disabled={isSavingOrganization || isOrganizationLoading}
+                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSavingOrganization ? (
+                                    <div className="flex items-center">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                        Saving...
+                                    </div>
+                                ) : (
+                                    'Save Organization Name'
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
 
             {/* Email Notification Preferences Section */}
             <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">

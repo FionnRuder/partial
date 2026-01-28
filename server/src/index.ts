@@ -27,6 +27,7 @@ import feedbackRoutes from "./routes/feedbackRoutes";
 import healthRoutes from "./routes/healthRoutes";
 import auditLogRoutes from "./routes/auditLogRoutes";
 import authRoutes from "./routes/authRoutes";
+import organizationRoutes from "./routes/organizationRoutes";
 import { authenticate } from "./middleware/authenticate";
 import {
   ipRateLimiter,
@@ -168,6 +169,7 @@ app.use("/deliverableTypes", deliverableTypeRoutes);
 app.use("/issueTypes", issueTypeRoutes);
 app.use("/feedback", feedbackRoutes);
 app.use("/auditLogs", auditLogRoutes);
+app.use("/organizations", organizationRoutes);
 // Note: /invitations routes are above the authenticate middleware
 // Some routes are public (validate), others require auth (create, get, revoke)
 
