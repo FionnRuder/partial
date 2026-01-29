@@ -6,6 +6,8 @@ import {
   sendWorkItemStatusChangeEmail,
 } from "../lib/emailService";
 import { logCreate, logUpdate, logDelete, sanitizeForAudit, getChangedFields } from "../lib/auditLogger";
+import { logger } from "../lib/logger";
+import { captureException } from "../lib/sentry";
 
 // Define a type for creates
 type WorkItemCreate = {
@@ -657,10 +659,44 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
 
     res.status(201).json({
       ...newWorkItem,
-      partIds: newWorkItem.partNumbers.map((p) => p.partId),
+      partIds: newWorkItem.partNumbers?.map((p) => p.partId) || [],
     });
   } catch (error: any) {
-    console.error("Error creating work item:", error);
+    // Extract error message safely (handle Prisma errors and other error types)
+    let errorMessage = "Unknown error";
+    if (error?.message) {
+      errorMessage = error.message;
+    } else if (typeof error === "string") {
+      errorMessage = error;
+    } else if (error?.code) {
+      // Prisma error codes
+      errorMessage = `Prisma error ${error.code}: ${error.meta?.cause || error.meta?.message || "Database operation failed"}`;
+    } else {
+      errorMessage = String(error);
+    }
+    
+    const errorStack = error?.stack;
+    
+    // Log detailed error information
+    logger.error("Error creating work item", {
+      error: errorMessage,
+      errorCode: error?.code,
+      errorMeta: error?.meta,
+      stack: errorStack,
+      body: sanitizeForAudit(body),
+      organizationId: req.auth?.organizationId,
+      userId: req.auth?.userId,
+    });
+
+    // Capture error in Sentry for production debugging
+    captureException(error instanceof Error ? error : new Error(errorMessage), {
+      component: "workItemController",
+      action: "createWorkItem",
+      body: sanitizeForAudit(body),
+      errorCode: error?.code,
+      errorMeta: error?.meta,
+    });
+
     const knownNotFoundMessages = new Set([
       "Program not found",
       "Milestone not found",
@@ -700,7 +736,10 @@ export const createWorkItem = async (req: Request, res: Response): Promise<void>
       }
     }
 
-    res.status(500).json({ message: `Error creating work item: ${error.message}` });
+    res.status(500).json({ 
+      message: `Error creating work item: ${errorMessage}`,
+      ...(process.env.NODE_ENV === "development" && { stack: errorStack }),
+    });
   }
 };
 

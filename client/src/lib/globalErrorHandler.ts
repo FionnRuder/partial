@@ -23,8 +23,27 @@ export const setupGlobalErrorHandlers = () => {
         originalErrorHandler(message, source, lineno, colno, error);
       }
 
+      const messageStr = String(message);
+      const errorMessage = error?.message || messageStr;
+      
+      // Ignore chunk loading errors - these are harmless and occur during navigation/logout
+      if (
+        messageStr.includes("Failed to load chunk") ||
+        messageStr.includes("Loading chunk") ||
+        messageStr.includes("ChunkLoadError") ||
+        messageStr.includes("/_next/static/chunks/") ||
+        errorMessage.includes("Failed to load chunk") ||
+        errorMessage.includes("Loading chunk") ||
+        errorMessage.includes("ChunkLoadError") ||
+        errorMessage.includes("/_next/static/chunks/") ||
+        (messageStr.includes("chunk") && messageStr.includes("module"))
+      ) {
+        // Silently ignore chunk loading errors - they're not actionable
+        return false;
+      }
+
       // Log the error
-      const errorObj = error || new Error(String(message));
+      const errorObj = error || new Error(messageStr);
       logError(errorObj, {
         component: "GlobalErrorHandler",
         action: "window.onerror",
@@ -32,7 +51,7 @@ export const setupGlobalErrorHandlers = () => {
           source,
           lineno,
           colno,
-          message: String(message),
+          message: messageStr,
         },
       });
 
@@ -55,11 +74,31 @@ export const setupGlobalErrorHandlers = () => {
         originalUnhandledRejection(event);
       }
 
+      const reasonStr = String(event.reason);
+      const errorMessage = event.reason instanceof Error ? event.reason.message : reasonStr;
+      
+      // Ignore chunk loading errors - these are harmless and occur during navigation/logout
+      if (
+        reasonStr.includes("Failed to load chunk") ||
+        reasonStr.includes("Loading chunk") ||
+        reasonStr.includes("ChunkLoadError") ||
+        reasonStr.includes("/_next/static/chunks/") ||
+        errorMessage.includes("Failed to load chunk") ||
+        errorMessage.includes("Loading chunk") ||
+        errorMessage.includes("ChunkLoadError") ||
+        errorMessage.includes("/_next/static/chunks/") ||
+        (reasonStr.includes("chunk") && reasonStr.includes("module"))
+      ) {
+        // Silently ignore chunk loading errors - they're not actionable
+        event.preventDefault();
+        return;
+      }
+
       // Log the error
       const error =
         event.reason instanceof Error
           ? event.reason
-          : new Error(String(event.reason));
+          : new Error(reasonStr);
       logError(error, {
         component: "GlobalErrorHandler",
         action: "unhandledrejection",

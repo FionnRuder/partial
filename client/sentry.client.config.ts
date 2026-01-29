@@ -60,6 +60,24 @@ if (!dsn) {
       return null;
     }
 
+    // Filter out chunk loading errors - these are harmless and occur during navigation/logout
+    const errorMessage = event.exception?.values?.[0]?.value || event.message || "";
+    const errorType = event.exception?.values?.[0]?.type || "";
+    
+    // Check for chunk loading errors
+    if (
+      errorMessage.includes("Failed to load chunk") ||
+      errorMessage.includes("Loading chunk") ||
+      errorMessage.includes("ChunkLoadError") ||
+      errorMessage.includes("/_next/static/chunks/") ||
+      errorType === "ChunkLoadError" ||
+      (errorMessage.includes("chunk") && errorMessage.includes("module"))
+    ) {
+      // These errors are harmless - they occur when navigating away during chunk loading
+      // (e.g., during logout) or when chunks are updated after deployment
+      return null;
+    }
+
     return event;
   },
 
