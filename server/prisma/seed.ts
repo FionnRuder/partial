@@ -1,6 +1,7 @@
+/// <reference types="node" />
 import { PrismaClient } from "@prisma/client";
-const fs = require("fs");
-const path = require("path");
+import * as fs from "fs";
+import * as path from "path";
 
 const prisma = new PrismaClient();
 
