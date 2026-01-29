@@ -1161,7 +1161,7 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 const ModalEditWorkItem = (param)=>{
-    let { isOpen, onClose, workItem } = param;
+    let { isOpen, onClose, workItem: workItemProp } = param;
     _s();
     const [editWorkItem, { isLoading: isSaving }] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEditWorkItemMutation"])();
     const [deleteWorkItem, { isLoading: isDeleting }] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useDeleteWorkItemMutation"])();
@@ -1171,6 +1171,13 @@ const ModalEditWorkItem = (param)=>{
     const { data: users = [], isLoading: usersLoading } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetUsersQuery"])();
     const { data: deliverableTypes = [] } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetDeliverableTypesQuery"])();
     const { data: issueTypes = [] } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetIssueTypesQuery"])();
+    const { data: allWorkItems = [] } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetWorkItemsQuery"])();
+    // Refetch work item with dependencies when modal opens
+    const { data: workItemWithDeps, refetch: refetchWorkItem } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetWorkItemByIdQuery"])((workItemProp === null || workItemProp === void 0 ? void 0 : workItemProp.id) || 0, {
+        skip: !(workItemProp === null || workItemProp === void 0 ? void 0 : workItemProp.id) || !isOpen
+    });
+    // Use the refetched work item if available (has dependencies), otherwise fall back to prop
+    const workItem = workItemWithDeps || workItemProp;
     // form state
     const [workItemType, setWorkItemType] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [title, setTitle] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
@@ -1185,6 +1192,9 @@ const ModalEditWorkItem = (param)=>{
     const [percentComplete, setPercentComplete] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
     const [inputStatus, setInputStatus] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [partIds, setPartIds] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [partSearchQuery, setPartSearchQuery] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [dependencyWorkItemIds, setDependencyWorkItemIds] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [dependencySearchQuery, setDependencySearchQuery] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [programId, setProgramId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [programName, setProgramName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [dueByMilestoneId, setDueByMilestoneId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
@@ -1197,12 +1207,25 @@ const ModalEditWorkItem = (param)=>{
     const [rootCause, setRootCause] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [correctiveAction, setCorrectiveAction] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [deliverableType, setDeliverableType] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    // Refetch work item when modal opens to ensure we have dependencies
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "ModalEditWorkItem.useEffect": ()=>{
+            if (isOpen && (workItemProp === null || workItemProp === void 0 ? void 0 : workItemProp.id)) {
+                refetchWorkItem();
+            }
+        }
+    }["ModalEditWorkItem.useEffect"], [
+        isOpen,
+        workItemProp === null || workItemProp === void 0 ? void 0 : workItemProp.id,
+        refetchWorkItem
+    ]);
     // Prefill all fields when modal opens
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "ModalEditWorkItem.useEffect": ()=>{
             if (workItem) {
-                var _workItem_partNumbers, _workItem_programId, _workItem_dueByMilestoneId, _workItem_authorUserId, _workItem_assignedUserId;
+                var _workItem_partNumbers, _workItem_dependencies, _workItem_programId, _workItem_dueByMilestoneId, _workItem_authorUserId, _workItem_assignedUserId;
                 console.log("workItem.partNumbers", workItem.partNumbers);
+                console.log("workItem.dependencies", workItem.dependencies);
                 setWorkItemType(workItem.workItemType || "");
                 setTitle(workItem.title || "");
                 setDescription(workItem.description || "");
@@ -1218,6 +1241,11 @@ const ModalEditWorkItem = (param)=>{
                 setPartIds(((_workItem_partNumbers = workItem.partNumbers) === null || _workItem_partNumbers === void 0 ? void 0 : _workItem_partNumbers.map({
                     "ModalEditWorkItem.useEffect": (p)=>p.partId
                 }["ModalEditWorkItem.useEffect"])) || []);
+                const dependencyIds = ((_workItem_dependencies = workItem.dependencies) === null || _workItem_dependencies === void 0 ? void 0 : _workItem_dependencies.map({
+                    "ModalEditWorkItem.useEffect": (d)=>d.dependencyWorkItemId
+                }["ModalEditWorkItem.useEffect"])) || [];
+                console.log("Setting dependencyWorkItemIds:", dependencyIds);
+                setDependencyWorkItemIds(dependencyIds);
                 setProgramId(((_workItem_programId = workItem.programId) === null || _workItem_programId === void 0 ? void 0 : _workItem_programId.toString()) || "");
                 // Prefill program name if known
                 const program = programs.find({
@@ -1261,7 +1289,8 @@ const ModalEditWorkItem = (param)=>{
         workItem,
         programs,
         milestones,
-        users
+        users,
+        allWorkItems
     ]);
     const isFormValid = ()=>!!workItemType && !!title && !!description && !!status && !!priority && !!dateOpened && !!dueDate && !!estimatedCompletionDate && percentComplete >= 0 && !!inputStatus && !!programId && !!dueByMilestoneId && !!authorUserId && !!assignedUserId;
     const handleSubmit = async ()=>{
@@ -1288,6 +1317,7 @@ const ModalEditWorkItem = (param)=>{
             percentComplete,
             inputStatus,
             partIds,
+            dependencyWorkItemIds: dependencyWorkItemIds.length > 0 ? dependencyWorkItemIds : undefined,
             programId: parseInt(programId),
             dueByMilestoneId: parseInt(dueByMilestoneId),
             authorUserId: authorUserId,
@@ -1309,8 +1339,11 @@ const ModalEditWorkItem = (param)=>{
             (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["showApiSuccess"])("Work item updated successfully");
             onClose(); // close modal on success
         } catch (err) {
-            console.error("Failed to save work item:", err);
-            (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["showApiError"])(err, "Failed to save work item");
+            var _err_data;
+            // Extract error message from RTK Query error structure
+            const errorMessage = (err === null || err === void 0 ? void 0 : (_err_data = err.data) === null || _err_data === void 0 ? void 0 : _err_data.message) || ((err === null || err === void 0 ? void 0 : err.data) && typeof err.data === "string" ? err.data : null) || (err === null || err === void 0 ? void 0 : err.message) || "Failed to save work item";
+            // Show toast with the error message directly (avoid passing error object)
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["showToast"].error(errorMessage);
         }
     };
     const handleDelete = async ()=>{
@@ -1322,8 +1355,11 @@ const ModalEditWorkItem = (param)=>{
             (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["showApiSuccess"])("Work item deleted successfully");
             onClose(); // close modal on success
         } catch (err) {
-            console.error("Failed to delete work item:", err);
-            (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["showApiError"])(err, "Failed to delete work item");
+            var _err_data;
+            // Extract error message from RTK Query error structure
+            const errorMessage = (err === null || err === void 0 ? void 0 : (_err_data = err.data) === null || _err_data === void 0 ? void 0 : _err_data.message) || ((err === null || err === void 0 ? void 0 : err.data) && typeof err.data === "string" ? err.data : null) || (err === null || err === void 0 ? void 0 : err.message) || "Failed to delete work item";
+            // Show toast with the error message directly
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["showToast"].error(errorMessage);
         }
     };
     const selectStyles = "mb-4 block w-full rounded border border-gray-300 px-3 py-2 dark:border-dark-tertiary dark:bg-dark-tertiary dark:text-white dark:focus:outline-none";
@@ -1347,7 +1383,7 @@ const ModalEditWorkItem = (param)=>{
                             children: "Work Item Type:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 227,
+                            lineNumber: 268,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1360,7 +1396,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Select Work Item Type"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 239,
+                                    lineNumber: 280,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 Object.values(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"]).map((type)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1368,19 +1404,19 @@ const ModalEditWorkItem = (param)=>{
                                         children: type
                                     }, type, false, {
                                         fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                        lineNumber: 241,
+                                        lineNumber: 282,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 230,
+                            lineNumber: 271,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 226,
+                    lineNumber: 267,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Issue && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1390,7 +1426,7 @@ const ModalEditWorkItem = (param)=>{
                             children: "Issue Type:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 249,
+                            lineNumber: 290,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1403,7 +1439,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Select Issue Type"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 257,
+                                    lineNumber: 298,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 issueTypes.map((type)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1411,19 +1447,19 @@ const ModalEditWorkItem = (param)=>{
                                         children: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["IssueTypeLabels"][type.name] || type.name
                                     }, type.id, false, {
                                         fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                        lineNumber: 259,
+                                        lineNumber: 300,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 252,
+                            lineNumber: 293,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 248,
+                    lineNumber: 289,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0)),
                 workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Deliverable && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1433,7 +1469,7 @@ const ModalEditWorkItem = (param)=>{
                             children: "Deliverable Type:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 269,
+                            lineNumber: 310,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1446,7 +1482,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Select Deliverable Type"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 277,
+                                    lineNumber: 318,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 deliverableTypes.map((type)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1454,19 +1490,19 @@ const ModalEditWorkItem = (param)=>{
                                         children: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DeliverableTypeLabels"][type.name] || type.name
                                     }, type.id, false, {
                                         fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                        lineNumber: 279,
+                                        lineNumber: 320,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 272,
+                            lineNumber: 313,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 268,
+                    lineNumber: 309,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1476,7 +1512,7 @@ const ModalEditWorkItem = (param)=>{
                             children: "Title:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 289,
+                            lineNumber: 330,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1487,13 +1523,13 @@ const ModalEditWorkItem = (param)=>{
                             onChange: (e)=>setTitle(e.target.value)
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 292,
+                            lineNumber: 333,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 288,
+                    lineNumber: 329,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1503,7 +1539,7 @@ const ModalEditWorkItem = (param)=>{
                             children: "Description:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 301,
+                            lineNumber: 342,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -1513,13 +1549,13 @@ const ModalEditWorkItem = (param)=>{
                             onChange: (e)=>setDescription(e.target.value)
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 304,
+                            lineNumber: 345,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 300,
+                    lineNumber: 341,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Issue && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -1531,7 +1567,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Root Cause:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 315,
+                                    lineNumber: 356,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -1541,13 +1577,13 @@ const ModalEditWorkItem = (param)=>{
                                     onChange: (e)=>setRootCause(e.target.value)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 318,
+                                    lineNumber: 359,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 314,
+                            lineNumber: 355,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1557,7 +1593,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Corrective Action:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 326,
+                                    lineNumber: 367,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -1567,13 +1603,13 @@ const ModalEditWorkItem = (param)=>{
                                     onChange: (e)=>setCorrectiveAction(e.target.value)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 329,
+                                    lineNumber: 370,
                                     columnNumber: 17
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 325,
+                            lineNumber: 366,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
@@ -1588,7 +1624,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Status:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 342,
+                                    lineNumber: 383,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1601,7 +1637,7 @@ const ModalEditWorkItem = (param)=>{
                                             children: "Select Status"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                            lineNumber: 350,
+                                            lineNumber: 391,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         Object.values(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Status"]).map((s)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1609,19 +1645,19 @@ const ModalEditWorkItem = (param)=>{
                                                 children: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["StatusLabels"][s]
                                             }, s, false, {
                                                 fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                                lineNumber: 352,
+                                                lineNumber: 393,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 345,
+                                    lineNumber: 386,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 341,
+                            lineNumber: 382,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1631,7 +1667,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Priority:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 359,
+                                    lineNumber: 400,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1644,7 +1680,7 @@ const ModalEditWorkItem = (param)=>{
                                             children: "Select Priority"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                            lineNumber: 367,
+                                            lineNumber: 408,
                                             columnNumber: 17
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         Object.values(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Priority"]).map((p)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1652,25 +1688,25 @@ const ModalEditWorkItem = (param)=>{
                                                 children: p
                                             }, p, false, {
                                                 fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                                lineNumber: 369,
+                                                lineNumber: 410,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 362,
+                                    lineNumber: 403,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 358,
+                            lineNumber: 399,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 340,
+                    lineNumber: 381,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1680,7 +1716,7 @@ const ModalEditWorkItem = (param)=>{
                             children: "Tags:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 376,
+                            lineNumber: 417,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1691,13 +1727,13 @@ const ModalEditWorkItem = (param)=>{
                             onChange: (e)=>setTags(e.target.value)
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 379,
+                            lineNumber: 420,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 375,
+                    lineNumber: 416,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1710,7 +1746,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Date Opened:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 391,
+                                    lineNumber: 432,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1720,13 +1756,13 @@ const ModalEditWorkItem = (param)=>{
                                     onChange: (e)=>setDateOpened(e.target.value)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 394,
+                                    lineNumber: 435,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 390,
+                            lineNumber: 431,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1736,7 +1772,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Due Date:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 397,
+                                    lineNumber: 438,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1746,13 +1782,13 @@ const ModalEditWorkItem = (param)=>{
                                     onChange: (e)=>setDueDate(e.target.value)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 400,
+                                    lineNumber: 441,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 396,
+                            lineNumber: 437,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1762,7 +1798,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Estimated Completion:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 403,
+                                    lineNumber: 444,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1772,13 +1808,13 @@ const ModalEditWorkItem = (param)=>{
                                     onChange: (e)=>setEstimatedCompletionDate(e.target.value)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 406,
+                                    lineNumber: 447,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 402,
+                            lineNumber: 443,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1788,7 +1824,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Actual Completion:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 409,
+                                    lineNumber: 450,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1798,19 +1834,19 @@ const ModalEditWorkItem = (param)=>{
                                     onChange: (e)=>setActualCompletionDate(e.target.value)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 412,
+                                    lineNumber: 453,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 408,
+                            lineNumber: 449,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 389,
+                    lineNumber: 430,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1820,7 +1856,7 @@ const ModalEditWorkItem = (param)=>{
                             children: "Percent Complete:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 418,
+                            lineNumber: 459,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1833,13 +1869,13 @@ const ModalEditWorkItem = (param)=>{
                             max: 100
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 421,
+                            lineNumber: 462,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 417,
+                    lineNumber: 458,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1849,7 +1885,7 @@ const ModalEditWorkItem = (param)=>{
                             children: "Current Status:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 433,
+                            lineNumber: 474,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1860,83 +1896,345 @@ const ModalEditWorkItem = (param)=>{
                             onChange: (e)=>setInputStatus(e.target.value)
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 436,
+                            lineNumber: 477,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 432,
+                    lineNumber: 473,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                            className: "block text-sm text-gray-600 dark:text-gray-300",
+                            className: "block text-sm text-gray-600 dark:text-gray-300 mb-1",
                             children: "Affected Part(s):"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 446,
+                            lineNumber: 487,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
-                            multiple: true,
-                            className: inputStyles,
-                            value: partIds.map(String),
-                            onChange: (e)=>{
-                                const selectedOptions = Array.from(e.target.selectedOptions);
-                                const ids = selectedOptions.map((opt)=>Number(opt.value));
-                                setPartIds(ids);
-                            },
-                            disabled: partsLoading,
-                            children: parts.map((part)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                    value: part.id,
-                                    children: [
-                                        part.partName,
-                                        " (",
-                                        part.code,
-                                        ")"
-                                    ]
-                                }, part.id, true, {
-                                    fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 461,
-                                    columnNumber: 15
-                                }, ("TURBOPACK compile-time value", void 0)))
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 449,
-                            columnNumber: 11
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                            className: "mt-1 text-xs text-gray-600 dark:text-gray-300",
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "relative",
                             children: [
-                                "Hold ",
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("kbd", {
-                                    children: "Ctrl"
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                    type: "text",
+                                    className: inputStyles,
+                                    placeholder: "Search parts...",
+                                    value: partSearchQuery,
+                                    onChange: (e)=>setPartSearchQuery(e.target.value),
+                                    onFocus: ()=>setPartSearchQuery("")
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 467,
-                                    columnNumber: 18
+                                    lineNumber: 491,
+                                    columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
-                                " (Windows) or ",
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("kbd", {
-                                    children: "Cmd"
+                                partSearchQuery && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-dark-secondary",
+                                    children: parts.filter((part)=>{
+                                        const searchLower = partSearchQuery.toLowerCase();
+                                        return part.code.toLowerCase().includes(searchLower) || part.partName.toLowerCase().includes(searchLower);
+                                    }).slice(0, 10).map((part)=>{
+                                        const isSelected = partIds.includes(part.id);
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ".concat(isSelected ? "bg-blue-100 dark:bg-blue-900" : ""),
+                                            onClick: ()=>{
+                                                if (isSelected) {
+                                                    setPartIds(partIds.filter((id)=>id !== part.id));
+                                                } else {
+                                                    setPartIds([
+                                                        ...partIds,
+                                                        part.id
+                                                    ]);
+                                                }
+                                                setPartSearchQuery("");
+                                            },
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex items-center justify-between",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-sm font-medium dark:text-white",
+                                                        children: [
+                                                            part.code,
+                                                            ": ",
+                                                            part.partName
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                                        lineNumber: 528,
+                                                        columnNumber: 27
+                                                    }, ("TURBOPACK compile-time value", void 0)),
+                                                    isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-xs text-blue-600 dark:text-blue-400",
+                                                        children: "✓"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                                        lineNumber: 531,
+                                                        columnNumber: 42
+                                                    }, ("TURBOPACK compile-time value", void 0))
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                                lineNumber: 527,
+                                                columnNumber: 25
+                                            }, ("TURBOPACK compile-time value", void 0))
+                                        }, part.id, false, {
+                                            fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                            lineNumber: 513,
+                                            columnNumber: 23
+                                        }, ("TURBOPACK compile-time value", void 0));
+                                    })
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 467,
-                                    columnNumber: 47
-                                }, ("TURBOPACK compile-time value", void 0)),
-                                " (Mac) to select multiple."
+                                    lineNumber: 500,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 466,
+                            lineNumber: 490,
                             columnNumber: 11
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        partIds.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "mt-2 flex flex-wrap gap-2",
+                            children: partIds.map((partId)=>{
+                                const part = parts.find((p)=>p.id === partId);
+                                if (!part) return null;
+                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+                                    children: [
+                                        part.code,
+                                        ": ",
+                                        part.partName,
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            type: "button",
+                                            onClick: ()=>setPartIds(partIds.filter((id)=>id !== partId)),
+                                            className: "ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200",
+                                            children: "×"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                            lineNumber: 550,
+                                            columnNumber: 21
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, partId, true, {
+                                    fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                    lineNumber: 545,
+                                    columnNumber: 19
+                                }, ("TURBOPACK compile-time value", void 0));
+                            })
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                            lineNumber: 540,
+                            columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 445,
+                    lineNumber: 486,
+                    columnNumber: 9
+                }, ("TURBOPACK compile-time value", void 0)),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                            className: "block text-sm text-gray-600 dark:text-gray-300 mb-1",
+                            children: "Dependencies:"
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                            lineNumber: 564,
+                            columnNumber: 11
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "relative",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                    type: "text",
+                                    className: inputStyles,
+                                    placeholder: "Search work items...",
+                                    value: dependencySearchQuery,
+                                    onChange: (e)=>setDependencySearchQuery(e.target.value),
+                                    onFocus: ()=>setDependencySearchQuery("")
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                    lineNumber: 568,
+                                    columnNumber: 13
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                dependencySearchQuery && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-dark-secondary",
+                                    children: allWorkItems.filter((wi)=>{
+                                        const searchLower = dependencySearchQuery.toLowerCase();
+                                        return wi.id !== (workItem === null || workItem === void 0 ? void 0 : workItem.id) && (wi.title.toLowerCase().includes(searchLower) || wi.id.toString().includes(searchLower) || wi.workItemType.toLowerCase().includes(searchLower));
+                                    }).slice(0, 10).map((wi)=>{
+                                        const isSelected = dependencyWorkItemIds.includes(wi.id);
+                                        const prefix = wi.workItemType === "Deliverable" ? "D" : wi.workItemType === "Issue" ? "I" : "T";
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ".concat(isSelected ? "bg-blue-100 dark:bg-blue-900" : ""),
+                                            onClick: ()=>{
+                                                if (isSelected) {
+                                                    setDependencyWorkItemIds(dependencyWorkItemIds.filter((id)=>id !== wi.id));
+                                                } else {
+                                                    setDependencyWorkItemIds([
+                                                        ...dependencyWorkItemIds,
+                                                        wi.id
+                                                    ]);
+                                                }
+                                                setDependencySearchQuery("");
+                                            },
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex items-center justify-between",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            className: "text-sm font-medium dark:text-white",
+                                                            children: [
+                                                                prefix,
+                                                                wi.id,
+                                                                ": ",
+                                                                wi.title
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                                            lineNumber: 608,
+                                                            columnNumber: 27
+                                                        }, ("TURBOPACK compile-time value", void 0)),
+                                                        isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            className: "text-xs text-blue-600 dark:text-blue-400",
+                                                            children: "✓"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                                            lineNumber: 611,
+                                                            columnNumber: 42
+                                                        }, ("TURBOPACK compile-time value", void 0))
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                                    lineNumber: 607,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "text-xs text-gray-500 dark:text-gray-400",
+                                                    children: [
+                                                        wi.workItemType,
+                                                        " • ",
+                                                        wi.status
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                                    lineNumber: 613,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, wi.id, true, {
+                                            fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                            lineNumber: 593,
+                                            columnNumber: 23
+                                        }, ("TURBOPACK compile-time value", void 0));
+                                    })
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                    lineNumber: 577,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0))
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                            lineNumber: 567,
+                            columnNumber: 11
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        dependencyWorkItemIds.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "mt-2 flex flex-wrap gap-2",
+                            children: dependencyWorkItemIds.map((depId)=>{
+                                // Try to find the work item in allWorkItems first
+                                const dep = allWorkItems.find((wi)=>wi.id === depId);
+                                if (!dep) {
+                                    var _workItem_dependencies;
+                                    // Fallback: try to find in workItem.dependencies if not in allWorkItems
+                                    const dependency = workItem === null || workItem === void 0 ? void 0 : (_workItem_dependencies = workItem.dependencies) === null || _workItem_dependencies === void 0 ? void 0 : _workItem_dependencies.find((d)=>d.dependencyWorkItemId === depId);
+                                    if (dependency === null || dependency === void 0 ? void 0 : dependency.dependencyWorkItem) {
+                                        const depWorkItem = dependency.dependencyWorkItem;
+                                        const prefix = depWorkItem.workItemType === "Deliverable" ? "D" : depWorkItem.workItemType === "Issue" ? "I" : "T";
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+                                            children: [
+                                                prefix,
+                                                depWorkItem.id,
+                                                ": ",
+                                                depWorkItem.title,
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                    type: "button",
+                                                    onClick: ()=>setDependencyWorkItemIds(dependencyWorkItemIds.filter((id)=>id !== depId)),
+                                                    className: "ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200",
+                                                    children: "×"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                                    lineNumber: 639,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, depId, true, {
+                                            fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                            lineNumber: 634,
+                                            columnNumber: 23
+                                        }, ("TURBOPACK compile-time value", void 0));
+                                    }
+                                    // If still not found, show just the ID
+                                    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+                                        children: [
+                                            "ID: ",
+                                            depId,
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                type: "button",
+                                                onClick: ()=>setDependencyWorkItemIds(dependencyWorkItemIds.filter((id)=>id !== depId)),
+                                                className: "ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200",
+                                                children: "×"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                                lineNumber: 656,
+                                                columnNumber: 23
+                                            }, ("TURBOPACK compile-time value", void 0))
+                                        ]
+                                    }, depId, true, {
+                                        fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                        lineNumber: 651,
+                                        columnNumber: 21
+                                    }, ("TURBOPACK compile-time value", void 0));
+                                }
+                                const prefix = dep.workItemType === "Deliverable" ? "D" : dep.workItemType === "Issue" ? "I" : "T";
+                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+                                    children: [
+                                        prefix,
+                                        dep.id,
+                                        ": ",
+                                        dep.title,
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            type: "button",
+                                            onClick: ()=>setDependencyWorkItemIds(dependencyWorkItemIds.filter((id)=>id !== depId)),
+                                            className: "ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200",
+                                            children: "×"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                            lineNumber: 673,
+                                            columnNumber: 21
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, depId, true, {
+                                    fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                                    lineNumber: 668,
+                                    columnNumber: 19
+                                }, ("TURBOPACK compile-time value", void 0));
+                            })
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                            lineNumber: 623,
+                            columnNumber: 13
+                        }, ("TURBOPACK compile-time value", void 0))
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
+                    lineNumber: 563,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1946,7 +2244,7 @@ const ModalEditWorkItem = (param)=>{
                             children: "Program:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 471,
+                            lineNumber: 687,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1964,7 +2262,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Select Program"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 484,
+                                    lineNumber: 700,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 programs.map((program)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1972,19 +2270,19 @@ const ModalEditWorkItem = (param)=>{
                                         children: program.name
                                     }, program.id, false, {
                                         fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                        lineNumber: 486,
+                                        lineNumber: 702,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 474,
+                            lineNumber: 690,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 470,
+                    lineNumber: 686,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1994,7 +2292,7 @@ const ModalEditWorkItem = (param)=>{
                             children: "Milestone:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 494,
+                            lineNumber: 710,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -2012,7 +2310,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Select Milestone"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 507,
+                                    lineNumber: 723,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 milestones.map((milestone)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -2020,19 +2318,19 @@ const ModalEditWorkItem = (param)=>{
                                         children: milestone.name
                                     }, milestone.id, false, {
                                         fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                        lineNumber: 509,
+                                        lineNumber: 725,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 497,
+                            lineNumber: 713,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 493,
+                    lineNumber: 709,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2042,7 +2340,7 @@ const ModalEditWorkItem = (param)=>{
                             children: "Author:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 517,
+                            lineNumber: 733,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -2060,7 +2358,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Select Author User"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 530,
+                                    lineNumber: 746,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 users.map((user)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -2073,19 +2371,19 @@ const ModalEditWorkItem = (param)=>{
                                         ]
                                     }, user.id, true, {
                                         fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                        lineNumber: 532,
+                                        lineNumber: 748,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 520,
+                            lineNumber: 736,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 516,
+                    lineNumber: 732,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2095,7 +2393,7 @@ const ModalEditWorkItem = (param)=>{
                             children: "Assignee:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 540,
+                            lineNumber: 756,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -2113,7 +2411,7 @@ const ModalEditWorkItem = (param)=>{
                                     children: "Select Assigned User"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                    lineNumber: 553,
+                                    lineNumber: 769,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 users.map((user)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -2126,19 +2424,19 @@ const ModalEditWorkItem = (param)=>{
                                         ]
                                     }, user.id, true, {
                                         fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                                        lineNumber: 555,
+                                        lineNumber: 771,
                                         columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0)))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                            lineNumber: 543,
+                            lineNumber: 759,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 539,
+                    lineNumber: 755,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2148,7 +2446,7 @@ const ModalEditWorkItem = (param)=>{
                     children: isSaving ? "Updating ".concat(workItemType, "...") : "Update ".concat(workItemType)
                 }, void 0, false, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 563,
+                    lineNumber: 779,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2159,22 +2457,22 @@ const ModalEditWorkItem = (param)=>{
                     children: isDeleting ? "Deleting ".concat(workItemType) : "Delete ".concat(workItemType)
                 }, void 0, false, {
                     fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-                    lineNumber: 572,
+                    lineNumber: 788,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-            lineNumber: 218,
+            lineNumber: 259,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/components/ModalEditWorkItem/index.tsx",
-        lineNumber: 217,
+        lineNumber: 258,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
-_s(ModalEditWorkItem, "VniQXpXl/CM+1Urc8GGyD98hE08=", false, function() {
+_s(ModalEditWorkItem, "aNDEzkpmj3oGiPSgW/as2DRvCT4=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEditWorkItemMutation"],
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useDeleteWorkItemMutation"],
@@ -2183,7 +2481,9 @@ _s(ModalEditWorkItem, "VniQXpXl/CM+1Urc8GGyD98hE08=", false, function() {
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetMilestonesQuery"],
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetUsersQuery"],
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetDeliverableTypesQuery"],
-        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetIssueTypesQuery"]
+        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetIssueTypesQuery"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetWorkItemsQuery"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetWorkItemByIdQuery"]
     ];
 });
 _c = ModalEditWorkItem;
@@ -2224,8 +2524,10 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navi
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Modal$2f$index$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/Modal/index.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$reduxjs$2f$toolkit$2f$dist$2f$query$2f$rtk$2d$query$2e$modern$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@reduxjs/toolkit/dist/query/rtk-query.modern.mjs [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$contexts$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/contexts/AuthContext.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/toast.ts [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.signature(), _s2 = __turbopack_context__.k.signature();
+;
 ;
 ;
 ;
@@ -2279,7 +2581,7 @@ const BoardView = (param)=>{
         partId: Number(id),
         includeChildren
     });
-    const [updateWorkItemStatus] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useUpdateWorkItemStatusMutation"])();
+    const [updateWorkItemStatus, { error: statusUpdateError }] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useUpdateWorkItemStatusMutation"])();
     const [activeCommentsWorkItem, setActiveCommentsWorkItem] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [isCommentsModalOpen, setIsCommentsModalOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [newCommentText, setNewCommentText] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
@@ -2289,11 +2591,43 @@ const BoardView = (param)=>{
     const [createComment, { isLoading: isCreatingComment }] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCreateCommentMutation"])();
     const [updateComment, { isLoading: isUpdatingComment }] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useUpdateCommentMutation"])();
     const [deleteComment, { isLoading: isDeletingComment }] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useDeleteCommentMutation"])();
-    const moveWorkItem = (workItemId, toStatus)=>{
-        updateWorkItemStatus({
-            workItemId,
-            status: toStatus
-        });
+    const moveWorkItem = async (workItemId, toStatus)=>{
+        try {
+            const result = await updateWorkItemStatus({
+                workItemId,
+                status: toStatus
+            });
+            // Check if the result has an error
+            if ("error" in result && result.error) {
+                const error = result.error;
+                // RTK Query error structure: error.data contains the response body
+                const errorData = error.data;
+                let errorMessage;
+                if (errorData && typeof errorData === "object" && errorData.message) {
+                    errorMessage = errorData.message;
+                } else if (errorData && typeof errorData === "string") {
+                    errorMessage = errorData;
+                } else if (error === null || error === void 0 ? void 0 : error.message) {
+                    errorMessage = error.message;
+                } else {
+                    errorMessage = "Failed to update work item status";
+                }
+                // Show toast with the error message directly (avoid passing error object)
+                __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["showToast"].error(errorMessage);
+                return;
+            }
+            // Success - refetch work items to update the board
+            if ("data" in result) {
+                refetchWorkItems();
+            }
+        } catch (error) {
+            var _error_data;
+            // This catch block handles errors from .unwrap() if used elsewhere
+            // Try to extract error message from various structures
+            const errorMessage = (error === null || error === void 0 ? void 0 : (_error_data = error.data) === null || _error_data === void 0 ? void 0 : _error_data.message) || ((error === null || error === void 0 ? void 0 : error.data) && typeof error.data === "string" ? error.data : null) || (error === null || error === void 0 ? void 0 : error.message) || "Failed to update work item status";
+            // Show toast with the error message directly
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["showToast"].error(errorMessage);
+        }
     };
     const [editingWorkItem, setEditingWorkItem] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     // Filter work items based on search query
@@ -2371,14 +2705,14 @@ const BoardView = (param)=>{
         children: "Loading..."
     }, void 0, false, {
         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-        lineNumber: 179,
+        lineNumber: 221,
         columnNumber: 27
     }, ("TURBOPACK compile-time value", void 0));
     if (error) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         children: "An error occured while fetching work items"
     }, void 0, false, {
         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-        lineNumber: 180,
+        lineNumber: 222,
         columnNumber: 23
     }, ("TURBOPACK compile-time value", void 0));
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$dnd$2f$dist$2f$core$2f$DndProvider$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DndProvider"], {
@@ -2395,12 +2729,12 @@ const BoardView = (param)=>{
                         onOpenComments: handleOpenComments
                     }, status, false, {
                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                        lineNumber: 185,
+                        lineNumber: 227,
                         columnNumber: 17
                     }, ("TURBOPACK compile-time value", void 0)))
             }, void 0, false, {
                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                lineNumber: 183,
+                lineNumber: 225,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0)),
             editingWorkItem && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ModalEditWorkItem$2f$index$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -2409,7 +2743,7 @@ const BoardView = (param)=>{
                 workItem: editingWorkItem
             }, void 0, false, {
                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                lineNumber: 197,
+                lineNumber: 239,
                 columnNumber: 13
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Modal$2f$index$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -2421,7 +2755,7 @@ const BoardView = (param)=>{
                     children: "Loading comments..."
                 }, void 0, false, {
                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                    lineNumber: 209,
+                    lineNumber: 251,
                     columnNumber: 17
                 }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-4",
@@ -2431,7 +2765,7 @@ const BoardView = (param)=>{
                             children: "No comments yet."
                         }, void 0, false, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 213,
+                            lineNumber: 255,
                             columnNumber: 25
                         }, ("TURBOPACK compile-time value", void 0)) : comments.map((comment)=>{
                             var _comment_commenterUser, _comment_commenterUser1;
@@ -2451,7 +2785,7 @@ const BoardView = (param)=>{
                                                         children: commenterName
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                                        lineNumber: 227,
+                                                        lineNumber: 269,
                                                         columnNumber: 45
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2459,13 +2793,13 @@ const BoardView = (param)=>{
                                                         children: formattedDate
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                                        lineNumber: 228,
+                                                        lineNumber: 270,
                                                         columnNumber: 45
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                                lineNumber: 226,
+                                                lineNumber: 268,
                                                 columnNumber: 41
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             isOwnComment && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2477,7 +2811,7 @@ const BoardView = (param)=>{
                                                         children: "Edit"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                                        lineNumber: 232,
+                                                        lineNumber: 274,
                                                         columnNumber: 49
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2487,19 +2821,19 @@ const BoardView = (param)=>{
                                                         children: "Delete"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                                        lineNumber: 238,
+                                                        lineNumber: 280,
                                                         columnNumber: 49
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                                lineNumber: 231,
+                                                lineNumber: 273,
                                                 columnNumber: 45
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                        lineNumber: 225,
+                                        lineNumber: 267,
                                         columnNumber: 37
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     editingCommentId === comment.id ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2512,7 +2846,7 @@ const BoardView = (param)=>{
                                                 onChange: (e)=>setEditingCommentText(e.target.value)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                                lineNumber: 250,
+                                                lineNumber: 292,
                                                 columnNumber: 45
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2525,7 +2859,7 @@ const BoardView = (param)=>{
                                                         children: "Save"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                                        lineNumber: 257,
+                                                        lineNumber: 299,
                                                         columnNumber: 49
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2534,32 +2868,32 @@ const BoardView = (param)=>{
                                                         children: "Cancel"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                                        lineNumber: 264,
+                                                        lineNumber: 306,
                                                         columnNumber: 49
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                                lineNumber: 256,
+                                                lineNumber: 298,
                                                 columnNumber: 45
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                        lineNumber: 249,
+                                        lineNumber: 291,
                                         columnNumber: 41
                                     }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                         className: "mt-3 whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200",
                                         children: comment.text
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                        lineNumber: 273,
+                                        lineNumber: 315,
                                         columnNumber: 41
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, comment.id, true, {
                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                lineNumber: 224,
+                                lineNumber: 266,
                                 columnNumber: 33
                             }, ("TURBOPACK compile-time value", void 0));
                         }),
@@ -2571,7 +2905,7 @@ const BoardView = (param)=>{
                                     children: "Add a comment"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 283,
+                                    lineNumber: 325,
                                     columnNumber: 25
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 !authUser ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2579,7 +2913,7 @@ const BoardView = (param)=>{
                                     children: "Sign in to add comments."
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 285,
+                                    lineNumber: 327,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "mt-2 space-y-3",
@@ -2592,7 +2926,7 @@ const BoardView = (param)=>{
                                             onChange: (e)=>setNewCommentText(e.target.value)
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                            lineNumber: 290,
+                                            lineNumber: 332,
                                             columnNumber: 33
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2604,45 +2938,45 @@ const BoardView = (param)=>{
                                                 children: isCreatingComment ? "Posting..." : "Post Comment"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                                lineNumber: 298,
+                                                lineNumber: 340,
                                                 columnNumber: 37
                                             }, ("TURBOPACK compile-time value", void 0))
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                            lineNumber: 297,
+                                            lineNumber: 339,
                                             columnNumber: 33
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 289,
+                                    lineNumber: 331,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 282,
+                            lineNumber: 324,
                             columnNumber: 21
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                    lineNumber: 211,
+                    lineNumber: 253,
                     columnNumber: 17
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                lineNumber: 203,
+                lineNumber: 245,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-        lineNumber: 182,
+        lineNumber: 224,
         columnNumber: 12
     }, ("TURBOPACK compile-time value", void 0));
 };
-_s(BoardView, "ueDwKfqZjA7BHvSE4NttcWBJKy4=", false, function() {
+_s(BoardView, "e1CJ/qdcdm68xYhoMkniUFH8oyk=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$contexts$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"],
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetWorkItemsByPartQuery"],
@@ -2693,7 +3027,7 @@ const WorkItemColumn = (param)=>{
                         }
                     }, void 0, false, {
                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                        lineNumber: 357,
+                        lineNumber: 399,
                         columnNumber: 17
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2713,13 +3047,13 @@ const WorkItemColumn = (param)=>{
                                         children: workItemCount
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                        lineNumber: 364,
+                                        lineNumber: 406,
                                         columnNumber: 25
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                lineNumber: 362,
+                                lineNumber: 404,
                                 columnNumber: 21
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2731,12 +3065,12 @@ const WorkItemColumn = (param)=>{
                                             size: 26
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                            lineNumber: 373,
+                                            lineNumber: 415,
                                             columnNumber: 29
                                         }, ("TURBOPACK compile-time value", void 0))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                        lineNumber: 372,
+                                        lineNumber: 414,
                                         columnNumber: 25
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2746,30 +3080,30 @@ const WorkItemColumn = (param)=>{
                                             size: 16
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                            lineNumber: 377,
+                                            lineNumber: 419,
                                             columnNumber: 33
                                         }, ("TURBOPACK compile-time value", void 0))
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                        lineNumber: 375,
+                                        lineNumber: 417,
                                         columnNumber: 25
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                lineNumber: 371,
+                                lineNumber: 413,
                                 columnNumber: 21
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                        lineNumber: 361,
+                        lineNumber: 403,
                         columnNumber: 17
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                lineNumber: 356,
+                lineNumber: 398,
                 columnNumber: 13
             }, ("TURBOPACK compile-time value", void 0)),
             workItems.filter((workItem)=>workItem.status === status).map((workItem)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(WorkItem, {
@@ -2778,13 +3112,13 @@ const WorkItemColumn = (param)=>{
                     onOpenComments: onOpenComments
                 }, workItem.id, false, {
                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                    lineNumber: 383,
+                    lineNumber: 425,
                     columnNumber: 17
                 }, ("TURBOPACK compile-time value", void 0)))
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-        lineNumber: 350,
+        lineNumber: 392,
         columnNumber: 9
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -2828,7 +3162,7 @@ const WorkItem = (param)=>{
             children: priority
         }, void 0, false, {
             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-            lineNumber: 422,
+            lineNumber: 464,
             columnNumber: 9
         }, ("TURBOPACK compile-time value", void 0));
     };
@@ -2847,7 +3181,7 @@ const WorkItem = (param)=>{
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-            lineNumber: 447,
+            lineNumber: 489,
             columnNumber: 13
         }, ("TURBOPACK compile-time value", void 0));
     };
@@ -2875,18 +3209,18 @@ const WorkItem = (param)=>{
                                     priority: workItem.priority
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 472,
+                                    lineNumber: 514,
                                     columnNumber: 47
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(WorkItemTypeBadge, {}, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 473,
+                                    lineNumber: 515,
                                     columnNumber: 25
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 471,
+                            lineNumber: 513,
                             columnNumber: 21
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2900,18 +3234,18 @@ const WorkItem = (param)=>{
                                 size: 18
                             }, void 0, false, {
                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                lineNumber: 483,
+                                lineNumber: 525,
                                 columnNumber: 25
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 475,
+                            lineNumber: 517,
                             columnNumber: 21
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                    lineNumber: 470,
+                    lineNumber: 512,
                     columnNumber: 17
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
@@ -2923,12 +3257,12 @@ const WorkItem = (param)=>{
                         children: workItem.title
                     }, void 0, false, {
                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                        lineNumber: 489,
+                        lineNumber: 531,
                         columnNumber: 21
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                    lineNumber: 488,
+                    lineNumber: 530,
                     columnNumber: 17
                 }, ("TURBOPACK compile-time value", void 0)),
                 typeof workItem.percentComplete === "number" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2942,7 +3276,7 @@ const WorkItem = (param)=>{
                                     children: "Progress"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 502,
+                                    lineNumber: 544,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2953,13 +3287,13 @@ const WorkItem = (param)=>{
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 503,
+                                    lineNumber: 545,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 501,
+                            lineNumber: 543,
                             columnNumber: 25
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2971,18 +3305,18 @@ const WorkItem = (param)=>{
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                lineNumber: 506,
+                                lineNumber: 548,
                                 columnNumber: 29
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 505,
+                            lineNumber: 547,
                             columnNumber: 25
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                    lineNumber: 500,
+                    lineNumber: 542,
                     columnNumber: 21
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2996,7 +3330,7 @@ const WorkItem = (param)=>{
                                     className: "flex-shrink-0 text-gray-400 dark:text-gray-500"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 518,
+                                    lineNumber: 560,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3004,7 +3338,7 @@ const WorkItem = (param)=>{
                                     children: "Est. Completion:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 519,
+                                    lineNumber: 561,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3012,13 +3346,13 @@ const WorkItem = (param)=>{
                                     children: formattedEstimatedCompletionDate
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 520,
+                                    lineNumber: 562,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 517,
+                            lineNumber: 559,
                             columnNumber: 25
                         }, ("TURBOPACK compile-time value", void 0)),
                         formattedDueDate && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3029,7 +3363,7 @@ const WorkItem = (param)=>{
                                     className: "flex-shrink-0 text-gray-400 dark:text-gray-500"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 525,
+                                    lineNumber: 567,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3037,7 +3371,7 @@ const WorkItem = (param)=>{
                                     children: "Due:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 526,
+                                    lineNumber: 568,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3045,13 +3379,13 @@ const WorkItem = (param)=>{
                                     children: formattedDueDate
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 527,
+                                    lineNumber: 569,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 524,
+                            lineNumber: 566,
                             columnNumber: 25
                         }, ("TURBOPACK compile-time value", void 0)),
                         workItem.status === "Completed" && formattedActualCompletionDate && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3062,7 +3396,7 @@ const WorkItem = (param)=>{
                                     className: "flex-shrink-0"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 532,
+                                    lineNumber: 574,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3070,26 +3404,26 @@ const WorkItem = (param)=>{
                                     children: "Completed:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 533,
+                                    lineNumber: 575,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                     children: formattedActualCompletionDate
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 534,
+                                    lineNumber: 576,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 531,
+                            lineNumber: 573,
                             columnNumber: 25
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                    lineNumber: 515,
+                    lineNumber: 557,
                     columnNumber: 17
                 }, ("TURBOPACK compile-time value", void 0)),
                 workItem.description && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3102,7 +3436,7 @@ const WorkItem = (param)=>{
                                 className: "mt-0.5 flex-shrink-0 text-gray-400 dark:text-gray-500"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                lineNumber: 543,
+                                lineNumber: 585,
                                 columnNumber: 29
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3110,18 +3444,18 @@ const WorkItem = (param)=>{
                                 children: truncateText(workItem.description, 120)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                lineNumber: 544,
+                                lineNumber: 586,
                                 columnNumber: 29
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                        lineNumber: 542,
+                        lineNumber: 584,
                         columnNumber: 25
                     }, ("TURBOPACK compile-time value", void 0))
                 }, void 0, false, {
                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                    lineNumber: 541,
+                    lineNumber: 583,
                     columnNumber: 21
                 }, ("TURBOPACK compile-time value", void 0)),
                 workItemTagsSplit.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3132,7 +3466,7 @@ const WorkItem = (param)=>{
                             className: "text-gray-400 dark:text-gray-500"
                         }, void 0, false, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 552,
+                            lineNumber: 594,
                             columnNumber: 25
                         }, ("TURBOPACK compile-time value", void 0)),
                         workItemTagsSplit.slice(0, 3).map((tag)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3140,7 +3474,7 @@ const WorkItem = (param)=>{
                                 children: tag
                             }, tag, false, {
                                 fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                lineNumber: 554,
+                                lineNumber: 596,
                                 columnNumber: 29
                             }, ("TURBOPACK compile-time value", void 0))),
                         workItemTagsSplit.length > 3 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3151,13 +3485,13 @@ const WorkItem = (param)=>{
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 562,
+                            lineNumber: 604,
                             columnNumber: 29
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                    lineNumber: 551,
+                    lineNumber: 593,
                     columnNumber: 21
                 }, ("TURBOPACK compile-time value", void 0)),
                 workItem.status !== "Completed" && workItem.inputStatus && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3168,7 +3502,7 @@ const WorkItem = (param)=>{
                             children: "Status: "
                         }, void 0, false, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 570,
+                            lineNumber: 612,
                             columnNumber: 25
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3176,20 +3510,20 @@ const WorkItem = (param)=>{
                             children: workItem.inputStatus
                         }, void 0, false, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 571,
+                            lineNumber: 613,
                             columnNumber: 25
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                    lineNumber: 569,
+                    lineNumber: 611,
                     columnNumber: 21
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "my-3 border-t border-gray-200 dark:border-gray-700"
                 }, void 0, false, {
                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                    lineNumber: 576,
+                    lineNumber: 618,
                     columnNumber: 17
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3220,12 +3554,12 @@ const WorkItem = (param)=>{
                                         className: "h-full w-full object-cover"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                        lineNumber: 598,
+                                        lineNumber: 640,
                                         columnNumber: 37
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, uniqueKey, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 589,
+                                    lineNumber: 631,
                                     columnNumber: 33
                                 }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     onClick: (e)=>{
@@ -3251,13 +3585,13 @@ const WorkItem = (param)=>{
                                     })()
                                 }, uniqueKey, false, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 607,
+                                    lineNumber: 649,
                                     columnNumber: 33
                                 }, ("TURBOPACK compile-time value", void 0));
                             })
                         }, void 0, false, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 580,
+                            lineNumber: 622,
                             columnNumber: 21
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3270,20 +3604,20 @@ const WorkItem = (param)=>{
                                             size: 14
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                            lineNumber: 639,
+                                            lineNumber: 681,
                                             columnNumber: 33
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             children: numberOfAttachments
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                            lineNumber: 640,
+                                            lineNumber: 682,
                                             columnNumber: 33
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 638,
+                                    lineNumber: 680,
                                     columnNumber: 29
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3298,7 +3632,7 @@ const WorkItem = (param)=>{
                                             size: 16
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                            lineNumber: 651,
+                                            lineNumber: 693,
                                             columnNumber: 29
                                         }, ("TURBOPACK compile-time value", void 0)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3306,36 +3640,36 @@ const WorkItem = (param)=>{
                                             children: numberOfComments
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                            lineNumber: 652,
+                                            lineNumber: 694,
                                             columnNumber: 29
                                         }, ("TURBOPACK compile-time value", void 0))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                                    lineNumber: 643,
+                                    lineNumber: 685,
                                     columnNumber: 25
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                            lineNumber: 636,
+                            lineNumber: 678,
                             columnNumber: 21
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/parts/BoardView/index.tsx",
-                    lineNumber: 579,
+                    lineNumber: 621,
                     columnNumber: 17
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/parts/BoardView/index.tsx",
-            lineNumber: 468,
+            lineNumber: 510,
             columnNumber: 13
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/app/parts/BoardView/index.tsx",
-        lineNumber: 460,
+        lineNumber: 502,
         columnNumber: 9
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -4431,50 +4765,78 @@ const columns = [
         field: "program",
         headerName: "Program",
         width: 150,
-        renderCell: (params)=>{
-            var _params_value;
-            return ((_params_value = params.value) === null || _params_value === void 0 ? void 0 : _params_value.name) || "N/A";
-        }
+        renderCell: (params)=>params.value || "N/A"
     },
     {
         field: "dueByMilestone",
         headerName: "Milestone",
         width: 150,
-        renderCell: (params)=>{
-            var _params_value;
-            return ((_params_value = params.value) === null || _params_value === void 0 ? void 0 : _params_value.name) || "N/A";
-        }
+        renderCell: (params)=>params.value || "N/A"
     },
     {
         field: "authorUser",
         headerName: "Author",
         width: 150,
-        renderCell: (params)=>{
-            var _params_value;
-            return ((_params_value = params.value) === null || _params_value === void 0 ? void 0 : _params_value.name) || "Unknown";
-        }
+        renderCell: (params)=>params.value || "Unknown"
     },
     {
         field: "assigneeUser",
         headerName: "Assignee",
         width: 150,
-        renderCell: (params)=>{
-            var _params_value;
-            return ((_params_value = params.value) === null || _params_value === void 0 ? void 0 : _params_value.name) || "Unassigned";
-        }
+        renderCell: (params)=>params.value || "Unassigned"
     },
     {
         field: "issueDetail",
         headerName: "Issue Type",
         width: 180,
+        valueGetter: (value, row)=>{
+            // Ensure we return a string value
+            // Handle nested structure: issueDetail.issueType.name
+            if (typeof row.issueDetail === "string") {
+                return row.issueDetail;
+            }
+            if (typeof row.issueDetail === "object" && row.issueDetail !== null) {
+                const issueDetail = row.issueDetail;
+                if (issueDetail.issueType) {
+                    if (typeof issueDetail.issueType === "object" && issueDetail.issueType !== null) {
+                        return issueDetail.issueType.name ? String(issueDetail.issueType.name) : "N/A";
+                    } else if (typeof issueDetail.issueType === "string") {
+                        return issueDetail.issueType;
+                    }
+                }
+            }
+            return "N/A";
+        },
         renderCell: (params)=>{
-            if (params.row.workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Issue && params.value) {
+            // Defensive check: ensure we have a string value
+            // Check both params.value and params.row.issueDetail as fallback
+            let displayValue = "N/A";
+            // First try params.value (from valueGetter)
+            if (params.value && typeof params.value === "string") {
+                displayValue = params.value;
+            }
+            // If still N/A, try params.row as fallback with nested structure handling
+            if (displayValue === "N/A" && params.row.issueDetail) {
+                if (typeof params.row.issueDetail === "string") {
+                    displayValue = params.row.issueDetail;
+                } else if (typeof params.row.issueDetail === "object" && params.row.issueDetail !== null) {
+                    const issueDetail = params.row.issueDetail;
+                    if (issueDetail.issueType) {
+                        if (typeof issueDetail.issueType === "object" && issueDetail.issueType !== null) {
+                            displayValue = issueDetail.issueType.name ? String(issueDetail.issueType.name) : "N/A";
+                        } else if (typeof issueDetail.issueType === "string") {
+                            displayValue = issueDetail.issueType;
+                        }
+                    }
+                }
+            }
+            if (displayValue && displayValue !== "N/A") {
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                     className: "inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800",
-                    children: params.value.issueType
+                    children: displayValue
                 }, void 0, false, {
                     fileName: "[project]/src/app/parts/TableView/index.tsx",
-                    lineNumber: 213,
+                    lineNumber: 256,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0));
             }
@@ -4487,17 +4849,15 @@ const columns = [
         width: 200,
         flex: 1,
         renderCell: (params)=>{
-            if (params.row.workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Issue && params.row.issueDetail) {
-                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                    className: "text-xs",
-                    children: params.row.issueDetail.rootCause || "N/A"
-                }, void 0, false, {
-                    fileName: "[project]/src/app/parts/TableView/index.tsx",
-                    lineNumber: 229,
-                    columnNumber: 11
-                }, ("TURBOPACK compile-time value", void 0));
-            }
-            return "N/A";
+            const value = typeof params.value === "string" ? params.value : "N/A";
+            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                className: "text-xs",
+                children: value
+            }, void 0, false, {
+                fileName: "[project]/src/app/parts/TableView/index.tsx",
+                lineNumber: 272,
+                columnNumber: 9
+            }, ("TURBOPACK compile-time value", void 0));
         }
     },
     {
@@ -4506,31 +4866,69 @@ const columns = [
         width: 200,
         flex: 1,
         renderCell: (params)=>{
-            if (params.row.workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Issue && params.row.issueDetail) {
-                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                    className: "text-xs",
-                    children: params.row.issueDetail.correctiveAction || "N/A"
-                }, void 0, false, {
-                    fileName: "[project]/src/app/parts/TableView/index.tsx",
-                    lineNumber: 245,
-                    columnNumber: 11
-                }, ("TURBOPACK compile-time value", void 0));
-            }
-            return "N/A";
+            const value = typeof params.value === "string" ? params.value : "N/A";
+            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                className: "text-xs",
+                children: value
+            }, void 0, false, {
+                fileName: "[project]/src/app/parts/TableView/index.tsx",
+                lineNumber: 286,
+                columnNumber: 9
+            }, ("TURBOPACK compile-time value", void 0));
         }
     },
     {
         field: "deliverableDetail",
         headerName: "Deliverable Type",
         width: 200,
+        valueGetter: (value, row)=>{
+            // Ensure we return a string value
+            // Handle nested structure: deliverableDetail.deliverableType.name
+            if (typeof row.deliverableDetail === "string") {
+                return row.deliverableDetail;
+            }
+            if (typeof row.deliverableDetail === "object" && row.deliverableDetail !== null) {
+                const deliverableDetail = row.deliverableDetail;
+                if (deliverableDetail.deliverableType) {
+                    if (typeof deliverableDetail.deliverableType === "object" && deliverableDetail.deliverableType !== null) {
+                        return deliverableDetail.deliverableType.name ? String(deliverableDetail.deliverableType.name) : "N/A";
+                    } else if (typeof deliverableDetail.deliverableType === "string") {
+                        return deliverableDetail.deliverableType;
+                    }
+                }
+            }
+            return "N/A";
+        },
         renderCell: (params)=>{
-            if (params.row.workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Deliverable && params.value) {
+            // Defensive check: ensure we have a string value
+            // Check both params.value and params.row.deliverableDetail as fallback
+            let displayValue = "N/A";
+            // First try params.value (from valueGetter)
+            if (params.value && typeof params.value === "string") {
+                displayValue = params.value;
+            }
+            // If still N/A, try params.row as fallback with nested structure handling
+            if (displayValue === "N/A" && params.row.deliverableDetail) {
+                if (typeof params.row.deliverableDetail === "string") {
+                    displayValue = params.row.deliverableDetail;
+                } else if (typeof params.row.deliverableDetail === "object" && params.row.deliverableDetail !== null) {
+                    const deliverableDetail = params.row.deliverableDetail;
+                    if (deliverableDetail.deliverableType) {
+                        if (typeof deliverableDetail.deliverableType === "object" && deliverableDetail.deliverableType !== null) {
+                            displayValue = deliverableDetail.deliverableType.name ? String(deliverableDetail.deliverableType.name) : "N/A";
+                        } else if (typeof deliverableDetail.deliverableType === "string") {
+                            displayValue = deliverableDetail.deliverableType;
+                        }
+                    }
+                }
+            }
+            if (displayValue && displayValue !== "N/A") {
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                    className: "text-xs",
-                    children: params.value.deliverableType
+                    className: "inline-flex rounded-full bg-purple-100 px-2 text-xs font-semibold leading-5 text-purple-800",
+                    children: displayValue
                 }, void 0, false, {
                     fileName: "[project]/src/app/parts/TableView/index.tsx",
-                    lineNumber: 260,
+                    lineNumber: 342,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0));
             }
@@ -4555,20 +4953,192 @@ const TableView = (param)=>{
         children: "Loading..."
     }, void 0, false, {
         fileName: "[project]/src/app/parts/TableView/index.tsx",
-        lineNumber: 282,
+        lineNumber: 364,
         columnNumber: 25
     }, ("TURBOPACK compile-time value", void 0));
     if (error || !workItems) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         children: "An error occurred while fetching work items"
     }, void 0, false, {
         fileName: "[project]/src/app/parts/TableView/index.tsx",
-        lineNumber: 283,
+        lineNumber: 365,
         columnNumber: 35
     }, ("TURBOPACK compile-time value", void 0));
     // Filter work items based on the toggle and search query
     let filteredWorkItems = workItemFilter === "open" ? workItems.filter((item)=>item.status !== __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Status"].Completed) : workItems;
     // Apply search filter
     filteredWorkItems = filterWorkItemsBySearch(filteredWorkItems, searchQuery);
+    // Transform work items to flatten nested objects for DataGrid
+    // This prevents DataGrid from trying to render objects directly
+    // We explicitly create a new object with only primitive values
+    const transformedWorkItems = filteredWorkItems.map((item)=>{
+        // Helper to safely extract string from object or return string as-is
+        const getStringValue = (value, extractor)=>{
+            if (!value) return "N/A";
+            if (typeof value === "string") {
+                // If it's already a string, check if it's JSON (shouldn't happen but be safe)
+                if (value.startsWith("{") && value.startsWith("{")) {
+                    try {
+                        const parsed = JSON.parse(value);
+                        if (extractor && typeof parsed === "object") {
+                            return extractor(parsed) || "N/A";
+                        }
+                    } catch (e) {
+                    // Not valid JSON, return as-is
+                    }
+                }
+                return value;
+            }
+            if (typeof value === "object" && extractor) {
+                const extracted = extractor(value);
+                return extracted || "N/A";
+            }
+            return "N/A";
+        };
+        // Extract issue type and deliverable type strings explicitly
+        // Note: issueDetail and deliverableDetail have nested structure:
+        // issueDetail: { issueType: { name: "..." } }
+        // deliverableDetail: { deliverableType: { name: "..." } }
+        let issueTypeString = "N/A";
+        if (item.workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Issue && item.issueDetail) {
+            if (typeof item.issueDetail === "object" && item.issueDetail !== null && !Array.isArray(item.issueDetail)) {
+                const issueDetail = item.issueDetail;
+                // Check if issueType is a nested object with a name property
+                if (issueDetail.issueType) {
+                    if (typeof issueDetail.issueType === "object" && issueDetail.issueType !== null) {
+                        // It's a nested object, extract the name
+                        issueTypeString = issueDetail.issueType.name ? String(issueDetail.issueType.name) : "N/A";
+                    } else if (typeof issueDetail.issueType === "string") {
+                        // It's already a string
+                        issueTypeString = issueDetail.issueType;
+                    }
+                }
+            } else if (typeof item.issueDetail === "string") {
+                issueTypeString = item.issueDetail;
+            }
+        }
+        let deliverableTypeString = "N/A";
+        if (item.workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Deliverable && item.deliverableDetail) {
+            if (typeof item.deliverableDetail === "object" && item.deliverableDetail !== null && !Array.isArray(item.deliverableDetail)) {
+                const deliverableDetail = item.deliverableDetail;
+                // Check if deliverableType is a nested object with a name property
+                if (deliverableDetail.deliverableType) {
+                    if (typeof deliverableDetail.deliverableType === "object" && deliverableDetail.deliverableType !== null) {
+                        // It's a nested object, extract the name
+                        deliverableTypeString = deliverableDetail.deliverableType.name ? String(deliverableDetail.deliverableType.name) : "N/A";
+                    } else if (typeof deliverableDetail.deliverableType === "string") {
+                        // It's already a string
+                        deliverableTypeString = deliverableDetail.deliverableType;
+                    }
+                }
+            } else if (typeof item.deliverableDetail === "string") {
+                deliverableTypeString = item.deliverableDetail;
+            }
+        }
+        // Ensure these are definitely strings, not objects
+        issueTypeString = typeof issueTypeString === "string" ? issueTypeString : "N/A";
+        deliverableTypeString = typeof deliverableTypeString === "string" ? deliverableTypeString : "N/A";
+        // Extract primitive values explicitly to avoid any object references
+        const transformed = {
+            id: item.id,
+            organizationId: item.organizationId,
+            workItemType: item.workItemType,
+            title: item.title,
+            description: item.description,
+            status: item.status,
+            priority: item.priority,
+            tags: item.tags,
+            dateOpened: item.dateOpened,
+            dueDate: item.dueDate,
+            estimatedCompletionDate: item.estimatedCompletionDate,
+            actualCompletionDate: item.actualCompletionDate,
+            percentComplete: item.percentComplete,
+            inputStatus: item.inputStatus,
+            programId: item.programId,
+            dueByMilestoneId: item.dueByMilestoneId,
+            authorUserId: item.authorUserId,
+            assignedUserId: item.assignedUserId,
+            // Convert object fields to strings - ensure they're always strings
+            program: getStringValue(item.program, (p)=>p.name),
+            dueByMilestone: getStringValue(item.dueByMilestone, (m)=>m.name),
+            authorUser: getStringValue(item.authorUser, (u)=>u.name || u.username),
+            assigneeUser: getStringValue(item.assigneeUser, (u)=>u.name || u.username),
+            // Use explicitly extracted strings - double-check they're strings
+            issueDetail: typeof issueTypeString === "string" ? issueTypeString : "N/A",
+            deliverableDetail: typeof deliverableTypeString === "string" ? deliverableTypeString : "N/A",
+            // Extract nested fields from issueDetail for rootCause and correctiveAction columns
+            rootCause: item.workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Issue && item.issueDetail && typeof item.issueDetail === "object" ? item.issueDetail.rootCause || "N/A" : "N/A",
+            correctiveAction: item.workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Issue && item.issueDetail && typeof item.issueDetail === "object" ? item.issueDetail.correctiveAction || "N/A" : "N/A"
+        };
+        // Final safety check: ensure all values are primitives (no objects or arrays)
+        // Special handling for issueDetail and deliverableDetail to ensure they're strings
+        Object.keys(transformed).forEach((key)=>{
+            const value = transformed[key];
+            if (value !== null && value !== undefined) {
+                if (typeof value === "object" && !Array.isArray(value)) {
+                    // Special handling for issueDetail and deliverableDetail with nested structure
+                    if (key === "issueDetail" && value.issueType) {
+                        const issueType = value.issueType;
+                        if (typeof issueType === "object" && issueType !== null && issueType.name) {
+                            transformed[key] = String(issueType.name);
+                        } else if (typeof issueType === "string") {
+                            transformed[key] = issueType;
+                        } else {
+                            transformed[key] = "N/A";
+                        }
+                    } else if (key === "deliverableDetail" && value.deliverableType) {
+                        const deliverableType = value.deliverableType;
+                        if (typeof deliverableType === "object" && deliverableType !== null && deliverableType.name) {
+                            transformed[key] = String(deliverableType.name);
+                        } else if (typeof deliverableType === "string") {
+                            transformed[key] = deliverableType;
+                        } else {
+                            transformed[key] = "N/A";
+                        }
+                    } else {
+                        // This shouldn't happen, but if it does, set to N/A (don't stringify)
+                        console.warn('Unexpected object in transformed data at key "'.concat(key, '":'), value);
+                        transformed[key] = "N/A";
+                    }
+                } else if (Array.isArray(value)) {
+                    // Arrays should also be excluded
+                    transformed[key] = "N/A";
+                }
+            }
+        });
+        // Final verification: ensure issueDetail and deliverableDetail are strings
+        if (typeof transformed.issueDetail !== "string") {
+            console.warn("issueDetail is not a string:", transformed.issueDetail, typeof transformed.issueDetail);
+            // Try to extract from object if it's still an object
+            if (typeof transformed.issueDetail === "object" && transformed.issueDetail !== null) {
+                transformed.issueDetail = transformed.issueDetail.issueType ? String(transformed.issueDetail.issueType) : "N/A";
+            } else {
+                transformed.issueDetail = "N/A";
+            }
+        }
+        if (typeof transformed.deliverableDetail !== "string") {
+            console.warn("deliverableDetail is not a string:", transformed.deliverableDetail, typeof transformed.deliverableDetail);
+            // Try to extract from object if it's still an object
+            if (typeof transformed.deliverableDetail === "object" && transformed.deliverableDetail !== null) {
+                transformed.deliverableDetail = transformed.deliverableDetail.deliverableType ? String(transformed.deliverableDetail.deliverableType) : "N/A";
+            } else {
+                transformed.deliverableDetail = "N/A";
+            }
+        }
+        // Debug: log first item to verify transformation (only log once)
+        if (filteredWorkItems.indexOf(item) === 0) {
+            console.log("Sample transformed item:", {
+                id: transformed.id,
+                workItemType: transformed.workItemType,
+                issueDetail: transformed.issueDetail,
+                deliverableDetail: transformed.deliverableDetail,
+                issueDetailType: typeof transformed.issueDetail,
+                deliverableDetailType: typeof transformed.deliverableDetail,
+                originalIssueDetail: item.issueDetail,
+                originalDeliverableDetail: item.deliverableDetail
+            });
+        }
+        return transformed;
+    });
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "h-[calc(100vh-250px)] w-full px-4 pb-8 xl:px-6",
         children: [
@@ -4578,7 +5148,7 @@ const TableView = (param)=>{
                 workItem: editingWorkItem
             }, void 0, false, {
                 fileName: "[project]/src/app/parts/TableView/index.tsx",
-                lineNumber: 296,
+                lineNumber: 563,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4595,7 +5165,7 @@ const TableView = (param)=>{
                                     children: "All Work Items"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/TableView/index.tsx",
-                                    lineNumber: 306,
+                                    lineNumber: 573,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4604,13 +5174,13 @@ const TableView = (param)=>{
                                     children: "Open Work Items"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/TableView/index.tsx",
-                                    lineNumber: 316,
+                                    lineNumber: 583,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/parts/TableView/index.tsx",
-                            lineNumber: 305,
+                            lineNumber: 572,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4621,29 +5191,29 @@ const TableView = (param)=>{
                                     className: "mr-2 h-5 w-5"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/parts/TableView/index.tsx",
-                                    lineNumber: 332,
+                                    lineNumber: 599,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 "New Work Item"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/parts/TableView/index.tsx",
-                            lineNumber: 328,
+                            lineNumber: 595,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/parts/TableView/index.tsx",
-                    lineNumber: 303,
+                    lineNumber: 570,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/app/parts/TableView/index.tsx",
-                lineNumber: 302,
+                lineNumber: 569,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$mui$2f$x$2d$data$2d$grid$2f$esm$2f$DataGrid$2f$DataGrid$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DataGrid"], {
-                rows: filteredWorkItems || [],
+                rows: transformedWorkItems || [],
                 columns: columns,
                 className: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["dataGridClassNames"],
                 showToolbar: true,
@@ -4676,13 +5246,13 @@ const TableView = (param)=>{
                 onRowClick: (params)=>router.push("/work-items/".concat(params.row.id))
             }, void 0, false, {
                 fileName: "[project]/src/app/parts/TableView/index.tsx",
-                lineNumber: 336,
+                lineNumber: 603,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/parts/TableView/index.tsx",
-        lineNumber: 294,
+        lineNumber: 561,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -4728,6 +5298,7 @@ const ModalNewWorkItem = (param)=>{
     const { data: milestones = [], isLoading: milestonesLoading } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetMilestonesQuery"])();
     const { data: deliverableTypes = [] } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetDeliverableTypesQuery"])();
     const { data: issueTypes = [] } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetIssueTypesQuery"])();
+    const { data: allWorkItems = [] } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetWorkItemsQuery"])();
     const [createWorkItem, { isLoading }] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCreateWorkItemMutation"])();
     const [workItemType, setWorkItemType] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [title, setTitle] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
@@ -4742,6 +5313,9 @@ const ModalNewWorkItem = (param)=>{
     const [percentComplete, setPercentComplete] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
     const [inputStatus, setInputStatus] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [partIds, setPartIds] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [partSearchQuery, setPartSearchQuery] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [dependencyWorkItemIds, setDependencyWorkItemIds] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [dependencySearchQuery, setDependencySearchQuery] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [programId, setProgramId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [dueByMilestoneId, setDueByMilestoneId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [authorUserId, setAuthorUserId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
@@ -4785,6 +5359,9 @@ const ModalNewWorkItem = (param)=>{
         };
         if (partIds.length > 0) {
             payload.partIds = partIds;
+        }
+        if (dependencyWorkItemIds.length > 0) {
+            payload.dependencyWorkItemIds = dependencyWorkItemIds;
         }
         // Add subtype-specific data
         if (workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Issue && issueType) {
@@ -4838,7 +5415,7 @@ const ModalNewWorkItem = (param)=>{
                             children: "Select Work Item Type"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 175,
+                            lineNumber: 184,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         Object.values(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"]).map((type)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4846,13 +5423,13 @@ const ModalNewWorkItem = (param)=>{
                                 children: type
                             }, type, false, {
                                 fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                lineNumber: 177,
+                                lineNumber: 186,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 164,
+                    lineNumber: 173,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Issue && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -4865,7 +5442,7 @@ const ModalNewWorkItem = (param)=>{
                             children: "Select Issue Type"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 190,
+                            lineNumber: 199,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         issueTypes.map((type)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4873,13 +5450,13 @@ const ModalNewWorkItem = (param)=>{
                                 children: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["IssueTypeLabels"][type.name] || type.name
                             }, type.id, false, {
                                 fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                lineNumber: 192,
+                                lineNumber: 201,
                                 columnNumber: 17
                             }, ("TURBOPACK compile-time value", void 0)))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 185,
+                    lineNumber: 194,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0)),
                 workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Deliverable && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -4892,7 +5469,7 @@ const ModalNewWorkItem = (param)=>{
                             children: "Select Deliverable Type"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 205,
+                            lineNumber: 214,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         deliverableTypes.map((type)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4900,13 +5477,13 @@ const ModalNewWorkItem = (param)=>{
                                 children: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DeliverableTypeLabels"][type.name] || type.name
                             }, type.id, false, {
                                 fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                lineNumber: 207,
+                                lineNumber: 216,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 200,
+                    lineNumber: 209,
                     columnNumber: 11
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -4917,7 +5494,7 @@ const ModalNewWorkItem = (param)=>{
                     onChange: (e)=>setTitle(e.target.value)
                 }, void 0, false, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 214,
+                    lineNumber: 223,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -4927,7 +5504,7 @@ const ModalNewWorkItem = (param)=>{
                     onChange: (e)=>setDescription(e.target.value)
                 }, void 0, false, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 221,
+                    lineNumber: 230,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 workItemType === __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["WorkItemType"].Issue && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -4939,7 +5516,7 @@ const ModalNewWorkItem = (param)=>{
                             onChange: (e)=>setRootCause(e.target.value)
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 230,
+                            lineNumber: 239,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -4949,7 +5526,7 @@ const ModalNewWorkItem = (param)=>{
                             onChange: (e)=>setCorrectiveAction(e.target.value)
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 236,
+                            lineNumber: 245,
                             columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
@@ -4967,7 +5544,7 @@ const ModalNewWorkItem = (param)=>{
                                     children: "Select Status"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 251,
+                                    lineNumber: 260,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 Object.values(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Status"]).map((s)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -4975,13 +5552,13 @@ const ModalNewWorkItem = (param)=>{
                                         children: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["StatusLabels"][s]
                                     }, s, false, {
                                         fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                        lineNumber: 253,
+                                        lineNumber: 262,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 246,
+                            lineNumber: 255,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -4994,7 +5571,7 @@ const ModalNewWorkItem = (param)=>{
                                     children: "Select Priority"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 263,
+                                    lineNumber: 272,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -5002,7 +5579,7 @@ const ModalNewWorkItem = (param)=>{
                                     children: "Urgent"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 264,
+                                    lineNumber: 273,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -5010,7 +5587,7 @@ const ModalNewWorkItem = (param)=>{
                                     children: "High"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 265,
+                                    lineNumber: 274,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -5018,7 +5595,7 @@ const ModalNewWorkItem = (param)=>{
                                     children: "Medium"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 266,
+                                    lineNumber: 275,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -5026,7 +5603,7 @@ const ModalNewWorkItem = (param)=>{
                                     children: "Low"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 267,
+                                    lineNumber: 276,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -5034,19 +5611,19 @@ const ModalNewWorkItem = (param)=>{
                                     children: "Backlog"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 268,
+                                    lineNumber: 277,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 258,
+                            lineNumber: 267,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 245,
+                    lineNumber: 254,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -5057,7 +5634,7 @@ const ModalNewWorkItem = (param)=>{
                     onChange: (e)=>setTags(e.target.value)
                 }, void 0, false, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 271,
+                    lineNumber: 280,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5070,7 +5647,7 @@ const ModalNewWorkItem = (param)=>{
                                     children: "Date Opened:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 281,
+                                    lineNumber: 290,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -5080,13 +5657,13 @@ const ModalNewWorkItem = (param)=>{
                                     onChange: (e)=>setDateOpened(e.target.value)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 284,
+                                    lineNumber: 293,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 280,
+                            lineNumber: 289,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5096,7 +5673,7 @@ const ModalNewWorkItem = (param)=>{
                                     children: "Due Date:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 293,
+                                    lineNumber: 302,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -5106,13 +5683,13 @@ const ModalNewWorkItem = (param)=>{
                                     onChange: (e)=>setDueDate(e.target.value)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 296,
+                                    lineNumber: 305,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 292,
+                            lineNumber: 301,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5122,7 +5699,7 @@ const ModalNewWorkItem = (param)=>{
                                     children: "Estimated Completion:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 305,
+                                    lineNumber: 314,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -5132,13 +5709,13 @@ const ModalNewWorkItem = (param)=>{
                                     onChange: (e)=>setEstimatedCompletionDate(e.target.value)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 308,
+                                    lineNumber: 317,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 304,
+                            lineNumber: 313,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5148,7 +5725,7 @@ const ModalNewWorkItem = (param)=>{
                                     children: "Actual Completion:"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 317,
+                                    lineNumber: 326,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -5158,19 +5735,19 @@ const ModalNewWorkItem = (param)=>{
                                     onChange: (e)=>setActualCompletionDate(e.target.value)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 320,
+                                    lineNumber: 329,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 316,
+                            lineNumber: 325,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 279,
+                    lineNumber: 288,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5180,7 +5757,7 @@ const ModalNewWorkItem = (param)=>{
                             children: "Percent Complete:"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 329,
+                            lineNumber: 338,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -5192,13 +5769,13 @@ const ModalNewWorkItem = (param)=>{
                             max: 100
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 332,
+                            lineNumber: 341,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 328,
+                    lineNumber: 337,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -5209,77 +5786,285 @@ const ModalNewWorkItem = (param)=>{
                     onChange: (e)=>setInputStatus(e.target.value)
                 }, void 0, false, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 341,
+                    lineNumber: 350,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                            className: "block text-sm text-gray-600 dark:text-gray-300",
+                            className: "block text-sm text-gray-600 dark:text-gray-300 mb-1",
                             children: "Affected Part(s):"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 349,
+                            lineNumber: 358,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
-                            multiple: true,
-                            className: inputStyles,
-                            value: partIds.map(String),
-                            onChange: (e)=>{
-                                const selectedOptions = Array.from(e.target.selectedOptions);
-                                const ids = selectedOptions.map((opt)=>Number(opt.value));
-                                setPartIds(ids);
-                            },
-                            disabled: partsLoading,
-                            children: parts === null || parts === void 0 ? void 0 : parts.map((part)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                    value: part.id,
-                                    children: [
-                                        part.partName,
-                                        " (",
-                                        part.code,
-                                        ")"
-                                    ]
-                                }, part.id, true, {
-                                    fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 364,
-                                    columnNumber: 15
-                                }, ("TURBOPACK compile-time value", void 0)))
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 352,
-                            columnNumber: 11
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                            className: "mt-1 text-xs text-gray-600 dark:text-gray-300",
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "relative",
                             children: [
-                                "Hold ",
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("kbd", {
-                                    children: "Ctrl"
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                    type: "text",
+                                    className: inputStyles,
+                                    placeholder: "Search parts...",
+                                    value: partSearchQuery,
+                                    onChange: (e)=>setPartSearchQuery(e.target.value),
+                                    onFocus: ()=>setPartSearchQuery("")
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 370,
-                                    columnNumber: 18
+                                    lineNumber: 362,
+                                    columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
-                                " (Windows) or ",
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("kbd", {
-                                    children: "Cmd"
+                                partSearchQuery && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-dark-secondary",
+                                    children: parts.filter((part)=>{
+                                        const searchLower = partSearchQuery.toLowerCase();
+                                        return part.code.toLowerCase().includes(searchLower) || part.partName.toLowerCase().includes(searchLower);
+                                    }).slice(0, 10).map((part)=>{
+                                        const isSelected = partIds.includes(part.id);
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ".concat(isSelected ? "bg-blue-100 dark:bg-blue-900" : ""),
+                                            onClick: ()=>{
+                                                if (isSelected) {
+                                                    setPartIds(partIds.filter((id)=>id !== part.id));
+                                                } else {
+                                                    setPartIds([
+                                                        ...partIds,
+                                                        part.id
+                                                    ]);
+                                                }
+                                                setPartSearchQuery("");
+                                            },
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex items-center justify-between",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-sm font-medium dark:text-white",
+                                                        children: [
+                                                            part.code,
+                                                            ": ",
+                                                            part.partName
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                                        lineNumber: 399,
+                                                        columnNumber: 27
+                                                    }, ("TURBOPACK compile-time value", void 0)),
+                                                    isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-xs text-blue-600 dark:text-blue-400",
+                                                        children: "✓"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                                        lineNumber: 402,
+                                                        columnNumber: 42
+                                                    }, ("TURBOPACK compile-time value", void 0))
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                                lineNumber: 398,
+                                                columnNumber: 25
+                                            }, ("TURBOPACK compile-time value", void 0))
+                                        }, part.id, false, {
+                                            fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                            lineNumber: 384,
+                                            columnNumber: 23
+                                        }, ("TURBOPACK compile-time value", void 0));
+                                    })
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                    lineNumber: 370,
-                                    columnNumber: 47
-                                }, ("TURBOPACK compile-time value", void 0)),
-                                " (Mac) to select multiple."
+                                    lineNumber: 371,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 369,
+                            lineNumber: 361,
                             columnNumber: 11
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        partIds.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "mt-2 flex flex-wrap gap-2",
+                            children: partIds.map((partId)=>{
+                                const part = parts.find((p)=>p.id === partId);
+                                if (!part) return null;
+                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+                                    children: [
+                                        part.code,
+                                        ": ",
+                                        part.partName,
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            type: "button",
+                                            onClick: ()=>setPartIds(partIds.filter((id)=>id !== partId)),
+                                            className: "ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200",
+                                            children: "×"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                            lineNumber: 421,
+                                            columnNumber: 21
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, partId, true, {
+                                    fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                    lineNumber: 416,
+                                    columnNumber: 19
+                                }, ("TURBOPACK compile-time value", void 0));
+                            })
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                            lineNumber: 411,
+                            columnNumber: 13
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 348,
+                    lineNumber: 357,
+                    columnNumber: 9
+                }, ("TURBOPACK compile-time value", void 0)),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                            className: "block text-sm text-gray-600 dark:text-gray-300 mb-1",
+                            children: "Dependencies:"
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                            lineNumber: 435,
+                            columnNumber: 11
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "relative",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                    type: "text",
+                                    className: inputStyles,
+                                    placeholder: "Search work items...",
+                                    value: dependencySearchQuery,
+                                    onChange: (e)=>setDependencySearchQuery(e.target.value),
+                                    onFocus: ()=>setDependencySearchQuery("")
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                    lineNumber: 439,
+                                    columnNumber: 13
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                dependencySearchQuery && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-dark-secondary",
+                                    children: allWorkItems.filter((wi)=>{
+                                        const searchLower = dependencySearchQuery.toLowerCase();
+                                        return wi.id !== Number(id) && (wi.title.toLowerCase().includes(searchLower) || wi.id.toString().includes(searchLower) || wi.workItemType.toLowerCase().includes(searchLower));
+                                    }).slice(0, 10).map((wi)=>{
+                                        const isSelected = dependencyWorkItemIds.includes(wi.id);
+                                        const prefix = wi.workItemType === "Deliverable" ? "D" : wi.workItemType === "Issue" ? "I" : "T";
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ".concat(isSelected ? "bg-blue-100 dark:bg-blue-900" : ""),
+                                            onClick: ()=>{
+                                                if (isSelected) {
+                                                    setDependencyWorkItemIds(dependencyWorkItemIds.filter((id)=>id !== wi.id));
+                                                } else {
+                                                    setDependencyWorkItemIds([
+                                                        ...dependencyWorkItemIds,
+                                                        wi.id
+                                                    ]);
+                                                }
+                                                setDependencySearchQuery("");
+                                            },
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex items-center justify-between",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            className: "text-sm font-medium dark:text-white",
+                                                            children: [
+                                                                prefix,
+                                                                wi.id,
+                                                                ": ",
+                                                                wi.title
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                                            lineNumber: 479,
+                                                            columnNumber: 27
+                                                        }, ("TURBOPACK compile-time value", void 0)),
+                                                        isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            className: "text-xs text-blue-600 dark:text-blue-400",
+                                                            children: "✓"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                                            lineNumber: 482,
+                                                            columnNumber: 42
+                                                        }, ("TURBOPACK compile-time value", void 0))
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                                    lineNumber: 478,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "text-xs text-gray-500 dark:text-gray-400",
+                                                    children: [
+                                                        wi.workItemType,
+                                                        " • ",
+                                                        wi.status
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                                    lineNumber: 484,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, wi.id, true, {
+                                            fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                            lineNumber: 464,
+                                            columnNumber: 23
+                                        }, ("TURBOPACK compile-time value", void 0));
+                                    })
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                    lineNumber: 448,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0))
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                            lineNumber: 438,
+                            columnNumber: 11
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        dependencyWorkItemIds.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "mt-2 flex flex-wrap gap-2",
+                            children: dependencyWorkItemIds.map((depId)=>{
+                                const dep = allWorkItems.find((wi)=>wi.id === depId);
+                                if (!dep) return null;
+                                const prefix = dep.workItemType === "Deliverable" ? "D" : dep.workItemType === "Issue" ? "I" : "T";
+                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+                                    children: [
+                                        prefix,
+                                        dep.id,
+                                        ": ",
+                                        dep.title,
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            type: "button",
+                                            onClick: ()=>setDependencyWorkItemIds(dependencyWorkItemIds.filter((id)=>id !== depId)),
+                                            className: "ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200",
+                                            children: "×"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                            lineNumber: 505,
+                                            columnNumber: 21
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, depId, true, {
+                                    fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                                    lineNumber: 500,
+                                    columnNumber: 19
+                                }, ("TURBOPACK compile-time value", void 0));
+                            })
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                            lineNumber: 494,
+                            columnNumber: 13
+                        }, ("TURBOPACK compile-time value", void 0))
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
+                    lineNumber: 434,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -5293,7 +6078,7 @@ const ModalNewWorkItem = (param)=>{
                             children: "Select Program"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 379,
+                            lineNumber: 524,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         programs.map((program)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -5301,13 +6086,13 @@ const ModalNewWorkItem = (param)=>{
                                 children: program.name
                             }, program.id, false, {
                                 fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                lineNumber: 381,
+                                lineNumber: 526,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 373,
+                    lineNumber: 518,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -5321,7 +6106,7 @@ const ModalNewWorkItem = (param)=>{
                             children: "Select Milestone"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 392,
+                            lineNumber: 537,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         milestones.map((milestone)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -5329,13 +6114,13 @@ const ModalNewWorkItem = (param)=>{
                                 children: milestone.name
                             }, milestone.id, false, {
                                 fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                lineNumber: 394,
+                                lineNumber: 539,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 386,
+                    lineNumber: 531,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -5349,7 +6134,7 @@ const ModalNewWorkItem = (param)=>{
                             children: "Select Author User"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 405,
+                            lineNumber: 550,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         users.map((user)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -5362,13 +6147,13 @@ const ModalNewWorkItem = (param)=>{
                                 ]
                             }, user.id, true, {
                                 fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                lineNumber: 407,
+                                lineNumber: 552,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 399,
+                    lineNumber: 544,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -5382,7 +6167,7 @@ const ModalNewWorkItem = (param)=>{
                             children: "Select Assigned User"
                         }, void 0, false, {
                             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                            lineNumber: 418,
+                            lineNumber: 563,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         users.map((user)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -5395,13 +6180,13 @@ const ModalNewWorkItem = (param)=>{
                                 ]
                             }, user.id, true, {
                                 fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                                lineNumber: 420,
+                                lineNumber: 565,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 412,
+                    lineNumber: 557,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -5411,22 +6196,22 @@ const ModalNewWorkItem = (param)=>{
                     children: isLoading ? "Creating ".concat(workItemType, "...") : "Create Work Item ".concat(workItemType)
                 }, void 0, false, {
                     fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-                    lineNumber: 427,
+                    lineNumber: 572,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-            lineNumber: 157,
+            lineNumber: 166,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/components/ModalNewWorkItem/index.tsx",
-        lineNumber: 156,
+        lineNumber: 165,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
-_s(ModalNewWorkItem, "zz9VgfYPePWzZpNkeqP/RbLF/1A=", false, function() {
+_s(ModalNewWorkItem, "aO7IcZPakVovlg/aWl5R17O3i5E=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetPartsQuery"],
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetUsersQuery"],
@@ -5434,6 +6219,7 @@ _s(ModalNewWorkItem, "zz9VgfYPePWzZpNkeqP/RbLF/1A=", false, function() {
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetMilestonesQuery"],
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetDeliverableTypesQuery"],
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetIssueTypesQuery"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useGetWorkItemsQuery"],
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$state$2f$api$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCreateWorkItemMutation"]
     ];
 });

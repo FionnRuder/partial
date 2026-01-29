@@ -12,6 +12,7 @@ import {
   useGetMilestonesQuery,
   useGetDeliverableTypesQuery,
   useGetIssueTypesQuery,
+  useGetWorkItemsQuery,
   DeliverableTypeLabels,
   IssueTypeLabels,
 } from '@/state/api';
@@ -37,6 +38,7 @@ const ModalNewWorkItem = ({
   const { data: milestones = [], isLoading: milestonesLoading } = useGetMilestonesQuery();
   const { data: deliverableTypes = [] } = useGetDeliverableTypesQuery();
   const { data: issueTypes = [] } = useGetIssueTypesQuery();
+  const { data: allWorkItems = [] } = useGetWorkItemsQuery();
   const [createWorkItem, { isLoading }] = useCreateWorkItemMutation();
   const [workItemType, setWorkItemType] = useState<WorkItemType | "">("");
   const [title, setTitle] = useState("");
@@ -51,6 +53,9 @@ const ModalNewWorkItem = ({
   const [percentComplete, setPercentComplete] = useState<number>(0);
   const [inputStatus, setInputStatus] = useState("");
   const [partIds, setPartIds] = useState<number[]>([]);
+  const [partSearchQuery, setPartSearchQuery] = useState("");
+  const [dependencyWorkItemIds, setDependencyWorkItemIds] = useState<number[]>([]);
+  const [dependencySearchQuery, setDependencySearchQuery] = useState("");
   const [programId, setProgramId] = useState("");
   const [dueByMilestoneId, setDueByMilestoneId] = useState("");
   const [authorUserId, setAuthorUserId] = useState("");
@@ -94,6 +99,10 @@ const ModalNewWorkItem = ({
 
     if (partIds.length > 0) {
       payload.partIds = partIds;
+    }
+
+    if (dependencyWorkItemIds.length > 0) {
+      payload.dependencyWorkItemIds = dependencyWorkItemIds;
     }
 
     // Add subtype-specific data
@@ -346,29 +355,165 @@ const ModalNewWorkItem = ({
           onChange={(e) => setInputStatus(e.target.value)}
         />
         <div>
-          <label className="block text-sm text-gray-600 dark:text-gray-300">
+          <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
             Affected Part(s):
           </label>
-          <select
-            multiple
-            className={inputStyles}
-            value={partIds.map(String)}
-            onChange={(e) => {
-              const selectedOptions = Array.from(e.target.selectedOptions);
-              const ids = selectedOptions.map((opt) => Number(opt.value));
-              setPartIds(ids);
-            }}
-            disabled={partsLoading}
-          >
-            {parts?.map((part) => (
-              <option key={part.id} value={part.id}>
-                {part.partName} ({part.code})
-              </option>
-            ))}
-          </select>
-          <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-            Hold <kbd>Ctrl</kbd> (Windows) or <kbd>Cmd</kbd> (Mac) to select multiple.
-          </p>
+          <div className="relative">
+            <input
+              type="text"
+              className={inputStyles}
+              placeholder="Search parts..."
+              value={partSearchQuery}
+              onChange={(e) => setPartSearchQuery(e.target.value)}
+              onFocus={() => setPartSearchQuery("")}
+            />
+            {partSearchQuery && (
+              <div className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-dark-secondary">
+                {parts
+                  .filter((part) => {
+                    const searchLower = partSearchQuery.toLowerCase();
+                    return (
+                      part.code.toLowerCase().includes(searchLower) ||
+                      part.partName.toLowerCase().includes(searchLower)
+                    );
+                  })
+                  .slice(0, 10)
+                  .map((part) => {
+                    const isSelected = partIds.includes(part.id);
+                    return (
+                      <div
+                        key={part.id}
+                        className={`cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                          isSelected ? "bg-blue-100 dark:bg-blue-900" : ""
+                        }`}
+                        onClick={() => {
+                          if (isSelected) {
+                            setPartIds(partIds.filter((id) => id !== part.id));
+                          } else {
+                            setPartIds([...partIds, part.id]);
+                          }
+                          setPartSearchQuery("");
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium dark:text-white">
+                            {part.code}: {part.partName}
+                          </span>
+                          {isSelected && <span className="text-xs text-blue-600 dark:text-blue-400">✓</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+          {partIds.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {partIds.map((partId) => {
+                const part = parts.find((p) => p.id === partId);
+                if (!part) return null;
+                return (
+                  <span
+                    key={partId}
+                    className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                  >
+                    {part.code}: {part.partName}
+                    <button
+                      type="button"
+                      onClick={() => setPartIds(partIds.filter((id) => id !== partId))}
+                      className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
+            Dependencies:
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              className={inputStyles}
+              placeholder="Search work items..."
+              value={dependencySearchQuery}
+              onChange={(e) => setDependencySearchQuery(e.target.value)}
+              onFocus={() => setDependencySearchQuery("")}
+            />
+            {dependencySearchQuery && (
+              <div className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-dark-secondary">
+                {allWorkItems
+                  .filter((wi) => {
+                    const searchLower = dependencySearchQuery.toLowerCase();
+                    return (
+                      wi.id !== Number(id) &&
+                      (wi.title.toLowerCase().includes(searchLower) ||
+                        wi.id.toString().includes(searchLower) ||
+                        wi.workItemType.toLowerCase().includes(searchLower))
+                    );
+                  })
+                  .slice(0, 10)
+                  .map((wi) => {
+                    const isSelected = dependencyWorkItemIds.includes(wi.id);
+                    const prefix = wi.workItemType === "Deliverable" ? "D" : wi.workItemType === "Issue" ? "I" : "T";
+                    return (
+                      <div
+                        key={wi.id}
+                        className={`cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                          isSelected ? "bg-blue-100 dark:bg-blue-900" : ""
+                        }`}
+                        onClick={() => {
+                          if (isSelected) {
+                            setDependencyWorkItemIds(dependencyWorkItemIds.filter((id) => id !== wi.id));
+                          } else {
+                            setDependencyWorkItemIds([...dependencyWorkItemIds, wi.id]);
+                          }
+                          setDependencySearchQuery("");
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium dark:text-white">
+                            {prefix}{wi.id}: {wi.title}
+                          </span>
+                          {isSelected && <span className="text-xs text-blue-600 dark:text-blue-400">✓</span>}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {wi.workItemType} • {wi.status}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+          {dependencyWorkItemIds.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {dependencyWorkItemIds.map((depId) => {
+                const dep = allWorkItems.find((wi) => wi.id === depId);
+                if (!dep) return null;
+                const prefix = dep.workItemType === "Deliverable" ? "D" : dep.workItemType === "Issue" ? "I" : "T";
+                return (
+                  <span
+                    key={depId}
+                    className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                  >
+                    {prefix}{dep.id}: {dep.title}
+                    <button
+                      type="button"
+                      onClick={() => setDependencyWorkItemIds(dependencyWorkItemIds.filter((id) => id !== depId))}
+                      className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
         <select
           className={inputStyles}

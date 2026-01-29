@@ -183,35 +183,78 @@ const columns: GridColDef[] = [
     field: "program",
     headerName: "Program",
     width: 150,
-    renderCell: (params) => params.value?.name || "N/A",
+    renderCell: (params) => params.value || "N/A",
   },
   {
     field: "dueByMilestone",
     headerName: "Milestone",
     width: 150,
-    renderCell: (params) => params.value?.name || "N/A",
+    renderCell: (params) => params.value || "N/A",
   },
   {
     field: "authorUser",
     headerName: "Author",
     width: 150,
-    renderCell: (params) => params.value?.name || "Unknown",
+    renderCell: (params) => params.value || "Unknown",
   },
   {
     field: "assigneeUser",
     headerName: "Assignee",
     width: 150,
-    renderCell: (params) => params.value?.name || "Unassigned",
+    renderCell: (params) => params.value || "Unassigned",
   },
   {
     field: "issueDetail",
     headerName: "Issue Type",
     width: 180,
+    valueGetter: (value, row) => {
+      // Ensure we return a string value
+      // Handle nested structure: issueDetail.issueType.name
+      if (typeof row.issueDetail === "string") {
+        return row.issueDetail;
+      }
+      if (typeof row.issueDetail === "object" && row.issueDetail !== null) {
+        const issueDetail = row.issueDetail as any;
+        if (issueDetail.issueType) {
+          if (typeof issueDetail.issueType === "object" && issueDetail.issueType !== null) {
+            return issueDetail.issueType.name ? String(issueDetail.issueType.name) : "N/A";
+          } else if (typeof issueDetail.issueType === "string") {
+            return issueDetail.issueType;
+          }
+        }
+      }
+      return "N/A";
+    },
     renderCell: (params) => {
-      if (params.row.workItemType === WorkItemType.Issue && params.value) {
+      // Defensive check: ensure we have a string value
+      // Check both params.value and params.row.issueDetail as fallback
+      let displayValue = "N/A";
+      
+      // First try params.value (from valueGetter)
+      if (params.value && typeof params.value === "string") {
+        displayValue = params.value;
+      }
+      
+      // If still N/A, try params.row as fallback with nested structure handling
+      if (displayValue === "N/A" && params.row.issueDetail) {
+        if (typeof params.row.issueDetail === "string") {
+          displayValue = params.row.issueDetail;
+        } else if (typeof params.row.issueDetail === "object" && params.row.issueDetail !== null) {
+          const issueDetail = params.row.issueDetail as any;
+          if (issueDetail.issueType) {
+            if (typeof issueDetail.issueType === "object" && issueDetail.issueType !== null) {
+              displayValue = issueDetail.issueType.name ? String(issueDetail.issueType.name) : "N/A";
+            } else if (typeof issueDetail.issueType === "string") {
+              displayValue = issueDetail.issueType;
+            }
+          }
+        }
+      }
+      
+      if (displayValue && displayValue !== "N/A") {
         return (
           <span className="inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800">
-            {params.value.issueType}
+            {displayValue}
           </span>
         );
       }
@@ -224,14 +267,12 @@ const columns: GridColDef[] = [
     width: 200,
     flex: 1,
     renderCell: (params) => {
-      if (params.row.workItemType === WorkItemType.Issue && params.row.issueDetail) {
-        return (
-          <span className="text-xs">
-            {params.row.issueDetail.rootCause || "N/A"}
-          </span>
-        );
-      }
-      return "N/A";
+      const value = typeof params.value === "string" ? params.value : "N/A";
+      return (
+        <span className="text-xs">
+          {value}
+        </span>
+      );
     },
   },
   {
@@ -240,25 +281,66 @@ const columns: GridColDef[] = [
     width: 200,
     flex: 1,
     renderCell: (params) => {
-      if (params.row.workItemType === WorkItemType.Issue && params.row.issueDetail) {
-        return (
-          <span className="text-xs">
-            {params.row.issueDetail.correctiveAction || "N/A"}
-          </span>
-        );
-      }
-      return "N/A";
+      const value = typeof params.value === "string" ? params.value : "N/A";
+      return (
+        <span className="text-xs">
+          {value}
+        </span>
+      );
     },
   },
   {
     field: "deliverableDetail",
     headerName: "Deliverable Type",
     width: 200,
+    valueGetter: (value, row) => {
+      // Ensure we return a string value
+      // Handle nested structure: deliverableDetail.deliverableType.name
+      if (typeof row.deliverableDetail === "string") {
+        return row.deliverableDetail;
+      }
+      if (typeof row.deliverableDetail === "object" && row.deliverableDetail !== null) {
+        const deliverableDetail = row.deliverableDetail as any;
+        if (deliverableDetail.deliverableType) {
+          if (typeof deliverableDetail.deliverableType === "object" && deliverableDetail.deliverableType !== null) {
+            return deliverableDetail.deliverableType.name ? String(deliverableDetail.deliverableType.name) : "N/A";
+          } else if (typeof deliverableDetail.deliverableType === "string") {
+            return deliverableDetail.deliverableType;
+          }
+        }
+      }
+      return "N/A";
+    },
     renderCell: (params) => {
-      if (params.row.workItemType === WorkItemType.Deliverable && params.value) {
+      // Defensive check: ensure we have a string value
+      // Check both params.value and params.row.deliverableDetail as fallback
+      let displayValue = "N/A";
+      
+      // First try params.value (from valueGetter)
+      if (params.value && typeof params.value === "string") {
+        displayValue = params.value;
+      }
+      
+      // If still N/A, try params.row as fallback with nested structure handling
+      if (displayValue === "N/A" && params.row.deliverableDetail) {
+        if (typeof params.row.deliverableDetail === "string") {
+          displayValue = params.row.deliverableDetail;
+        } else if (typeof params.row.deliverableDetail === "object" && params.row.deliverableDetail !== null) {
+          const deliverableDetail = params.row.deliverableDetail as any;
+          if (deliverableDetail.deliverableType) {
+            if (typeof deliverableDetail.deliverableType === "object" && deliverableDetail.deliverableType !== null) {
+              displayValue = deliverableDetail.deliverableType.name ? String(deliverableDetail.deliverableType.name) : "N/A";
+            } else if (typeof deliverableDetail.deliverableType === "string") {
+              displayValue = deliverableDetail.deliverableType;
+            }
+          }
+        }
+      }
+      
+      if (displayValue && displayValue !== "N/A") {
         return (
-          <span className="text-xs">
-            {params.value.deliverableType}
+          <span className="inline-flex rounded-full bg-purple-100 px-2 text-xs font-semibold leading-5 text-purple-800">
+            {displayValue}
           </span>
         );
       }
@@ -289,6 +371,191 @@ const TableView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren
   
   // Apply search filter
   filteredWorkItems = filterWorkItemsBySearch(filteredWorkItems, searchQuery);
+
+  // Transform work items to flatten nested objects for DataGrid
+  // This prevents DataGrid from trying to render objects directly
+  // We explicitly create a new object with only primitive values
+  const transformedWorkItems = filteredWorkItems.map((item) => {
+    // Helper to safely extract string from object or return string as-is
+    const getStringValue = (value: any, extractor?: (obj: any) => string): string => {
+      if (!value) return "N/A";
+      if (typeof value === "string") {
+        // If it's already a string, check if it's JSON (shouldn't happen but be safe)
+        if (value.startsWith("{") && value.startsWith("{")) {
+          try {
+            const parsed = JSON.parse(value);
+            if (extractor && typeof parsed === "object") {
+              return extractor(parsed) || "N/A";
+            }
+          } catch {
+            // Not valid JSON, return as-is
+          }
+        }
+        return value;
+      }
+      if (typeof value === "object" && extractor) {
+        const extracted = extractor(value);
+        return extracted || "N/A";
+      }
+      return "N/A";
+    };
+    
+    // Extract issue type and deliverable type strings explicitly
+    // Note: issueDetail and deliverableDetail have nested structure:
+    // issueDetail: { issueType: { name: "..." } }
+    // deliverableDetail: { deliverableType: { name: "..." } }
+    let issueTypeString = "N/A";
+    if (item.workItemType === WorkItemType.Issue && item.issueDetail) {
+      if (typeof item.issueDetail === "object" && item.issueDetail !== null && !Array.isArray(item.issueDetail)) {
+        const issueDetail = item.issueDetail as any;
+        // Check if issueType is a nested object with a name property
+        if (issueDetail.issueType) {
+          if (typeof issueDetail.issueType === "object" && issueDetail.issueType !== null) {
+            // It's a nested object, extract the name
+            issueTypeString = issueDetail.issueType.name ? String(issueDetail.issueType.name) : "N/A";
+          } else if (typeof issueDetail.issueType === "string") {
+            // It's already a string
+            issueTypeString = issueDetail.issueType;
+          }
+        }
+      } else if (typeof item.issueDetail === "string") {
+        issueTypeString = item.issueDetail;
+      }
+    }
+    
+    let deliverableTypeString = "N/A";
+    if (item.workItemType === WorkItemType.Deliverable && item.deliverableDetail) {
+      if (typeof item.deliverableDetail === "object" && item.deliverableDetail !== null && !Array.isArray(item.deliverableDetail)) {
+        const deliverableDetail = item.deliverableDetail as any;
+        // Check if deliverableType is a nested object with a name property
+        if (deliverableDetail.deliverableType) {
+          if (typeof deliverableDetail.deliverableType === "object" && deliverableDetail.deliverableType !== null) {
+            // It's a nested object, extract the name
+            deliverableTypeString = deliverableDetail.deliverableType.name ? String(deliverableDetail.deliverableType.name) : "N/A";
+          } else if (typeof deliverableDetail.deliverableType === "string") {
+            // It's already a string
+            deliverableTypeString = deliverableDetail.deliverableType;
+          }
+        }
+      } else if (typeof item.deliverableDetail === "string") {
+        deliverableTypeString = item.deliverableDetail;
+      }
+    }
+    
+    // Ensure these are definitely strings, not objects
+    issueTypeString = typeof issueTypeString === "string" ? issueTypeString : "N/A";
+    deliverableTypeString = typeof deliverableTypeString === "string" ? deliverableTypeString : "N/A";
+    
+    // Extract primitive values explicitly to avoid any object references
+    const transformed: any = {
+      id: item.id,
+      organizationId: item.organizationId,
+      workItemType: item.workItemType,
+      title: item.title,
+      description: item.description,
+      status: item.status,
+      priority: item.priority,
+      tags: item.tags,
+      dateOpened: item.dateOpened,
+      dueDate: item.dueDate,
+      estimatedCompletionDate: item.estimatedCompletionDate,
+      actualCompletionDate: item.actualCompletionDate,
+      percentComplete: item.percentComplete,
+      inputStatus: item.inputStatus,
+      programId: item.programId,
+      dueByMilestoneId: item.dueByMilestoneId,
+      authorUserId: item.authorUserId,
+      assignedUserId: item.assignedUserId,
+      // Convert object fields to strings - ensure they're always strings
+      program: getStringValue(item.program, (p) => p.name),
+      dueByMilestone: getStringValue(item.dueByMilestone, (m) => m.name),
+      authorUser: getStringValue(item.authorUser, (u) => u.name || u.username),
+      assigneeUser: getStringValue(item.assigneeUser, (u) => u.name || u.username),
+      // Use explicitly extracted strings - double-check they're strings
+      issueDetail: typeof issueTypeString === "string" ? issueTypeString : "N/A",
+      deliverableDetail: typeof deliverableTypeString === "string" ? deliverableTypeString : "N/A",
+      // Extract nested fields from issueDetail for rootCause and correctiveAction columns
+      rootCause: item.workItemType === WorkItemType.Issue && item.issueDetail && typeof item.issueDetail === "object"
+        ? (item.issueDetail.rootCause || "N/A")
+        : "N/A",
+      correctiveAction: item.workItemType === WorkItemType.Issue && item.issueDetail && typeof item.issueDetail === "object"
+        ? (item.issueDetail.correctiveAction || "N/A")
+        : "N/A",
+    };
+    
+    // Final safety check: ensure all values are primitives (no objects or arrays)
+    // Special handling for issueDetail and deliverableDetail to ensure they're strings
+    Object.keys(transformed).forEach(key => {
+      const value = transformed[key];
+      if (value !== null && value !== undefined) {
+        if (typeof value === "object" && !Array.isArray(value)) {
+          // Special handling for issueDetail and deliverableDetail with nested structure
+          if (key === "issueDetail" && (value as any).issueType) {
+            const issueType = (value as any).issueType;
+            if (typeof issueType === "object" && issueType !== null && issueType.name) {
+              transformed[key] = String(issueType.name);
+            } else if (typeof issueType === "string") {
+              transformed[key] = issueType;
+            } else {
+              transformed[key] = "N/A";
+            }
+          } else if (key === "deliverableDetail" && (value as any).deliverableType) {
+            const deliverableType = (value as any).deliverableType;
+            if (typeof deliverableType === "object" && deliverableType !== null && deliverableType.name) {
+              transformed[key] = String(deliverableType.name);
+            } else if (typeof deliverableType === "string") {
+              transformed[key] = deliverableType;
+            } else {
+              transformed[key] = "N/A";
+            }
+          } else {
+            // This shouldn't happen, but if it does, set to N/A (don't stringify)
+            console.warn(`Unexpected object in transformed data at key "${key}":`, value);
+            transformed[key] = "N/A";
+          }
+        } else if (Array.isArray(value)) {
+          // Arrays should also be excluded
+          transformed[key] = "N/A";
+        }
+      }
+    });
+    
+    // Final verification: ensure issueDetail and deliverableDetail are strings
+    if (typeof transformed.issueDetail !== "string") {
+      console.warn("issueDetail is not a string:", transformed.issueDetail, typeof transformed.issueDetail);
+      // Try to extract from object if it's still an object
+      if (typeof transformed.issueDetail === "object" && transformed.issueDetail !== null) {
+        transformed.issueDetail = (transformed.issueDetail as any).issueType ? String((transformed.issueDetail as any).issueType) : "N/A";
+      } else {
+        transformed.issueDetail = "N/A";
+      }
+    }
+    if (typeof transformed.deliverableDetail !== "string") {
+      console.warn("deliverableDetail is not a string:", transformed.deliverableDetail, typeof transformed.deliverableDetail);
+      // Try to extract from object if it's still an object
+      if (typeof transformed.deliverableDetail === "object" && transformed.deliverableDetail !== null) {
+        transformed.deliverableDetail = (transformed.deliverableDetail as any).deliverableType ? String((transformed.deliverableDetail as any).deliverableType) : "N/A";
+      } else {
+        transformed.deliverableDetail = "N/A";
+      }
+    }
+    
+    // Debug: log first item to verify transformation (only log once)
+    if (filteredWorkItems.indexOf(item) === 0) {
+      console.log("Sample transformed item:", {
+        id: transformed.id,
+        workItemType: transformed.workItemType,
+        issueDetail: transformed.issueDetail,
+        deliverableDetail: transformed.deliverableDetail,
+        issueDetailType: typeof transformed.issueDetail,
+        deliverableDetailType: typeof transformed.deliverableDetail,
+        originalIssueDetail: item.issueDetail,
+        originalDeliverableDetail: item.deliverableDetail,
+      });
+    }
+    
+    return transformed;
+  });
 
   return (
     <div className="h-[calc(100vh-250px)] w-full px-4 pb-8 xl:px-6">
@@ -334,7 +601,7 @@ const TableView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren
         </div>
       </div>
       <DataGrid
-        rows={filteredWorkItems || []}
+        rows={transformedWorkItems || []}
         columns={columns}
         className={dataGridClassNames}
         showToolbar

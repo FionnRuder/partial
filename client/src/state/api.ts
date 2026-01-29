@@ -185,6 +185,13 @@ export interface Part {
   workItemLinks?: WorkItemToPart[];
 }
 
+export interface WorkItemDependency {
+  id: number;
+  workItemId: number;
+  dependencyWorkItemId: number;
+  dependencyWorkItem: WorkItem;
+}
+
 export interface WorkItem {
   id: number;
   organizationId: number;
@@ -213,6 +220,7 @@ export interface WorkItem {
   partIds?: number[];
   attachments?: Attachment[];
   comments?: Comment[];
+  dependencies?: WorkItemDependency[];
 
   issueDetail?: IssueDetail;
   deliverableDetail?: DeliverableDetail;
@@ -479,6 +487,7 @@ export interface WorkItemCreateInput {
     deliverableType: DeliverableType;
   };
   partIds?: number[];
+  dependencyWorkItemIds?: number[];
 }
 
 export interface WorkItemEditInput {
@@ -507,6 +516,7 @@ export interface WorkItemEditInput {
     deliverableType?: DeliverableType;
   };
   partIds?: number[];
+  dependencyWorkItemIds?: number[];
 }
 
 
@@ -844,6 +854,35 @@ export const api = createApi({
             { type: "Attachments", id: attachmentId },
             { type: "Attachments", id: `LIST-${workItemId}` },
             { type: "WorkItems", id: workItemId },
+        ],
+    }),
+
+    addDependency: build.mutation<
+        WorkItemDependency,
+        { workItemId: number; dependencyWorkItemId: number }
+    >({
+        query: ({ workItemId, dependencyWorkItemId }) => ({
+            url: `workItems/${workItemId}/dependencies`,
+            method: "POST",
+            body: { dependencyWorkItemId },
+        }),
+        invalidatesTags: (result, error, { workItemId }) => [
+            { type: "WorkItems", id: workItemId },
+            { type: "WorkItems", id: "LIST" },
+        ],
+    }),
+
+    removeDependency: build.mutation<
+        void,
+        { workItemId: number; dependencyId: number }
+    >({
+        query: ({ workItemId, dependencyId }) => ({
+            url: `workItems/${workItemId}/dependencies/${dependencyId}`,
+            method: "DELETE",
+        }),
+        invalidatesTags: (result, error, { workItemId }) => [
+            { type: "WorkItems", id: workItemId },
+            { type: "WorkItems", id: "LIST" },
         ],
     }),
 
@@ -1312,6 +1351,9 @@ export const {
   useCreateAttachmentMutation,
   useUpdateAttachmentMutation,
   useDeleteAttachmentMutation,
+
+  useAddDependencyMutation,
+  useRemoveDependencyMutation,
 
   useGetMilestonesQuery,
   useGetMilestonesByProgramQuery,

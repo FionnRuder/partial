@@ -1,9 +1,15 @@
 {
+  "/deliverable-types/page": "app/deliverable-types/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/home/page": "app/home/page.js",
-  "/onboarding/page": "app/onboarding/page.js",
   "/page": "app/page.js",
+  "/part-hierarchy/page": "app/part-hierarchy/page.js",
+  "/parts/[id]/page": "app/parts/[id]/page.js",
+  "/programs/page": "app/programs/page.js",
   "/search/page": "app/search/page.js",
   "/settings/page": "app/settings/page.js",
-  "/users/[id]/page": "app/users/[id]/page.js"
+  "/users/[id]/page": "app/users/[id]/page.js",
+  "/users/page": "app/users/page.js",
+  "/work-items/[id]/page": "app/work-items/[id]/page.js",
+  "/work-items/deliverables/page": "app/work-items/deliverables/page.js"
 }
