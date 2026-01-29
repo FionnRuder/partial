@@ -19,6 +19,8 @@ import {
   createAttachmentForWorkItem,
   updateAttachmentForWorkItem,
   deleteAttachmentForWorkItem,
+  addDependencyToWorkItem,
+  removeDependencyFromWorkItem,
 } from "../controllers/workItemController";
 
 const router = express.Router();
@@ -46,6 +48,10 @@ router.get("/:workItemId/attachments", getAttachmentsForWorkItem);
 router.post("/:workItemId/attachments", createAttachmentForWorkItem);
 router.patch("/:workItemId/attachments/:attachmentId", updateAttachmentForWorkItem);
 router.delete("/:workItemId/attachments/:attachmentId", deleteAttachmentForWorkItem);
+
+// ✅ Dependencies
+router.post("/:workItemId/dependencies", addDependencyToWorkItem);
+router.delete("/:workItemId/dependencies/:dependencyId", removeDependencyFromWorkItem);
 
 // ✅ GET single work item by ID (must be last to avoid conflicts)
 router.get("/:workItemId", getWorkItemById);

@@ -18,6 +18,8 @@ import {
   useCreateAttachmentMutation,
   useUpdateAttachmentMutation,
   useDeleteAttachmentMutation,
+  useAddDependencyMutation,
+  useRemoveDependencyMutation,
   Status,
   Priority,
   DeliverableTypeLabels,
@@ -26,14 +28,26 @@ import {
   Comment as CommentType,
   StatusLog as StatusLogType,
   Attachment,
+  WorkItemDependency,
 } from "@/state/api";
 import { format } from "date-fns";
 import ModalEditWorkItem from "@/components/ModalEditWorkItem";
-import { SquarePen } from "lucide-react";
+import { SquarePen, Calendar, Target, CheckCircle2, FileText, Tag, MessageSquareMore, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 type Props = {
   params: Promise<{ id: string }>;
+};
+
+const formatDateOnly = (dateString: string): string => {
+  if (!dateString) return "";
+  // Extract just the date portion (YYYY-MM-DD) from ISO string
+  const dateOnly = dateString.split('T')[0];
+  // Parse as local date to avoid timezone conversion
+  const [year, month, day] = dateOnly.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  return format(date, "MMM d, yyyy");
 };
 
 const getStatusColor = (status: Status) => {
@@ -94,6 +108,7 @@ const getUserInitials = (user: { name?: string; username?: string } | null | und
 const WorkItemDetailPage = ({ params }: Props) => {
   const { id } = React.use(params);
   const workItemId = Number(id);
+  const router = useRouter();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [newCommentText, setNewCommentText] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
@@ -121,6 +136,8 @@ const WorkItemDetailPage = ({ params }: Props) => {
   const [createAttachment, { isLoading: isCreatingAttachment }] = useCreateAttachmentMutation();
   const [updateAttachment, { isLoading: isUpdatingAttachment }] = useUpdateAttachmentMutation();
   const [deleteAttachment, { isLoading: isDeletingAttachment }] = useDeleteAttachmentMutation();
+  const [addDependency, { isLoading: isAddingDependency }] = useAddDependencyMutation();
+  const [removeDependency, { isLoading: isRemovingDependency }] = useRemoveDependencyMutation();
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
   const { user: authUser } = useAuth();
 
@@ -317,6 +334,19 @@ const WorkItemDetailPage = ({ params }: Props) => {
       refetchWorkItem();
     } catch (error) {
       console.error("Failed to delete attachment:", error);
+    }
+  };
+
+  const handleRemoveDependency = async (dependency: WorkItemDependency) => {
+    if (!authUser) return;
+    try {
+      await removeDependency({
+        workItemId: workItemId,
+        dependencyId: dependency.id,
+      }).unwrap();
+      await refetchWorkItem();
+    } catch (error) {
+      console.error("Failed to remove dependency:", error);
     }
   };
 
@@ -781,6 +811,279 @@ const WorkItemDetailPage = ({ params }: Props) => {
           </div>
         </div>
       )}
+
+      {/* Dependencies */}
+      <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-lg font-semibold dark:text-white">Dependencies</h3>
+          <span className="text-sm text-gray-500 dark:text-neutral-400">
+            {workItem?.dependencies?.length || 0}{" "}
+            {(workItem?.dependencies?.length || 0) === 1 ? "dependency" : "dependencies"}
+          </span>
+        </div>
+
+        {!workItem ? (
+          <p className="text-sm text-gray-500 dark:text-neutral-400">Loading dependencies...</p>
+        ) : !workItem.dependencies || workItem.dependencies.length === 0 ? (
+          <p className="text-sm text-gray-500 dark:text-neutral-400">No dependencies.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {workItem.dependencies.map((dependency: WorkItemDependency) => {
+              const depWorkItem = dependency.dependencyWorkItem;
+              const isCompleted = depWorkItem.status === Status.Completed;
+              const workItemPrefix = depWorkItem.workItemType === "Deliverable" ? "D" : depWorkItem.workItemType === "Issue" ? "I" : "T";
+              
+              const formattedDateOpened = formatDateOnly(depWorkItem.dateOpened);
+              const formattedDueDate = formatDateOnly(depWorkItem.dueDate);
+              const formattedEstimatedCompletionDate = formatDateOnly(depWorkItem.estimatedCompletionDate || "");
+              const formattedActualCompletionDate = depWorkItem.actualCompletionDate ? formatDateOnly(depWorkItem.actualCompletionDate) : "";
+              
+              const numberOfComments = depWorkItem.comments?.length ?? 0;
+              const numberOfAttachments = depWorkItem.attachments?.length ?? 0;
+              
+              const workItemTagsSplit = depWorkItem.tags ? depWorkItem.tags.split(",").map(t => t.trim()).filter(Boolean) : [];
+              
+              const truncateText = (text: string, maxLength: number = 100) => {
+                if (!text || text.length <= maxLength) return text;
+                return text.substring(0, maxLength) + "...";
+              };
+
+              const PriorityTag = ({ priority }: { priority: Priority }) => (
+                <div
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    priority === "Urgent"
+                      ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                      : priority === "High"
+                        ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+                        : priority === "Medium"
+                          ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+                          : priority === "Low"
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                            : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  {priority}
+                </div>
+              );
+
+              const WorkItemTypeBadge = () => {
+                const typeColors = {
+                  "Deliverable": "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+                  "Issue": "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+                  "Task": "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+                };
+                return (
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${typeColors[depWorkItem.workItemType as keyof typeof typeColors] || typeColors.Task}`}>
+                    {workItemPrefix}{depWorkItem.id}
+                  </span>
+                );
+              };
+
+              return (
+                <div
+                  key={dependency.id}
+                  className="rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-dark-secondary"
+                >
+                  <div className="p-4">
+                    {/* Header: Priority, Type Badge, and Remove Button */}
+                    <div className="mb-3 flex items-start justify-between gap-2">
+                      <div className="flex flex-1 flex-wrap items-center gap-2">
+                        {depWorkItem.priority && <PriorityTag priority={depWorkItem.priority} />}
+                        <WorkItemTypeBadge />
+                      </div>
+                      {authUser && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleRemoveDependency(dependency);
+                          }}
+                          disabled={isRemovingDependency}
+                          className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 disabled:opacity-50"
+                          title="Remove dependency"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Title */}
+                    <h4 className="mb-2 line-clamp-2 text-sm font-semibold leading-tight dark:text-white">
+                      <Link
+                        href={`/work-items/${depWorkItem.id}`}
+                        className="text-gray-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400"
+                      >
+                        {depWorkItem.title}
+                      </Link>
+                    </h4>
+
+                    {/* Progress Bar */}
+                    {typeof depWorkItem.percentComplete === "number" && (
+                      <div className="mb-3">
+                        <div className="mb-1 flex items-center justify-between">
+                          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Progress</span>
+                          <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{depWorkItem.percentComplete}%</span>
+                        </div>
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                          <div 
+                            className="h-full bg-blue-600 transition-all dark:bg-blue-500"
+                            style={{ width: `${depWorkItem.percentComplete}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Key Dates */}
+                    <div className="mb-3 space-y-1.5 text-xs">
+                      {formattedEstimatedCompletionDate && (
+                        <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                          <Target size={14} className="flex-shrink-0 text-gray-400 dark:text-gray-500" />
+                          <span className="font-medium">Est. Completion:</span>
+                          <span className="text-gray-700 dark:text-gray-300">{formattedEstimatedCompletionDate}</span>
+                        </div>
+                      )}
+                      {formattedDueDate && (
+                        <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                          <Calendar size={14} className="flex-shrink-0 text-gray-400 dark:text-gray-500" />
+                          <span className="font-medium">Due:</span>
+                          <span className="text-gray-700 dark:text-gray-300">{formattedDueDate}</span>
+                        </div>
+                      )}
+                      {depWorkItem.status === "Completed" && formattedActualCompletionDate && (
+                        <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                          <CheckCircle2 size={14} className="flex-shrink-0" />
+                          <span className="font-medium">Completed:</span>
+                          <span>{formattedActualCompletionDate}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Description (truncated) */}
+                    {depWorkItem.description && (
+                      <div className="mb-3">
+                        <div className="flex items-start gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                          <FileText size={14} className="mt-0.5 flex-shrink-0 text-gray-400 dark:text-gray-500" />
+                          <p className="line-clamp-2 leading-relaxed">{truncateText(depWorkItem.description, 120)}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tags */}
+                    {workItemTagsSplit.length > 0 && (
+                      <div className="mb-3 flex flex-wrap items-center gap-1.5">
+                        <Tag size={12} className="text-gray-400 dark:text-gray-500" />
+                        {workItemTagsSplit.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                        {workItemTagsSplit.length > 3 && (
+                          <span className="text-xs text-gray-500 dark:text-gray-500">+{workItemTagsSplit.length - 3}</span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Status (if not completed) */}
+                    {depWorkItem.status !== "Completed" && depWorkItem.inputStatus && (
+                      <div className="mb-3 text-xs">
+                        <span className="text-gray-500 dark:text-gray-400">Status: </span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{depWorkItem.inputStatus}</span>
+                      </div>
+                    )}
+
+                    {/* Warning if not completed */}
+                    {!isCompleted && (
+                      <div className="mb-3 text-xs text-yellow-600 dark:text-yellow-400 font-medium">
+                        ⚠️ Must be completed first
+                      </div>
+                    )}
+
+                    {/* Divider */}
+                    <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
+
+                    {/* Footer: Users, Comments, Attachments */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex -space-x-2">
+                        {[depWorkItem.assigneeUser, depWorkItem.authorUser].map((user, index) => {
+                          if (!user) return null;
+
+                          const uniqueKey = `${user.id}-${index}`;
+                          const role = index === 0 ? "Assignee" : "Author";
+                          const tooltip = `${role}: ${user.name || user.username}`;
+
+                          return user.profilePictureUrl ? (
+                            <button
+                              key={uniqueKey}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/users/${user.id}`);
+                              }}
+                              className="relative h-7 w-7 cursor-pointer overflow-hidden rounded-full border-2 border-white ring-1 ring-gray-200 transition-all hover:z-10 hover:ring-2 hover:ring-blue-500 dark:border-dark-secondary dark:ring-gray-700"
+                              title={tooltip}
+                            >
+                              <Image
+                                src={user.profilePictureUrl ? `/images/${user.profilePictureUrl}` : '/placeholder.png'}
+                                alt={user.username}
+                                width={28}
+                                height={28}
+                                className="h-full w-full object-cover"
+                              />
+                            </button>
+                          ) : (
+                            <button
+                              key={uniqueKey}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/users/${user.id}`);
+                              }}
+                              title={tooltip}
+                              className="relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-gray-300 to-gray-400 text-xs font-semibold text-white ring-1 ring-gray-200 transition-all hover:z-10 hover:ring-2 hover:ring-blue-500 dark:border-dark-secondary dark:from-gray-600 dark:to-gray-700 dark:ring-gray-700"
+                            >
+                              {(() => {
+                                if (user.name) {
+                                  const names = user.name.trim().split(" ").filter(Boolean);
+                                  if (names.length >= 2) {
+                                    return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+                                  }
+                                  if (names.length === 1 && names[0].length > 0) {
+                                    return names[0][0].toUpperCase();
+                                  }
+                                }
+                                if (user.username) {
+                                  return user.username.substring(0, 2).toUpperCase();
+                                }
+                                return "?";
+                              })()}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        {numberOfAttachments > 0 && (
+                          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                            <FileText size={14} />
+                            <span>{numberOfAttachments}</span>
+                          </div>
+                        )}
+                        {numberOfComments > 0 && (
+                          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                            <MessageSquareMore size={14} />
+                            <span>{numberOfComments}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Attachments */}
       <div className="mb-8 rounded-lg bg-white p-6 shadow dark:bg-dark-secondary">

@@ -71,6 +71,7 @@ vi.mock('@prisma/client', () => {
     };
     user = {
       findFirst: mockUserFindFirst,
+      findUnique: vi.fn().mockResolvedValue({ id: 'user-123', name: 'Test User' }),
     };
     part = {
       findMany: mockPartFindMany,
@@ -121,6 +122,7 @@ vi.mock('../../lib/emailService', () => ({
   sendWorkItemStatusChangeEmail: mockEmailService.sendWorkItemStatusChangeEmail,
   sendWorkItemCommentEmail: vi.fn(),
 }));
+
 
 // Mock audit logger
 vi.mock('../../lib/auditLogger', () => ({
@@ -184,6 +186,10 @@ describe('WorkItem Mutations', () => {
         assigneeUser: { id: 'user-456', name: 'Assignee', email: 'assignee@test.com' },
         partNumbers: [],
         comments: [],
+        dependencies: [],
+        deliverableDetail: null,
+        issueDetail: null,
+        attachments: [],
       };
 
       // Setup transaction mock
@@ -201,6 +207,11 @@ describe('WorkItem Mutations', () => {
           deliverableType: { findFirst: vi.fn() },
           workItem: {
             create: vi.fn().mockResolvedValue(mockCreatedWorkItem),
+            findUnique: vi.fn().mockResolvedValue(mockCreatedWorkItem),
+          },
+          workItemDependency: {
+            createMany: vi.fn(),
+            findFirst: vi.fn(),
           },
           statusLog: { create: vi.fn() },
         };
@@ -288,20 +299,30 @@ describe('WorkItem Mutations', () => {
         status: 'In Progress',
       };
 
+      const updatedWorkItem = {
+        ...existingWorkItem,
+        ...updates,
+        partNumbers: [],
+        dependencies: [],
+        program: existingWorkItem.program,
+        dueByMilestone: { id: 1, name: 'Test Milestone' },
+        authorUser: existingWorkItem.authorUser,
+        assigneeUser: existingWorkItem.assigneeUser,
+        deliverableDetail: null,
+        issueDetail: null,
+        attachments: [],
+        comments: [],
+      };
+
       mockWorkItemFindFirst.mockResolvedValueOnce(existingWorkItem);
 
       mockTransaction.mockImplementation(async (callback) => {
         const mockTx = {
           workItem: {
             findFirst: vi.fn().mockResolvedValue(existingWorkItem),
-            findUnique: vi.fn().mockResolvedValue({
-              ...existingWorkItem,
-              ...updates,
-            }),
-            update: vi.fn().mockResolvedValue({
-              ...existingWorkItem,
-              ...updates,
-            }),
+            findUnique: vi.fn().mockResolvedValue(updatedWorkItem),
+            findMany: vi.fn().mockResolvedValue([]),
+            update: vi.fn().mockResolvedValue(updatedWorkItem),
           },
           program: { findFirst: vi.fn() },
           milestone: { findFirst: vi.fn() },
@@ -311,14 +332,20 @@ describe('WorkItem Mutations', () => {
             deleteMany: vi.fn(),
             createMany: vi.fn(),
           },
+          workItemDependency: {
+            deleteMany: vi.fn(),
+            createMany: vi.fn(),
+            findMany: vi.fn().mockResolvedValue([]),
+            findFirst: vi.fn().mockResolvedValue(null),
+          },
           statusLog: { create: vi.fn() },
           issueDetail: {
-            findUnique: vi.fn(),
+            findUnique: vi.fn().mockResolvedValue(null),
             update: vi.fn(),
             create: vi.fn(),
           },
           deliverableDetail: {
-            findUnique: vi.fn(),
+            findUnique: vi.fn().mockResolvedValue(null),
             update: vi.fn(),
             create: vi.fn(),
           },

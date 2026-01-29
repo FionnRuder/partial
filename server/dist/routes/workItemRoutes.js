@@ -25,6 +25,9 @@ router.get("/:workItemId/attachments", workItemController_1.getAttachmentsForWor
 router.post("/:workItemId/attachments", workItemController_1.createAttachmentForWorkItem);
 router.patch("/:workItemId/attachments/:attachmentId", workItemController_1.updateAttachmentForWorkItem);
 router.delete("/:workItemId/attachments/:attachmentId", workItemController_1.deleteAttachmentForWorkItem);
+// ✅ Dependencies
+router.post("/:workItemId/dependencies", workItemController_1.addDependencyToWorkItem);
+router.delete("/:workItemId/dependencies/:dependencyId", workItemController_1.removeDependencyFromWorkItem);
 // ✅ GET single work item by ID (must be last to avoid conflicts)
 router.get("/:workItemId", workItemController_1.getWorkItemById);
 // ✅ CREATE a new work item (with DeliverableDetail or IssueDetail if applicable)

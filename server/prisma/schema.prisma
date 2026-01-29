@@ -237,6 +237,11 @@ model WorkItem {
   comments    Comment[]
   statusLogs  StatusLog[]
 
+  // Dependencies: work items that this work item depends on
+  dependencies WorkItemDependency[] @relation("WorkItemDependencies")
+  // Dependents: work items that depend on this work item
+  dependents   WorkItemDependency[] @relation("WorkItemDependents")
+
   // Subtype details
   issueDetail       IssueDetail?
   deliverableDetail DeliverableDetail?
@@ -305,6 +310,19 @@ model WorkItemToPart {
 
   workItem WorkItem @relation(fields: [workItemId], references: [id])
   part     Part     @relation(fields: [partId], references: [id])
+}
+
+model WorkItemDependency {
+  id                   Int @id @default(autoincrement())
+  workItemId           Int // The work item that has the dependency
+  dependencyWorkItemId Int // The work item that is the dependency
+
+  workItem           WorkItem @relation("WorkItemDependencies", fields: [workItemId], references: [id], onDelete: Cascade)
+  dependencyWorkItem WorkItem @relation("WorkItemDependents", fields: [dependencyWorkItemId], references: [id], onDelete: Cascade)
+
+  @@unique([workItemId, dependencyWorkItemId])
+  @@index([workItemId])
+  @@index([dependencyWorkItemId])
 }
 
 model Attachment {

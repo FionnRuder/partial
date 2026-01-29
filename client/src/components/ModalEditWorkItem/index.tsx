@@ -18,10 +18,12 @@ import {
   useGetUsersQuery,
   useGetDeliverableTypesQuery,
   useGetIssueTypesQuery,
+  useGetWorkItemsQuery,
+  useGetWorkItemByIdQuery,
 } from '@/state/api';
 import React, { useEffect, useState } from 'react';
 import { formatISO } from 'date-fns';
-import { showApiError, showApiSuccess } from '@/lib/toast';
+import { showToast, showApiSuccess } from '@/lib/toast';
 
 type Props = {
   isOpen: boolean;
@@ -29,7 +31,7 @@ type Props = {
   workItem: WorkItemTypeModel | null;
 };
 
-const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
+const ModalEditWorkItem = ({ isOpen, onClose, workItem: workItemProp }: Props) => {
   const [editWorkItem, { isLoading: isSaving }] = useEditWorkItemMutation();
   const [deleteWorkItem, { isLoading: isDeleting }] = useDeleteWorkItemMutation();
   const { data: parts = [], isLoading: partsLoading } = useGetPartsQuery();
@@ -38,6 +40,16 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
   const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
   const { data: deliverableTypes = [] } = useGetDeliverableTypesQuery();
   const { data: issueTypes = [] } = useGetIssueTypesQuery();
+  const { data: allWorkItems = [] } = useGetWorkItemsQuery();
+  
+  // Refetch work item with dependencies when modal opens
+  const { data: workItemWithDeps, refetch: refetchWorkItem } = useGetWorkItemByIdQuery(
+    workItemProp?.id || 0,
+    { skip: !workItemProp?.id || !isOpen }
+  );
+  
+  // Use the refetched work item if available (has dependencies), otherwise fall back to prop
+  const workItem = workItemWithDeps || workItemProp;
 
   // form state
   const [workItemType, setWorkItemType] = useState<WorkItemType | "">("");
@@ -53,6 +65,9 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
   const [percentComplete, setPercentComplete] = useState<number>(0);
   const [inputStatus, setInputStatus] = useState("");
   const [partIds, setPartIds] = useState<number[]>([]);
+  const [partSearchQuery, setPartSearchQuery] = useState("");
+  const [dependencyWorkItemIds, setDependencyWorkItemIds] = useState<number[]>([]);
+  const [dependencySearchQuery, setDependencySearchQuery] = useState("");
   const [programId, setProgramId] = useState("");
   const [programName, setProgramName] = useState("");
   const [dueByMilestoneId, setDueByMilestoneId] = useState("");
@@ -67,10 +82,18 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
   const [correctiveAction, setCorrectiveAction] = useState("");
   const [deliverableType, setDeliverableType] = useState<string>("");
 
+  // Refetch work item when modal opens to ensure we have dependencies
+  useEffect(() => {
+    if (isOpen && workItemProp?.id) {
+      refetchWorkItem();
+    }
+  }, [isOpen, workItemProp?.id, refetchWorkItem]);
+
   // Prefill all fields when modal opens
   useEffect(() => {
     if (workItem) {
       console.log("workItem.partNumbers", workItem.partNumbers);
+      console.log("workItem.dependencies", workItem.dependencies);
       setWorkItemType(workItem.workItemType || "");
       setTitle(workItem.title || "");
       setDescription(workItem.description || "");
@@ -88,6 +111,9 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
       setPercentComplete(workItem.percentComplete || 0);
       setInputStatus(workItem.inputStatus || "");
       setPartIds(workItem.partNumbers?.map((p) => p.partId) || []);
+      const dependencyIds = workItem.dependencies?.map((d) => d.dependencyWorkItemId) || [];
+      console.log("Setting dependencyWorkItemIds:", dependencyIds);
+      setDependencyWorkItemIds(dependencyIds);
       
       setProgramId(workItem.programId?.toString() || "");
       // Prefill program name if known
@@ -121,7 +147,7 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
         setDeliverableType(typeName);
       }
     }
-  }, [workItem, programs, milestones, users]);
+  }, [workItem, programs, milestones, users, allWorkItems]);
 
   const isFormValid = (): boolean =>
     !!workItemType &&
@@ -158,6 +184,7 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
       percentComplete,
       inputStatus,
       partIds,
+      dependencyWorkItemIds: dependencyWorkItemIds.length > 0 ? dependencyWorkItemIds : undefined,
       programId: parseInt(programId),
       dueByMilestoneId: parseInt(dueByMilestoneId),
       authorUserId: authorUserId,
@@ -184,8 +211,15 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
         showApiSuccess("Work item updated successfully");
         onClose(); // close modal on success
     } catch (err: any) {
-        console.error("Failed to save work item:", err);
-        showApiError(err, "Failed to save work item");
+        // Extract error message from RTK Query error structure
+        const errorMessage = 
+            err?.data?.message || 
+            (err?.data && typeof err.data === "string" ? err.data : null) ||
+            err?.message || 
+            "Failed to save work item";
+        
+        // Show toast with the error message directly (avoid passing error object)
+        showToast.error(errorMessage);
     }
   };
 
@@ -202,8 +236,15 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
         showApiSuccess("Work item deleted successfully");
         onClose(); // close modal on success
     } catch (err: any) {
-        console.error("Failed to delete work item:", err);
-        showApiError(err, "Failed to delete work item");
+        // Extract error message from RTK Query error structure
+        const errorMessage = 
+            err?.data?.message || 
+            (err?.data && typeof err.data === "string" ? err.data : null) ||
+            err?.message || 
+            "Failed to delete work item";
+        
+        // Show toast with the error message directly
+        showToast.error(errorMessage);
     }
   };
 
@@ -443,29 +484,204 @@ const ModalEditWorkItem = ({ isOpen, onClose, workItem }: Props) => {
         </div>
 
         <div>
-          <label className="block text-sm text-gray-600 dark:text-gray-300">
+          <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
             Affected Part(s):
           </label>
-          <select
-            multiple
-            className={inputStyles}
-            value={partIds.map(String)} // convert numbers to strings for <select>
-            onChange={(e) => {
-              const selectedOptions = Array.from(e.target.selectedOptions);
-              const ids = selectedOptions.map((opt) => Number(opt.value));
-              setPartIds(ids);
-            }}
-            disabled={partsLoading}
-          >
-            {parts.map((part) => (
-              <option key={part.id} value={part.id}>
-                {part.partName} ({part.code})
-              </option>
-            ))}
-          </select>
-          <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-            Hold <kbd>Ctrl</kbd> (Windows) or <kbd>Cmd</kbd> (Mac) to select multiple.
-          </p>
+          <div className="relative">
+            <input
+              type="text"
+              className={inputStyles}
+              placeholder="Search parts..."
+              value={partSearchQuery}
+              onChange={(e) => setPartSearchQuery(e.target.value)}
+              onFocus={() => setPartSearchQuery("")}
+            />
+            {partSearchQuery && (
+              <div className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-dark-secondary">
+                {parts
+                  .filter((part) => {
+                    const searchLower = partSearchQuery.toLowerCase();
+                    return (
+                      part.code.toLowerCase().includes(searchLower) ||
+                      part.partName.toLowerCase().includes(searchLower)
+                    );
+                  })
+                  .slice(0, 10)
+                  .map((part) => {
+                    const isSelected = partIds.includes(part.id);
+                    return (
+                      <div
+                        key={part.id}
+                        className={`cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                          isSelected ? "bg-blue-100 dark:bg-blue-900" : ""
+                        }`}
+                        onClick={() => {
+                          if (isSelected) {
+                            setPartIds(partIds.filter((id) => id !== part.id));
+                          } else {
+                            setPartIds([...partIds, part.id]);
+                          }
+                          setPartSearchQuery("");
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium dark:text-white">
+                            {part.code}: {part.partName}
+                          </span>
+                          {isSelected && <span className="text-xs text-blue-600 dark:text-blue-400">✓</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+          {partIds.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {partIds.map((partId) => {
+                const part = parts.find((p) => p.id === partId);
+                if (!part) return null;
+                return (
+                  <span
+                    key={partId}
+                    className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                  >
+                    {part.code}: {part.partName}
+                    <button
+                      type="button"
+                      onClick={() => setPartIds(partIds.filter((id) => id !== partId))}
+                      className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
+            Dependencies:
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              className={inputStyles}
+              placeholder="Search work items..."
+              value={dependencySearchQuery}
+              onChange={(e) => setDependencySearchQuery(e.target.value)}
+              onFocus={() => setDependencySearchQuery("")}
+            />
+            {dependencySearchQuery && (
+              <div className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-dark-secondary">
+                {allWorkItems
+                  .filter((wi) => {
+                    const searchLower = dependencySearchQuery.toLowerCase();
+                    return (
+                      wi.id !== workItem?.id &&
+                      (wi.title.toLowerCase().includes(searchLower) ||
+                        wi.id.toString().includes(searchLower) ||
+                        wi.workItemType.toLowerCase().includes(searchLower))
+                    );
+                  })
+                  .slice(0, 10)
+                  .map((wi) => {
+                    const isSelected = dependencyWorkItemIds.includes(wi.id);
+                    const prefix = wi.workItemType === "Deliverable" ? "D" : wi.workItemType === "Issue" ? "I" : "T";
+                    return (
+                      <div
+                        key={wi.id}
+                        className={`cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                          isSelected ? "bg-blue-100 dark:bg-blue-900" : ""
+                        }`}
+                        onClick={() => {
+                          if (isSelected) {
+                            setDependencyWorkItemIds(dependencyWorkItemIds.filter((id) => id !== wi.id));
+                          } else {
+                            setDependencyWorkItemIds([...dependencyWorkItemIds, wi.id]);
+                          }
+                          setDependencySearchQuery("");
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium dark:text-white">
+                            {prefix}{wi.id}: {wi.title}
+                          </span>
+                          {isSelected && <span className="text-xs text-blue-600 dark:text-blue-400">✓</span>}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {wi.workItemType} • {wi.status}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+          {dependencyWorkItemIds.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {dependencyWorkItemIds.map((depId) => {
+                // Try to find the work item in allWorkItems first
+                const dep = allWorkItems.find((wi) => wi.id === depId);
+                if (!dep) {
+                  // Fallback: try to find in workItem.dependencies if not in allWorkItems
+                  const dependency = workItem?.dependencies?.find((d) => d.dependencyWorkItemId === depId);
+                  if (dependency?.dependencyWorkItem) {
+                    const depWorkItem = dependency.dependencyWorkItem;
+                    const prefix = depWorkItem.workItemType === "Deliverable" ? "D" : depWorkItem.workItemType === "Issue" ? "I" : "T";
+                    return (
+                      <span
+                        key={depId}
+                        className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                      >
+                        {prefix}{depWorkItem.id}: {depWorkItem.title}
+                        <button
+                          type="button"
+                          onClick={() => setDependencyWorkItemIds(dependencyWorkItemIds.filter((id) => id !== depId))}
+                          className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  }
+                  // If still not found, show just the ID
+                  return (
+                    <span
+                      key={depId}
+                      className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                    >
+                      ID: {depId}
+                      <button
+                        type="button"
+                        onClick={() => setDependencyWorkItemIds(dependencyWorkItemIds.filter((id) => id !== depId))}
+                        className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  );
+                }
+                const prefix = dep.workItemType === "Deliverable" ? "D" : dep.workItemType === "Issue" ? "I" : "T";
+                return (
+                  <span
+                    key={depId}
+                    className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                  >
+                    {prefix}{dep.id}: {dep.title}
+                    <button
+                      type="button"
+                      onClick={() => setDependencyWorkItemIds(dependencyWorkItemIds.filter((id) => id !== depId))}
+                      className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
         <div>
           <label className="block text-sm text-gray-600 dark:text-gray-300">

@@ -18,8 +18,49 @@ export const logError = (
   error: Error | unknown,
   context?: ErrorContext
 ): void => {
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  const errorStack = error instanceof Error ? error.stack : undefined;
+  // Handle RTK Query error structure
+  let errorMessage: string;
+  let errorStack: string | undefined;
+  
+  if (error && typeof error === "object") {
+    // Check for RTK Query error structure - try multiple paths
+    const errorObj = error as any;
+    
+    // Check if object has any enumerable properties
+    const hasProperties = Object.keys(errorObj).length > 0;
+    
+    if (!hasProperties) {
+      // Empty object - might be a serialization issue
+      // Try to access properties that might not be enumerable
+      errorMessage = "An error occurred";
+      errorStack = undefined;
+    } else if (errorObj?.data?.message) {
+      errorMessage = String(errorObj.data.message);
+    } else if (errorObj?.error?.data?.message) {
+      errorMessage = String(errorObj.error.data.message);
+    } else if (errorObj?.message) {
+      errorMessage = String(errorObj.message);
+    } else if (errorObj?.status === "FETCH_ERROR" || errorObj?.status === "PARSING_ERROR") {
+      errorMessage = errorObj.error || "Network error occurred";
+    } else {
+      // Try to stringify, but handle circular references
+      try {
+        const stringified = JSON.stringify(error);
+        errorMessage = stringified === "{}" ? "An error occurred" : stringified;
+      } catch {
+        errorMessage = "An error occurred";
+      }
+    }
+    
+    if (errorObj?.stack) {
+      errorStack = String(errorObj.stack);
+    }
+  } else if (error instanceof Error) {
+    errorMessage = error.message;
+    errorStack = error.stack;
+  } else {
+    errorMessage = String(error);
+  }
 
   // In development, log to console
   if (process.env.NODE_ENV === "development") {
@@ -129,8 +170,15 @@ export const getUserFriendlyErrorMessage = (
   }
 
   // Return the original message if it's user-friendly, otherwise return default
-  if (error.message && error.message.length < 100) {
-    return error.message;
+  // Special handling for dependency errors - always show them even if long
+  if (error.message) {
+    if (error.message.includes("Cannot complete work item") || 
+        error.message.includes("dependencies must be completed")) {
+      return error.message;
+    }
+    if (error.message.length < 100) {
+      return error.message;
+    }
   }
 
   return defaultMessage;
@@ -143,7 +191,10 @@ export const handleApiError = (
   error: any,
   defaultMessage: string = "An error occurred"
 ): string => {
-  // Check for API error response structure
+  // Check for API error response structure (RTK Query format)
+  // RTK Query errors can have data in different places
+  
+  // First, try to extract message from error.data.message
   if (error?.data?.message) {
     return getUserFriendlyErrorMessage(
       new Error(error.data.message),
@@ -151,8 +202,44 @@ export const handleApiError = (
     );
   }
 
+  // Check if error.data is a string (some error formats)
+  if (error?.data && typeof error.data === "string") {
+    return getUserFriendlyErrorMessage(new Error(error.data), defaultMessage);
+  }
+
+  // Check if error.data is an object - try to find message property
+  if (error?.data && typeof error.data === "object") {
+    // Try to extract message from nested structure
+    try {
+      const dataStr = JSON.stringify(error.data);
+      const messageMatch = dataStr.match(/"message"\s*:\s*"([^"]+)"/);
+      if (messageMatch && messageMatch[1]) {
+        return getUserFriendlyErrorMessage(
+          new Error(messageMatch[1]),
+          defaultMessage
+        );
+      }
+    } catch {
+      // If stringify fails, continue to other checks
+    }
+  }
+
+  // Check for nested error structure
+  if (error?.error?.data?.message) {
+    return getUserFriendlyErrorMessage(
+      new Error(error.error.data.message),
+      defaultMessage
+    );
+  }
+
+  // Check for direct message property
   if (error?.message) {
     return getUserFriendlyErrorMessage(error, defaultMessage);
+  }
+
+  // Check if error is a string
+  if (typeof error === "string") {
+    return getUserFriendlyErrorMessage(new Error(error), defaultMessage);
   }
 
   return defaultMessage;

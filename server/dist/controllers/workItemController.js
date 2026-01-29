@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteAttachmentForWorkItem = exports.updateAttachmentForWorkItem = exports.createAttachmentForWorkItem = exports.getAttachmentsForWorkItem = exports.deleteStatusLogForWorkItem = exports.updateStatusLogForWorkItem = exports.createStatusLogForWorkItem = exports.getStatusLogsForWorkItem = exports.deleteWorkItem = exports.deleteCommentForWorkItem = exports.updateCommentForWorkItem = exports.createCommentForWorkItem = exports.getCommentsForWorkItem = exports.editWorkItem = exports.updateWorkItemStatus = exports.createWorkItem = exports.getWorkItemsByUser = exports.getWorkItems = exports.getWorkItemById = void 0;
+exports.removeDependencyFromWorkItem = exports.addDependencyToWorkItem = exports.deleteAttachmentForWorkItem = exports.updateAttachmentForWorkItem = exports.createAttachmentForWorkItem = exports.getAttachmentsForWorkItem = exports.deleteStatusLogForWorkItem = exports.updateStatusLogForWorkItem = exports.createStatusLogForWorkItem = exports.getStatusLogsForWorkItem = exports.deleteWorkItem = exports.deleteCommentForWorkItem = exports.updateCommentForWorkItem = exports.createCommentForWorkItem = exports.getCommentsForWorkItem = exports.editWorkItem = exports.updateWorkItemStatus = exports.createWorkItem = exports.getWorkItemsByUser = exports.getWorkItems = exports.getWorkItemById = void 0;
 const client_1 = require("@prisma/client");
 const emailService_1 = require("../lib/emailService");
 const auditLogger_1 = require("../lib/auditLogger");
@@ -61,6 +61,17 @@ const getWorkItemById = (req, res) => __awaiter(void 0, void 0, void 0, function
                     },
                     orderBy: {
                         dateCommented: "desc",
+                    },
+                },
+                dependencies: {
+                    include: {
+                        dependencyWorkItem: {
+                            include: {
+                                program: true,
+                                authorUser: true,
+                                assigneeUser: true,
+                            },
+                        },
                     },
                 },
             },
@@ -437,7 +448,78 @@ const createWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     },
                 });
             }
-            return createdWorkItem;
+            // Create dependencies if provided
+            if (body.dependencyWorkItemIds && body.dependencyWorkItemIds.length > 0) {
+                const normalizedDependencyIds = body.dependencyWorkItemIds.map((id) => Number(id));
+                // Verify all dependency work items exist and belong to the organization
+                const dependencyWorkItems = yield tx.workItem.findMany({
+                    where: {
+                        id: { in: normalizedDependencyIds },
+                        organizationId,
+                    },
+                    select: { id: true },
+                });
+                if (dependencyWorkItems.length !== normalizedDependencyIds.length) {
+                    throw new Error("One or more dependency work items not found");
+                }
+                // Prevent self-dependency
+                if (normalizedDependencyIds.includes(createdWorkItem.id)) {
+                    throw new Error("A work item cannot depend on itself");
+                }
+                // Check for circular dependencies
+                for (const depId of normalizedDependencyIds) {
+                    const wouldCreateCycle = yield tx.workItemDependency.findFirst({
+                        where: {
+                            workItemId: depId,
+                            dependencyWorkItemId: createdWorkItem.id,
+                        },
+                    });
+                    if (wouldCreateCycle) {
+                        throw new Error("Cannot create circular dependency");
+                    }
+                }
+                // Create dependencies
+                yield tx.workItemDependency.createMany({
+                    data: normalizedDependencyIds.map((depId) => ({
+                        workItemId: createdWorkItem.id,
+                        dependencyWorkItemId: depId,
+                    })),
+                    skipDuplicates: true,
+                });
+            }
+            // Fetch the created work item with dependencies
+            const workItemWithDeps = yield tx.workItem.findUnique({
+                where: { id: createdWorkItem.id },
+                include: {
+                    program: true,
+                    dueByMilestone: true,
+                    deliverableDetail: {
+                        include: {
+                            deliverableType: true,
+                        },
+                    },
+                    issueDetail: {
+                        include: {
+                            issueType: true,
+                        },
+                    },
+                    authorUser: true,
+                    assigneeUser: true,
+                    partNumbers: { include: { part: true } },
+                    dependencies: {
+                        include: {
+                            dependencyWorkItem: {
+                                include: {
+                                    program: true,
+                                    authorUser: true,
+                                    assigneeUser: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+            return workItemWithDeps || createdWorkItem;
         }));
         // Log work item creation
         yield (0, auditLogger_1.logCreate)(req, "WorkItem", newWorkItem.id, `Work item created: ${newWorkItem.title} (${newWorkItem.workItemType})`, (0, auditLogger_1.sanitizeForAudit)(newWorkItem));
@@ -463,6 +545,11 @@ const createWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function*
             "Author user not found",
             "Assigned user not found",
             "One or more parts not found",
+            "One or more dependency work items not found",
+        ]);
+        const knownBadRequestMessages = new Set([
+            "A work item cannot depend on itself",
+            "Cannot create circular dependency",
         ]);
         const knownTypeNotFoundMessages = new Set([
             /^Issue type ".*" not found$/,
@@ -470,6 +557,10 @@ const createWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function*
         ]);
         if (error instanceof Error && knownNotFoundMessages.has(error.message)) {
             res.status(404).json({ message: error.message });
+            return;
+        }
+        if (error instanceof Error && knownBadRequestMessages.has(error.message)) {
+            res.status(400).json({ message: error.message });
             return;
         }
         // Check for type not found errors
@@ -497,14 +588,48 @@ const updateWorkItemStatus = (req, res) => __awaiter(void 0, void 0, void 0, fun
             res.status(400).json({ message: "workItemId must be a valid integer" });
             return;
         }
+        // If status is being set to Completed, check that all dependencies are completed
+        if (status === "Completed") {
+            const workItem = yield prisma.workItem.findFirst({
+                where: {
+                    id: workItemIdNumber,
+                    organizationId: req.auth.organizationId,
+                },
+                include: {
+                    dependencies: {
+                        include: {
+                            dependencyWorkItem: true,
+                        },
+                    },
+                },
+            });
+            if (!workItem) {
+                res.status(404).json({ message: "Work item not found" });
+                return;
+            }
+            // Check if any dependencies are not completed
+            const incompleteDependencies = workItem.dependencies.filter((dep) => dep.dependencyWorkItem.status !== "Completed");
+            if (incompleteDependencies.length > 0) {
+                const incompleteTitles = incompleteDependencies
+                    .map((dep) => dep.dependencyWorkItem.title)
+                    .join(", ");
+                res.status(400).json({
+                    message: `Cannot complete work item. The following dependencies must be completed first: ${incompleteTitles}`,
+                });
+                return;
+            }
+        }
+        // If status is being set to Completed, automatically set percentComplete to 100
+        const updateData = { status };
+        if (status === "Completed") {
+            updateData.percentComplete = 100;
+        }
         const updateResult = yield prisma.workItem.updateMany({
             where: {
                 id: workItemIdNumber,
                 organizationId: req.auth.organizationId,
             },
-            data: {
-                status,
-            },
+            data: updateData,
         });
         if (updateResult.count === 0) {
             res.status(404).json({ message: "Work item not found" });
@@ -512,6 +637,19 @@ const updateWorkItemStatus = (req, res) => __awaiter(void 0, void 0, void 0, fun
         }
         const updatedWorkItem = yield prisma.workItem.findUnique({
             where: { id: workItemIdNumber },
+            include: {
+                dependencies: {
+                    include: {
+                        dependencyWorkItem: {
+                            include: {
+                                program: true,
+                                authorUser: true,
+                                assigneeUser: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
         res.json(updatedWorkItem);
     }
@@ -618,6 +756,25 @@ const editWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     throw new Error("ASSIGNEE_NOT_FOUND");
                 }
             }
+            // If status is being set to Completed, check that all dependencies are completed
+            if (updates.status === "Completed") {
+                const dependencies = yield tx.workItemDependency.findMany({
+                    where: {
+                        workItemId: workItemIdNumber,
+                    },
+                    include: {
+                        dependencyWorkItem: true,
+                    },
+                });
+                // Check if any dependencies are not completed
+                const incompleteDependencies = dependencies.filter((dep) => dep.dependencyWorkItem.status !== "Completed");
+                if (incompleteDependencies.length > 0) {
+                    const incompleteTitles = incompleteDependencies
+                        .map((dep) => dep.dependencyWorkItem.title)
+                        .join(", ");
+                    throw new Error(`Cannot complete work item. The following dependencies must be completed first: ${incompleteTitles}`);
+                }
+            }
             const updateData = {};
             if (updates.workItemType)
                 updateData.workItemType = updates.workItemType;
@@ -625,8 +782,13 @@ const editWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 updateData.title = updates.title;
             if (updates.description)
                 updateData.description = updates.description;
-            if (updates.status)
+            if (updates.status) {
                 updateData.status = updates.status;
+                // If status is being set to Completed, automatically set percentComplete to 100
+                if (updates.status === "Completed") {
+                    updateData.percentComplete = 100;
+                }
+            }
             if (updates.priority)
                 updateData.priority = updates.priority;
             if (updates.tags)
@@ -639,7 +801,9 @@ const editWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 updateData.estimatedCompletionDate = new Date(updates.estimatedCompletionDate);
             if (updates.actualCompletionDate)
                 updateData.actualCompletionDate = new Date(updates.actualCompletionDate);
-            if (typeof updates.percentComplete === "number")
+            // Only set percentComplete from updates if status is not being set to Completed
+            // (if status is Completed, we already set it to 100 above)
+            if (typeof updates.percentComplete === "number" && updates.status !== "Completed")
                 updateData.percentComplete = updates.percentComplete;
             // Check if inputStatus is being updated and if it's different from the current value
             const inputStatusChanged = updates.inputStatus !== undefined &&
@@ -802,6 +966,53 @@ const editWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     }
                 }
             }
+            // Handle dependency updates
+            if (updates.dependencyWorkItemIds !== undefined) {
+                const normalizedDependencyIds = updates.dependencyWorkItemIds.map((id) => Number(id));
+                // Verify all dependency work items exist and belong to the organization
+                if (normalizedDependencyIds.length > 0) {
+                    const dependencyWorkItems = yield tx.workItem.findMany({
+                        where: {
+                            id: { in: normalizedDependencyIds },
+                            organizationId,
+                        },
+                        select: { id: true },
+                    });
+                    if (dependencyWorkItems.length !== normalizedDependencyIds.length) {
+                        throw new Error("One or more dependency work items not found");
+                    }
+                    // Prevent self-dependency
+                    if (normalizedDependencyIds.includes(workItemIdNumber)) {
+                        throw new Error("A work item cannot depend on itself");
+                    }
+                    // Check for circular dependencies
+                    for (const depId of normalizedDependencyIds) {
+                        const wouldCreateCycle = yield tx.workItemDependency.findFirst({
+                            where: {
+                                workItemId: depId,
+                                dependencyWorkItemId: workItemIdNumber,
+                            },
+                        });
+                        if (wouldCreateCycle) {
+                            throw new Error("Cannot create circular dependency");
+                        }
+                    }
+                }
+                // Delete all existing dependencies
+                yield tx.workItemDependency.deleteMany({
+                    where: { workItemId: workItemIdNumber },
+                });
+                // Create new dependencies
+                if (normalizedDependencyIds.length > 0) {
+                    yield tx.workItemDependency.createMany({
+                        data: normalizedDependencyIds.map((depId) => ({
+                            workItemId: workItemIdNumber,
+                            dependencyWorkItemId: depId,
+                        })),
+                        skipDuplicates: true,
+                    });
+                }
+            }
             const finalWorkItem = yield tx.workItem.findUnique({
                 where: { id: workItemIdNumber },
                 include: {
@@ -836,6 +1047,17 @@ const editWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                         },
                     },
                     partNumbers: { include: { part: true } },
+                    dependencies: {
+                        include: {
+                            dependencyWorkItem: {
+                                include: {
+                                    program: true,
+                                    authorUser: true,
+                                    assigneeUser: true,
+                                },
+                            },
+                        },
+                    },
                 },
             });
             if (!finalWorkItem) {
@@ -905,8 +1127,22 @@ const editWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             "ASSIGNEE_NOT_FOUND",
             "PART_NOT_FOUND",
         ]);
+        const badRequestErrors = new Set([
+            "A work item cannot depend on itself",
+            "Cannot create circular dependency",
+            "One or more dependency work items not found",
+        ]);
         if (errorMessage === "INVALID_PART_ID") {
             res.status(400).json({ message: "All partIds must be valid integers" });
+            return;
+        }
+        // Check for dependency validation error
+        if (errorMessage.startsWith("Cannot complete work item")) {
+            res.status(400).json({ message: errorMessage });
+            return;
+        }
+        if (badRequestErrors.has(errorMessage)) {
+            res.status(400).json({ message: errorMessage });
             return;
         }
         if (notFoundErrors.has(errorMessage)) {
@@ -1676,3 +1912,133 @@ const deleteAttachmentForWorkItem = (req, res) => __awaiter(void 0, void 0, void
     }
 });
 exports.deleteAttachmentForWorkItem = deleteAttachmentForWorkItem;
+/**
+ * Add Dependency to WorkItem
+ */
+const addDependencyToWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { workItemId } = req.params;
+    const { dependencyWorkItemId } = req.body;
+    if (!dependencyWorkItemId || typeof dependencyWorkItemId !== "number") {
+        res.status(400).json({ message: "dependencyWorkItemId is required and must be a number" });
+        return;
+    }
+    try {
+        const workItemIdNumber = Number(workItemId);
+        const dependencyIdNumber = Number(dependencyWorkItemId);
+        if (!Number.isInteger(workItemIdNumber) || !Number.isInteger(dependencyIdNumber)) {
+            res.status(400).json({ message: "workItemId and dependencyWorkItemId must be valid integers" });
+            return;
+        }
+        // Prevent self-dependency
+        if (workItemIdNumber === dependencyIdNumber) {
+            res.status(400).json({ message: "A work item cannot depend on itself" });
+            return;
+        }
+        const organizationId = req.auth.organizationId;
+        // Verify both work items exist and belong to the organization
+        const [workItem, dependencyWorkItem] = yield Promise.all([
+            prisma.workItem.findFirst({
+                where: { id: workItemIdNumber, organizationId },
+            }),
+            prisma.workItem.findFirst({
+                where: { id: dependencyIdNumber, organizationId },
+            }),
+        ]);
+        if (!workItem) {
+            res.status(404).json({ message: "Work item not found" });
+            return;
+        }
+        if (!dependencyWorkItem) {
+            res.status(404).json({ message: "Dependency work item not found" });
+            return;
+        }
+        // Check if dependency already exists
+        const existingDependency = yield prisma.workItemDependency.findFirst({
+            where: {
+                workItemId: workItemIdNumber,
+                dependencyWorkItemId: dependencyIdNumber,
+            },
+        });
+        if (existingDependency) {
+            res.status(400).json({ message: "This dependency already exists" });
+            return;
+        }
+        // Check for circular dependencies (if the dependency depends on this work item, it would create a cycle)
+        const wouldCreateCycle = yield prisma.workItemDependency.findFirst({
+            where: {
+                workItemId: dependencyIdNumber,
+                dependencyWorkItemId: workItemIdNumber,
+            },
+        });
+        if (wouldCreateCycle) {
+            res.status(400).json({ message: "Cannot create circular dependency" });
+            return;
+        }
+        // Create the dependency
+        const dependency = yield prisma.workItemDependency.create({
+            data: {
+                workItemId: workItemIdNumber,
+                dependencyWorkItemId: dependencyIdNumber,
+            },
+            include: {
+                dependencyWorkItem: {
+                    include: {
+                        program: true,
+                        authorUser: true,
+                        assigneeUser: true,
+                    },
+                },
+            },
+        });
+        res.status(201).json(dependency);
+    }
+    catch (error) {
+        console.error("Error adding dependency:", error);
+        res.status(500).json({ message: `Error adding dependency: ${error.message}` });
+    }
+});
+exports.addDependencyToWorkItem = addDependencyToWorkItem;
+/**
+ * Remove Dependency from WorkItem
+ */
+const removeDependencyFromWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { workItemId, dependencyId } = req.params;
+    try {
+        const workItemIdNumber = Number(workItemId);
+        const dependencyIdNumber = Number(dependencyId);
+        if (!Number.isInteger(workItemIdNumber) || !Number.isInteger(dependencyIdNumber)) {
+            res.status(400).json({ message: "workItemId and dependencyId must be valid integers" });
+            return;
+        }
+        const organizationId = req.auth.organizationId;
+        // Verify the work item exists and belongs to the organization
+        const workItem = yield prisma.workItem.findFirst({
+            where: { id: workItemIdNumber, organizationId },
+        });
+        if (!workItem) {
+            res.status(404).json({ message: "Work item not found" });
+            return;
+        }
+        // Verify the dependency exists
+        const dependency = yield prisma.workItemDependency.findFirst({
+            where: {
+                id: dependencyIdNumber,
+                workItemId: workItemIdNumber,
+            },
+        });
+        if (!dependency) {
+            res.status(404).json({ message: "Dependency not found" });
+            return;
+        }
+        // Delete the dependency
+        yield prisma.workItemDependency.delete({
+            where: { id: dependencyIdNumber },
+        });
+        res.status(204).send();
+    }
+    catch (error) {
+        console.error("Error removing dependency:", error);
+        res.status(500).json({ message: `Error removing dependency: ${error.message}` });
+    }
+});
+exports.removeDependencyFromWorkItem = removeDependencyFromWorkItem;

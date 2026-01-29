@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import Modal from '@/components/Modal';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useAuth } from '@/contexts/AuthContext';
+import { showToast } from '@/lib/toast';
 
 type BoardProps = {
     id: string;
@@ -74,7 +75,7 @@ const BoardView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren
         error,
         refetch: refetchWorkItems,
     } = useGetWorkItemsByPartQuery({ partId: Number(id), includeChildren });
-    const [updateWorkItemStatus] = useUpdateWorkItemStatusMutation();
+    const [updateWorkItemStatus, { error: statusUpdateError }] = useUpdateWorkItemStatusMutation();
     const [activeCommentsWorkItem, setActiveCommentsWorkItem] = useState<WorkItemType | null>(null);
     const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
     const [newCommentText, setNewCommentText] = useState("");
@@ -90,8 +91,49 @@ const BoardView = ({ id, setIsModalNewWorkItemOpen, searchQuery, includeChildren
     const [updateComment, { isLoading: isUpdatingComment }] = useUpdateCommentMutation();
     const [deleteComment, { isLoading: isDeletingComment }] = useDeleteCommentMutation();
 
-    const moveWorkItem = (workItemId: number, toStatus: string) => {
-        updateWorkItemStatus({ workItemId, status: toStatus })
+    const moveWorkItem = async (workItemId: number, toStatus: string) => {
+        try {
+            const result = await updateWorkItemStatus({ workItemId, status: toStatus });
+            
+            // Check if the result has an error
+            if ("error" in result && result.error) {
+                const error = result.error as any;
+                
+                // RTK Query error structure: error.data contains the response body
+                const errorData = error.data;
+                let errorMessage: string;
+                
+                if (errorData && typeof errorData === "object" && errorData.message) {
+                    errorMessage = errorData.message;
+                } else if (errorData && typeof errorData === "string") {
+                    errorMessage = errorData;
+                } else if (error?.message) {
+                    errorMessage = error.message;
+                } else {
+                    errorMessage = "Failed to update work item status";
+                }
+                
+                // Show toast with the error message directly (avoid passing error object)
+                showToast.error(errorMessage);
+                return;
+            }
+            
+            // Success - refetch work items to update the board
+            if ("data" in result) {
+                refetchWorkItems();
+            }
+        } catch (error: any) {
+            // This catch block handles errors from .unwrap() if used elsewhere
+            // Try to extract error message from various structures
+            const errorMessage = 
+                error?.data?.message ||
+                (error?.data && typeof error.data === "string" ? error.data : null) ||
+                error?.message ||
+                "Failed to update work item status";
+            
+            // Show toast with the error message directly
+            showToast.error(errorMessage);
+        }
     };
 
     const [editingWorkItem, setEditingWorkItem] = useState<WorkItemType | null>(null);
