@@ -1,3 +1,4 @@
+/// <reference path="../@types/express/index.d.ts" />
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { logCreate, logUpdate, sanitizeForAudit, getChangedFields } from "../lib/auditLogger";

@@ -13,6 +13,8 @@ exports.removeDependencyFromWorkItem = exports.addDependencyToWorkItem = exports
 const client_1 = require("@prisma/client");
 const emailService_1 = require("../lib/emailService");
 const auditLogger_1 = require("../lib/auditLogger");
+const logger_1 = require("../lib/logger");
+const sentry_1 = require("../lib/sentry");
 const prisma = new client_1.PrismaClient();
 /**
  * Get single WorkItem by ID
@@ -274,6 +276,7 @@ exports.getWorkItemsByUser = getWorkItemsByUser;
  * Handles DeliverableDetail or IssueDetail based on type
  */
 const createWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e;
     const body = req.body;
     try {
         const organizationId = req.auth.organizationId;
@@ -535,10 +538,43 @@ const createWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 }
             }
         }
-        res.status(201).json(Object.assign(Object.assign({}, newWorkItem), { partIds: newWorkItem.partNumbers.map((p) => p.partId) }));
+        res.status(201).json(Object.assign(Object.assign({}, newWorkItem), { partIds: ((_a = newWorkItem.partNumbers) === null || _a === void 0 ? void 0 : _a.map((p) => p.partId)) || [] }));
     }
     catch (error) {
-        console.error("Error creating work item:", error);
+        // Extract error message safely (handle Prisma errors and other error types)
+        let errorMessage = "Unknown error";
+        if (error === null || error === void 0 ? void 0 : error.message) {
+            errorMessage = error.message;
+        }
+        else if (typeof error === "string") {
+            errorMessage = error;
+        }
+        else if (error === null || error === void 0 ? void 0 : error.code) {
+            // Prisma error codes
+            errorMessage = `Prisma error ${error.code}: ${((_b = error.meta) === null || _b === void 0 ? void 0 : _b.cause) || ((_c = error.meta) === null || _c === void 0 ? void 0 : _c.message) || "Database operation failed"}`;
+        }
+        else {
+            errorMessage = String(error);
+        }
+        const errorStack = error === null || error === void 0 ? void 0 : error.stack;
+        // Log detailed error information
+        logger_1.logger.error("Error creating work item", {
+            error: errorMessage,
+            errorCode: error === null || error === void 0 ? void 0 : error.code,
+            errorMeta: error === null || error === void 0 ? void 0 : error.meta,
+            stack: errorStack,
+            body: (0, auditLogger_1.sanitizeForAudit)(body),
+            organizationId: (_d = req.auth) === null || _d === void 0 ? void 0 : _d.organizationId,
+            userId: (_e = req.auth) === null || _e === void 0 ? void 0 : _e.userId,
+        });
+        // Capture error in Sentry for production debugging
+        (0, sentry_1.captureException)(error instanceof Error ? error : new Error(errorMessage), {
+            component: "workItemController",
+            action: "createWorkItem",
+            body: (0, auditLogger_1.sanitizeForAudit)(body),
+            errorCode: error === null || error === void 0 ? void 0 : error.code,
+            errorMeta: error === null || error === void 0 ? void 0 : error.meta,
+        });
         const knownNotFoundMessages = new Set([
             "Program not found",
             "Milestone not found",
@@ -572,7 +608,7 @@ const createWorkItem = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 }
             }
         }
-        res.status(500).json({ message: `Error creating work item: ${error.message}` });
+        res.status(500).json(Object.assign({ message: `Error creating work item: ${errorMessage}` }, (process.env.NODE_ENV === "development" && { stack: errorStack })));
     }
 });
 exports.createWorkItem = createWorkItem;
